@@ -273,6 +273,37 @@ def list_surahs():
         conn.close()
 
 
+@app.get(
+    "/original/{translation_id}/{surah_id}/{ayah_number}",
+    summary="Get the original whole-ayah translation (read-only reference)",
+    description=(
+        "Returns the pristine, pre-editing translation of one ayah from "
+        "translation_originals. This is the immutable whole-ayah text the "
+        "editor shows under 'Show original' — independent of however the ayah "
+        "may later be segmented in translation_segments."
+    ),
+)
+def get_original_translation(translation_id: int, surah_id: int, ayah_number: int):
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT translation_text FROM translation_originals "
+            "WHERE translation_id=%s AND surah_id=%s AND ayah_number=%s",
+            (translation_id, surah_id, ayah_number),
+        )
+        row = cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail="No original whole-ayah translation stored for this (translation, surah, ayah).",
+        )
+    return {"translation_text": row["translation_text"]}
+
+
 # ---------------------------------------------------------------------------
 # Minimal static reader (see app/static/reader.html)
 # ---------------------------------------------------------------------------

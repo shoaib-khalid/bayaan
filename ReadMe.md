@@ -46,6 +46,13 @@ The last token of (almost) every ayah is **not a word** — it is the end-of-aya
   - `translation_text` = the Urdu for that word range.
 - **Current state:** `translation_id = 2` (Jalandhri) loaded as **1 segment per ayah** → 6,236 rows. `translation_id = 1` is registered but has **no segments** yet.
 
+### 2.5 `translation_originals` (immutable whole-ayah reference)
+
+- A pristine copy of each ayah's **original (pre-editing) whole-ayah translation**, independent of how `translation_segments` later gets split.
+- Columns: `id`, `translation_id`, `surah_id`, `ayah_number`, `translation_text`; `UNIQUE(translation_id, surah_id, ayah_number)`.
+- Created by `data/002_translation_originals.sql` (migration 002) with a **check**: it copies only ayahs that currently have **exactly one** segment (`HAVING COUNT(*) = 1`) — 6,236 rows for translation 2, 0 groups skipped. If a translation is later added, run the same copy to snapshot its originals **before** segmenting it.
+- Served by `GET /original/{translation_id}/{surah_id}/{ayah_number}` and shown (read-only) by the editor's **“Show original translation”** button.
+
 ### 2.4 Jalandhri import mapping (deen.pk → DB)
 
 The scraper (`deen_jalandhri_scraper`) captured deen.pk's **Urdu translation only** (not deen.pk's Arabic). Import logic lives in `D:\Personal_repos\deen_jalandhri_scraper\scripts\import_to_bayaan.py` and maps:
@@ -135,6 +142,7 @@ DB connection is read from `app/config.py` ← `app/.env` (defaults already matc
 | `GET /reader?translation_id=2&surah=1` | Minimal HTML renderer (uses the API) |
 | `GET /editor?translation_id=2&surah=12&ayah=70` | **Segment editor** (see below) |
 | `GET /surah/{surah_id}?translation_id=2` | **Everything a renderer/editor needs**: surah meta, translation meta, and per ayah → `words[]` (`id`, `word_index`, `text`, `is_word`) + `segments[]` (`segment_index`, `word_start`/`word_end` ids, `word_start_index`/`word_end_index`, `translation_text`) |
+| `GET /original/{translation_id}/{surah_id}/{ayah_number}` | Pristine whole-ayah translation from `translation_originals` (editor's “Show original”) |
 | `GET /ayah/{surah_id}/{ayah_number}` | Legacy: words of one ayah |
 | `GET /segments/{translation_id}/{surah_id}/{ayah_number}` | Legacy: segments of one ayah |
 | `POST /segments` | Legacy: overwrite segments for an ayah (⚠️ body uses word indices; ensure ids align with the FK) |
@@ -152,7 +160,19 @@ Renderer: `app/static/reader.html` — plain HTML/JS, no framework; toggles Layo
 - **Save** overwrites all segments of (translation, surah, ayah) via `POST /segments` and **auto-adds any remaining un-assigned words + translation as the final segment** — so a partial edit ends as two segments, never a hole. Before writing it validates that the script words are fully covered (ordered, no gap/overlap, no missing words; the ayah ornament is ignored).
 - **Start over** empties the table and merges the whole translation back into the work area (nothing saved until you press Save).
 - **AutoSave**: when checked, ◀/▶ save the current ayah first so you don’t have to click Save repeatedly.
+- **Show original translation**: button between the script and the translation; it loads the pristine whole-ayah text from `translation_originals` (read-only) for comparison — unaffected by your segmenting/editing.
+- The “Segments of this ayah” heading shows a live count (e.g. “0 — none yet”), so it never claims segments exist when it is empty.
 - Tooltips on every button plus a full **usage guide** (press `?`) explain each action and the keyboard shortcuts (`Alt+A` add, `Alt+S` save, `Ctrl+Enter` save & next, `N`/`P` next/prev, arrows in the script box with Shift to extend).
+
+### 6.2 Tests (segmentation logic)
+
+The segmentation **math** lives in a pure, DOM-free module **`app/static/editor-logic.js`** (single source of truth — the page and the tests both use it):
+
+```bash
+npm test        # runs  node --test tests/editor-logic.test.js   (30 tests)
+```
+
+Covers: word vs. ornament classification, whole-ayah detection, `buildModel`, `leftoverWords`, `addSegment`, auto-finalize (partial edit → 2 segments), coverage validation (gap/overlap/missing-word/empty-text), merge/delete, split ordering, serialization, and an end-to-end mirror of the Surah 12:70 split. Add a test here whenever the editor logic changes.
 
 ---
 
@@ -163,7 +183,7 @@ Renderer: `app/static/reader.html` — plain HTML/JS, no framework; toggles Layo
 3. Load segments for `translation_id = 1` (`bayan-ul-quran`) the same way.
 4. Paginate Layout A into mushaf-like pages; surah navigation; tune line spacing/empty-space behavior.
 5. Reader hardening: highlight only word tokens (never ornaments), correct bidi (`unicode-bidi: isolate` per line), handling of words that contain internal pause marks (e.g. `عَلَیْهِمْ ۙ۬ۦ`).
-6. Tests for the API + import idempotency; seed verification counts (6,236 etc.).
+6. Add API/integration tests + import idempotency + seed verification counts. (Unit tests for the **editor logic** already exist: `npm test` → `tests/editor-logic.test.js`.)
 
 ---
 
@@ -171,4 +191,5 @@ Renderer: `app/static/reader.html` — plain HTML/JS, no framework; toggles Layo
 
 - `surahs` 114 · `ayahs` 6,236 (Surah 1 has 7 — includes basmala as ayah 1) · `ayah_words` 83,668 (every ayah has words).
 - `translations`: 2 rows (as above). `translation_segments`: 6,236 rows for `translation_id = 2`; 0 for `1`.
-- Schema dump: `data/db-schema.sql` (also the original data load script: `data/import-quran-aya-words.py`).
+- `translation_originals`: 6,236 rows for `translation_id = 2` (immutable whole-ayah reference; migration `data/002_translation_originals.sql`).
+- Schema/dump: `data/db-schema.sql`; migrations under `data/0*.sql` (e.g. `002_translation_originals.sql`); original word-load script: `data/import-quran-aya-words.py`.

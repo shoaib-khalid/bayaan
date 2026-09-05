@@ -138,6 +138,14 @@
          title="The remaining Arabic words. Click to select, shift+click for a range, or use ←/→ with shift. The golden ayah-end ornament is shown automatically and is NOT selectable."></div>
     <div class="legend">Sel: click = single word &nbsp;·&nbsp; shift+click / shift+←→ = range &nbsp;·&nbsp; the ayah marker (gold) is auto and never part of a segment</div>
 
+    <div class="btnrow">
+      <button id="btnOrig" type="button" title="Show / hide the ORIGINAL whole-ayah translation straight from the database. It is always read-only — a reference to compare against, independent of the segments above.">👁 Show original translation</button>
+    </div>
+    <div id="origWrap" style="display:none">
+      <textarea id="origTr" class="tr" readonly spellcheck="false" dir="rtl" lang="ur" title="Original whole-ayah translation from translation_originals — read-only reference."></textarea>
+      <div class="legend">Original whole-ayah translation (translation_originals) — read-only reference for comparison. It is never edited here and is unaffected by your segmenting.</div>
+    </div>
+
     <div style="height:10px"></div>
     <div class="hint rtl" id="trHint">Translation (ترجمہ) — select the text that belongs to the words you chose above. Read-only by default; press “Edit translation” to type/edit (e.g. when the source translation is empty).</div>
     <textarea id="srcTr" class="tr" readonly spellcheck="false" dir="rtl" lang="ur"
@@ -156,7 +164,8 @@
   <!-- ============ SEGMENTS TABLE ============ -->
   <div class="panel">
     <h3>2 · Segments of this ayah
-      <span class="pill">script is on the right · translation on the left</span>
+      <span class="pill" id="segCountPill">0</span>
+      <span class="pill">script right · translation left</span>
     </h3>
     <div class="segrows" id="segrows">
       <p class="hint">No segments yet — make your first segment above.</p>
@@ -167,6 +176,7 @@
 <div class="help" id="helpPanel" dir="ltr"></div>
 <div class="toast" id="toast"></div>
 
+<script src="/static/editor-logic.js"></script>
 <script>
 "use strict";
 /* =====================================================================
@@ -179,9 +189,9 @@
 
 /* ---------------- helpers ---------------- */
 const $ = (id) => document.getElementById(id);
-const AR_LETTER = /[\u0621-\u064a\u0671-\u06d3]/;      // Arabic letter ⇒ real word
-const isWordTok = (t) => AR_LETTER.test(t || "");
-const isOrn = (t) => !isWordTok(t);
+const Editor = window.BayaanEditor;          // pure logic module (also unit-tested)
+const isWordTok = Editor.isWord;
+const isOrn = (t) => Editor.isOrn(t);
 function toUrdu(n){ return String(n).replace(/[0-9]/g,(d)=>"۰۱۲۳۴۵۶۷۸۹"[+d]); }
 function esc(s){ return String(s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -256,53 +266,25 @@ function loadAyah(num){
   pushUrl();
   const meta = S.ayahMap[num];
   if (!meta) return;
-  const words = meta.words;
-  const allWords = words.filter(w => isWordTok(w.text));
-  const orn = words.filter(w => isOrn(w.text));
-  const dbSegs = meta.segments || [];
-  const whole = isWholeAyahSegment(dbSegs, allWords);
-
-  S.cur = { allWords, orn, segs: [], wholeText: "" };
-
-  if (whole && dbSegs.length === 1){
-    // Treat a single whole-ayah segment as "not yet segmented":
-    // show the full text in the work area so the user can split it.
-    S.cur.wholeText = dbSegs[0].translation_text || "";
-  } else {
-    // Already segmented → show segments table; any un-covered words are leftovers.
-    S.cur.segs = dbSegs.map(d => ({ startId:d.word_start, endId:d.word_end, text:d.translation_text }))
-                      .filter(s => s.startId && s.endId)
-                      .sort((a,b)=>a.startId-b.startId);
-    // remainder text for leftover words (typically empty)
-    const covered = new Set();
-    for (const s of S.cur.segs) for (const w of wordsIn(s)) covered.add(w.id);
-    const leftover = allWords.filter(w => !covered.has(w.id));
-    S.cur.wholeText = leftover.length ? "" : "";
-  }
+  // Pure model built by the shared (unit-tested) logic module.
+  const model = Editor.buildModel(meta.words, meta.segments || []);
+  S.cur = model;
   renderAll();
 }
 
 function isWholeAyahSegment(segs, allWords){
-  if (!segs || segs.length !== 1) return false;
-  const s = segs[0];
-  if (!allWords.length) return false;
-  // A stored single segment is "whole" if it starts at the first real word and
-  // reaches at least the last real word (some rows also include the trailing
-  // end-of-ayah ornament id as word_end — treat that as whole too).
-  return s.word_start === allWords[0].id &&
-         s.word_end >= allWords[allWords.length - 1].id;
+  return Editor.isWholeSegment(segs, allWords);
 }
-function wordsIn(seg){ return S.cur.allWords.filter(w => seg.startId<=w.id && w.id<=seg.endId); }
+function wordsIn(seg){ return Editor.wordsOfRange(S.cur.allWords, seg); }
 
 /* which real words are NOT inside any segment */
 function leftoverWords(){
-  const covered = new Set();
-  for (const s of S.cur.segs) for (const w of wordsIn(s)) covered.add(w.id);
-  return S.cur.allWords.filter(w => !covered.has(w.id));
+  return Editor.leftoverWords(S.cur.allWords, S.cur.segs);
 }
 
 /* ---------------- render ---------------- */
 function renderAll(){
+  hideOriginal();
   renderAyahTag();
   renderChips();
   renderSegments();
@@ -409,35 +391,47 @@ $("btnEditTr").addEventListener("click", ()=>{
                    : "Translation box is now editable — type/paste the remaining translation.", "ok");
 });
 
+/* --- Show / hide the ORIGINAL whole-ayah translation (read-only reference) --- */
+let origShown = false;
+function hideOriginal(){
+  origShown = false;
+  const w = $("origWrap"); if (w) w.style.display = "none";
+  const b = $("btnOrig"); if (b) b.textContent = "👁 Show original translation";
+}
+async function toggleOriginal(){
+  if (origShown){ hideOriginal(); return; }
+  try {
+    const r = await fetch(`/original/${S.translationId}/${S.surahId}/${S.ayahNumber}`);
+    if (!r.ok){ toast("No original whole-ayah translation stored for this ayah/translation.","warn"); return; }
+    const d = await r.json();
+    const ta = $("origTr");
+    ta.value = d.translation_text;
+    ta.readOnly = true;
+    $("origWrap").style.display = "block";
+    origShown = true;
+    $("btnOrig").textContent = "🙈 Hide original translation";
+    toast("Showing the ORIGINAL whole-ayah translation (read-only reference).","ok");
+  } catch(err){ toast("Error loading original: "+err.message,"warn"); }
+}
+$("btnOrig").addEventListener("click", toggleOriginal);
+
 /* =====================================================================
    Add a segment from current script + translation selections
    ===================================================================== */
 function addSegment(){
-  const leftover = leftoverWords();
-  const lo = rangeStart(), hi = rangeEnd();
-  const selWords = (lo===null||hi===null)?[]:leftover.slice(lo, hi+1);
-  if (!selWords.length){
-    toast("Select some script words first (click a word, shift+click for a range).","warn"); return;
-  }
   const ta = $("srcTr");
-  const a0 = ta.selectionStart, a1 = ta.selectionEnd;
-  const selText = (a1>a0)? ta.value.slice(a0,a1) : "";
-  if (!selText.trim().length){
-    toast("Now select the matching translation text in the box below the script.","warn");
-    ta.focus(); return;
+  const lo = rangeStart(), hi = rangeEnd();
+  const s0 = Math.min(ta.selectionStart, ta.selectionEnd);
+  const s1 = Math.max(ta.selectionStart, ta.selectionEnd);
+  const res = Editor.addSegment(S.cur.allWords, S.cur.segs, ta.value, { lo, hi, trStart: s0, trEnd: s1 });
+  if (!res.ok){
+    toast(res.msg, "warn");
+    if (res.needTr) ta.focus();
+    return;
   }
-  // remove selected translation from the remaining text
-  const before = ta.value.slice(0,a0), after = ta.value.slice(a1);
-  ta.value = before + after;
-  S.cur.wholeText = ta.value;
-
-  const seg = {
-    startId: selWords[0].id,
-    endId:   selWords[selWords.length-1].id,
-    text:    selText,
-  };
-  S.cur.segs.push(seg);
-  S.cur.segs.sort((x,y)=>x.startId-y.startId);
+  S.cur.segs = res.segs;
+  ta.value = res.wholeText;
+  S.cur.wholeText = res.wholeText;
   selA = selB = null;
   renderChips(); renderSegments(); updateSelCounts();
 
@@ -458,8 +452,11 @@ let splitRow = -1;         // index in split mode
 let splitWordIdx = null;   // local word index (inside that segment) = last word of part 1
 function renderSegments(){
   const box = $("segrows");
+  const pill = $("segCountPill");
+  const n = S.cur.segs.length;
+  if (pill) pill.textContent = n ? toUrdu(n) : "0 — none yet";
   box.innerHTML = "";
-  if (!S.cur.segs.length){
+  if (!n){
     box.innerHTML = '<p class="hint">No segments yet — make your first segment above.</p>';
     return;
   }
@@ -556,44 +553,30 @@ function doSplit(i){
   const seg = S.cur.segs[i];
   const ws = wordsIn(seg);
   const rowTa = document.querySelector(`.segrow[data-i="${i}"] textarea.tr`);
-  if (splitWordIdx===null || splitWordIdx < 0 || splitWordIdx >= ws.length-1){
+  const caret = rowTa ? rowTa.selectionStart : -1;
+  if (splitWordIdx === null || splitWordIdx < 0 || splitWordIdx >= ws.length - 1){
     toast("Click an Arabic word inside this segment that is NOT the very last word (it becomes the last word of the first part).","warn"); return;
   }
-  const caret = rowTa ? rowTa.selectionStart : -1;
-  if (caret<=0 || caret>=seg.text.length){
-    toast("In the translation box, put the caret (or a selection ending) at the end of the FIRST part’s text.","warn"); return;
-  }
-  const t1 = seg.text.slice(0, caret).trim();
-  const t2 = seg.text.slice(caret).trim();
-  if (!t1 || !t2){ toast("Both parts need non-empty translation text.","warn"); return; }
-  const boundaryId = ws[splitWordIdx].id;
-  const a = { startId: seg.startId, endId: boundaryId, text: t1 };
-  const b = { startId: ws[splitWordIdx+1].id, endId: seg.endId, text: t2 };
-  S.cur.segs.splice(i, 1, a, b);
-  splitRow=-1; splitWordIdx=null; editingRow=-1;
+  const res = Editor.splitAt(S.cur.allWords, S.cur.segs, i, ws[splitWordIdx].id, caret);
+  splitRow = -1; splitWordIdx = null; editingRow = -1;
+  if (!res.ok){ toast(res.msg, "warn"); return; }
+  S.cur.segs = res.segs;
   renderSegments();
   toast("Segment split into two.","ok");
 }
 function mergeSegs(i){
-  if (i >= S.cur.segs.length-1){ toast("This is the last segment — there is no next one to merge with.","warn"); return; }
-  const a = S.cur.segs[i], b = S.cur.segs[i+1];
-  a.endId = b.endId;
-  a.text = [a.text, b.text].filter(Boolean).join(" ");
-  S.cur.segs.splice(i+1, 1);
-  editingRow=-1; splitRow=-1; renderSegments();
+  const res = Editor.mergeAt(S.cur.segs, i);
+  if (!res.ok){ toast(res.msg, "warn"); return; }
+  S.cur.segs = res.segs;
+  editingRow = -1; splitRow = -1; renderSegments();
   toast("Merged with the next segment.","ok");
 }
 function deleteSeg(i){
-  if (S.cur.segs.length<=1){ toast("Deleting the only segment would empty the ayah — use “Start over” instead.","warn"); return; }
-  if (i < S.cur.segs.length-1){ mergeSegs(i); }
-  else { // last segment: merge it into the previous one
-    const p = S.cur.segs[i-1], b = S.cur.segs[i];
-    p.endId = b.endId;
-    p.text = [p.text, b.text].filter(Boolean).join(" ");
-    S.cur.segs.splice(i,1);
-    editingRow=-1; splitRow=-1; renderSegments();
-    toast("Deleted (merged into previous).","ok");
-  }
+  const res = Editor.deleteAt(S.cur.segs, i);
+  if (!res.ok){ toast(res.msg, "warn"); return; }
+  S.cur.segs = res.segs;
+  editingRow = -1; splitRow = -1; renderSegments();
+  toast("Segment deleted (merged with its neighbour).","ok");
 }
 
 /* =====================================================================
@@ -612,36 +595,11 @@ $("btnClear").addEventListener("click", ()=>{
    Save (overwrite all) with auto-finalize + coverage validation
    ===================================================================== */
 function finalizeSegments(){
-  // Auto-finalize: if any words are left un-assigned, make them the final segment
-  // using the remaining text from the translation box (if any).
-  const leftover = leftoverWords();
-  if (leftover.length){
-    const remText = ($("srcTr").value||"").trim();
-    if (!remText){
-      // If there is no leftover text, but every earlier word is covered and the
-      // leftover is only a decorative remainder, we still need text — warn.
-      return { ok:false, msg:"Some script words are still un-assigned and there is no remaining translation text for them. Select them + their translation and Add, or type the translation, before saving." };
-    }
-    S.cur.segs.push({ startId: leftover[0].id, endId: leftover[leftover.length-1].id, text: remText });
-    $("srcTr").value = ""; S.cur.wholeText = "";
-    S.cur.segs.sort((a,b)=>a.startId-b.startId);
-  }
-  // Coverage check: every real word in order must be covered by exactly one segment
-  const all = S.cur.allWords;
-  const segs = [...S.cur.segs].sort((a,b)=>a.startId-b.startId);
-  let prevEnd = null;
-  for (const s of segs){
-    if (!s.text || !s.text.trim()) return { ok:false, msg:"Every segment needs translation text." };
-    if (prevEnd !== null && s.startId !== prevEnd+1){
-      return { ok:false, msg:"There is a GAP or OVERLAP between segments (words are missing or duplicated). Fix with merge/delete, or use Start over." };
-    }
-    const wlist = wordsIn(s);
-    if (!wlist.length) return { ok:false, msg:"A segment contains no words." };
-    prevEnd = s.endId;
-  }
-  if (prevEnd !== null && prevEnd !== all[all.length-1].id) return { ok:false, msg:"Segments do not reach the end of the ayah." };
-  if (!segs.length) return { ok:false, msg:"There are no segments to save." };
-  return { ok:true, segs };
+  // Auto-finalize (any leftover words + remaining translation become the final
+  // segment) + coverage validation — pure logic in the tested module.
+  const res = Editor.finalize(S.cur.allWords, S.cur.segs, $("srcTr").value || "");
+  if (res.ok) S.cur.segs = res.segs;
+  return res;
 }
 
 async function saveAyah(){
@@ -789,6 +747,7 @@ const HELP_HTML = `
   <li><b>Selecting translation text:</b> drag (or shift+click) inside the translation box to select the exact Urdu that matches the words you selected. The box is <b>read-only by default</b> so text is not changed by accident — press <b>✎ Edit translation</b> only when you need to type/paste.</li>
   <li>Press <b>+ Add segment</b> (keyboard <b>Alt+A</b>, or <b>Enter</b> while in the translation box). The selected words + text are removed from the work area and appended to the segments table below, in order.</li>
   <li>If you only made ONE segment (or a few) and there are still words/text left, <b>Save</b> (or Next with AutoSave) automatically turns the remainder into the final segment — so a partial edit ends up as two segments, never a hole.</li>
+  <li><b>👁 Show original translation</b> (button between the script and the translation) loads the pristine whole-ayah translation from <code>translation_originals</code>. It is always read-only — a reference to compare against what the ayah originally said, even after you have segmented/edited it. It hides again when you navigate to another ayah.</li>
   <li>If you did not select words or text, a non-blocking alert explains what to select.</li>
 </ul>
 

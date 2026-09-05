@@ -67,3 +67,21 @@ the schema comment when convenient.
 - Words that embed pause marks internally (e.g. `عَلَیْهِمْ ۙ۬ۦ`) render as-is.
 - Mushaf pagination for Layout A; surah navigation; zoom (deen.pk has a
   `data-zoom` cookie pattern worth copying for font-size controls).
+
+## 6. Tests
+
+- **Editor-logic unit tests EXIST** (`tests/editor-logic.test.js`, run with
+  `npm test` = `node --test tests/editor-logic.test.js`, 30 tests). The page
+  (`app/static/editor.html`) and the tests share the pure module
+  `app/static/editor-logic.js` — when changing editor logic, update the module
+  and add a test here.
+- TODO: API/integration tests (FastAPI endpoints incl. `POST /segments` and
+  `GET /original/...`), import idempotency test, seed-count verification.
+
+## 7. translation_originals
+
+- Table `translation_originals` + migration `data/002_translation_originals.sql`
+  ship an immutable whole-ayah translation (6,236 rows for translation 2).
+  When a NEW translation is registered, snapshot its originals from
+  `translation_segments` (while each ayah still has exactly one segment)
+  BEFORE segmenting it — the copy uses `HAVING COUNT(*) = 1` as its check.

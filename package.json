@@ -1,0 +1,9 @@
+{
+  "name": "bayaan",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quran segment-aligned reader + editor (FastAPI + vanilla JS). JS used only for the pure segmentation logic and its tests.",
+  "scripts": {
+    "test": "node --test tests/editor-logic.test.js"
+  }
+}
