@@ -41,13 +41,13 @@ still be rendered at the end of the ayah.
 
 ## 2. Sentence-level segmentation of Jalandhri (translation_id=2)
 
-Current data is 1 segment per ayah (whole-ayah translation). Long ayahs should
-be split into sentence/phrase segments so Layout A (interlinear) can show each
-sentence's Arabic words on one line with its Urdu directly beneath. This is
-**editorial work** — needs a segment editor (UI) or a carefully reviewed import.
-Each new segment needs `translation_text` and exact `word_start`/`word_end`
-(as `ayah_words.id`, contiguous, covering every real word exactly once,
-non-overlapping, no gaps).
+The **editor MVP is built** at `/editor` (`app/static/editor.html`) and validated end-to-end
+(Surah 12:70 example → split + auto-finalize into 2 segments; POST round-trip verified).
+The remaining work is **editorial**: use the editor to actually split the 6,236 whole-ayah
+segments into sentence/phrase segments (long ayahs first). Each new segment needs
+`translation_text` and exact `word_start`/`word_end` (as `ayah_words.id`, contiguous,
+covering every real word exactly once, non-overlapping, no gaps). The editor auto-adds any
+remaining words as the final segment and validates coverage on Save.
 
 ## 3. Populate bayan-ul-quran (translation_id=1) segments
 

@@ -131,8 +131,10 @@ DB connection is read from `app/config.py` ← `app/.env` (defaults already matc
 | Endpoint | Purpose |
 |----------|---------|
 | `GET /` | Tiny index with links |
+| `GET /surahs` | List all surahs with `name_arabic`, `name_english`, `ayah_count` (for named dropdowns) |
 | `GET /reader?translation_id=2&surah=1` | Minimal HTML renderer (uses the API) |
-| `GET /surah/{surah_id}?translation_id=2` | **Everything a renderer needs**: surah meta, translation meta, and per ayah → `words[]` (`id`, `word_index`, `text`, `is_word`) + `segments[]` (`segment_index`, `word_start`/`word_end` ids, `word_start_index`/`word_end_index`, `translation_text`) |
+| `GET /editor?translation_id=2&surah=12&ayah=70` | **Segment editor** (see below) |
+| `GET /surah/{surah_id}?translation_id=2` | **Everything a renderer/editor needs**: surah meta, translation meta, and per ayah → `words[]` (`id`, `word_index`, `text`, `is_word`) + `segments[]` (`segment_index`, `word_start`/`word_end` ids, `word_start_index`/`word_end_index`, `translation_text`) |
 | `GET /ayah/{surah_id}/{ayah_number}` | Legacy: words of one ayah |
 | `GET /segments/{translation_id}/{surah_id}/{ayah_number}` | Legacy: segments of one ayah |
 | `POST /segments` | Legacy: overwrite segments for an ayah (⚠️ body uses word indices; ensure ids align with the FK) |
@@ -140,11 +142,23 @@ DB connection is read from `app/config.py` ← `app/.env` (defaults already matc
 
 Renderer: `app/static/reader.html` — plain HTML/JS, no framework; toggles Layout A / Layout B; surah + translation selectors.
 
+### 6.1 Segment editor (MVP)
+
+`app/static/editor.html` at `GET /editor` — vanilla HTML/JS page for creating/editing word-anchored segments of one ayah.
+
+- **Pick a verse:** Surah dropdown (named), Ayah dropdown (populated per surah), Translation dropdown. Selection is mirrored in the URL (`translation_id`, `surah`, `ayah`) so links are shareable. ◀/▶ Prev/Next move between verses.
+- **Work area (top):** an un-segmented ayah (a stored single whole-ayah segment) shows its remaining Arabic as **word chips** + its remaining translation in a read-only (until ✎) box. Select words (click = single, shift+click = range), select the matching translation text, press **+ Add segment** → the pair is appended to the segments table and removed from the work area.
+- **Segments table (below):** one row per segment — **script on the right, translation on the left** (deen.pk-like). Per-row actions: **✎ Edit** (translation, read-only until then), **✂ Split** (pick the last Arabic word of part 1 + place the caret in the translation, then ✓ Split here — new segment inserted in sequence), **⇄ Merge next**, **✕ Delete** (merges into next, or previous if last).
+- **Save** overwrites all segments of (translation, surah, ayah) via `POST /segments` and **auto-adds any remaining un-assigned words + translation as the final segment** — so a partial edit ends as two segments, never a hole. Before writing it validates that the script words are fully covered (ordered, no gap/overlap, no missing words; the ayah ornament is ignored).
+- **Start over** empties the table and merges the whole translation back into the work area (nothing saved until you press Save).
+- **AutoSave**: when checked, ◀/▶ save the current ayah first so you don’t have to click Save repeatedly.
+- Tooltips on every button plus a full **usage guide** (press `?`) explain each action and the keyboard shortcuts (`Alt+A` add, `Alt+S` save, `Ctrl+Enter` save & next, `N`/`P` next/prev, arrows in the script box with Shift to extend).
+
 ---
 
 ## 7. Roadmap / next steps (priority order)
 
-1. **Sentence-level segmentation (the big one).** Build a segment editor (or a curated import) that splits each long ayah into sentence/phrase segments, each with `translation_text` + exact `word_start`/`word_end` (`ayah_words.id`). This is editorial work; Jalandhri text is continuous, so it must be split sensibly per sentence.
+1. **Sentence-level segmentation (the big one, ongoing).** A working **editor MVP shipped at `/editor`** (`app/static/editor.html`) splits each ayah into segments, each with `translation_text` + exact `word_start`/`word_end` (`ayah_words.id`). The remaining work is **editorial**: actually splitting the long continuous Jalandhri ayahs into sentence/phrase segments using the editor (translation_id=2), plus polishing editor UX (keyboard breadth, translation-1 onboarding, undo).
 2. **Proper ornament classification + word-range fix** (see `TODO.md`): re-derive `is_symbol` from the Arabic-letter rule and correct the 2,798 segment `word_end`s so ranges contain only real words.
 3. Load segments for `translation_id = 1` (`bayan-ul-quran`) the same way.
 4. Paginate Layout A into mushaf-like pages; surah navigation; tune line spacing/empty-space behavior.

@@ -253,10 +253,29 @@ def get_surah_render(
     }
 
 
+@app.get(
+    "/surahs",
+    summary="List surahs (with names and ayah counts)",
+    description="Used by the editor/reader to build a named surah dropdown.",
+)
+def list_surahs():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT s.id, s.name_arabic, s.name_english, COUNT(a.ayah_number) AS ayah_count "
+            "FROM surahs s LEFT JOIN ayahs a ON a.surah_id = s.id "
+            "GROUP BY s.id, s.name_arabic, s.name_english ORDER BY s.id"
+        )
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+
 # ---------------------------------------------------------------------------
 # Minimal static reader (see app/static/reader.html)
 # ---------------------------------------------------------------------------
-
 if STATIC_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
@@ -269,6 +288,14 @@ def reader_page():
     return FileResponse(index)
 
 
+@app.get("/editor", response_class=HTMLResponse, include_in_schema=False)
+def editor_page():
+    index = STATIC_DIR / "editor.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="editor.html not built")
+    return FileResponse(index)
+
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index_page():
     return HTMLResponse(
@@ -276,6 +303,7 @@ def index_page():
         "<h2>Bayaan API</h2>"
         "<ul>"
         "<li>Interactive docs: <a href='/docs'>/docs</a></li>"
+        "<li>Segment editor: <a href='/editor?translation_id=2&surah=1&ayah=1'>/editor?translation_id=2&amp;surah=1&amp;ayah=1</a></li>"
         "<li>Sample renderer (uses the API): <a href='/reader?translation_id=2&surah=1'>/reader?translation_id=2&amp;surah=1</a></li>"
         "<li>Data endpoint: <a href='/surah/1?translation_id=2'>/surah/1?translation_id=2</a></li>"
         "</ul></body></html>"

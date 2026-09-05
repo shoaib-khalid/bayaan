@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bayaan — Segment Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face {
+    font-family: "IndoPak Quran";
+    src: url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");
+    font-display: swap;
+  }
+  :root {
+    --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
+    --border:#a8946e; --gold:#9c7c3e; --urdu:#40392f; --err:#b3261e;
+    --sel:#cfe3ff; --sel2:#b9d7ff; --amber:#fef3c7; --blue:#dbeafe;
+    --ok:#e7f6e7; --btn:#fff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#efe9db; color:var(--ink);
+    font-family:"Noto Nastaliq Urdu", serif; }
+  .bar { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center; justify-content:center; padding:8px 10px; background:#fffdf5;
+    border-bottom:1px solid var(--gold); font-family:system-ui,sans-serif; direction:ltr; }
+  .bar label { font-size:12px; color:var(--muted); }
+  .bar select,.bar button,.bar input[type=checkbox]{ font:inherit; font-size:13px;
+    padding:4px 6px; border:1px solid rgba(156,124,62,.5); border-radius:7px; background:var(--btn); cursor:pointer; }
+  .bar button.primary{ background:var(--gold); color:#fff; font-weight:600; }
+  .bar button.danger{ color:var(--err); border-color:var(--err); }
+  .wrap { max-width:1060px; margin:14px auto; display:grid; gap:14px; padding:0 10px 40px; }
+  .panel { background:var(--paper); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .panel h3 { margin:0 0 8px; font-family:system-ui,sans-serif; font-size:14px; color:var(--gold);
+    border-bottom:1px dashed rgba(156,124,62,.4); padding-bottom:4px; }
+  .ayah-tag { font-size:14px; color:var(--muted); margin-bottom:6px; }
+  .hint { font-size:13px; color:var(--muted); }
+
+  /* ---------- source word chips (script) ---------- */
+  .chiprow { direction:rtl; text-align:right; font-family:"IndoPak Quran", serif;
+    font-size:26px; line-height:2; padding:6px; border:1px dashed var(--border);
+    border-radius:8px; min-height:3em; background:var(--paper2); cursor:text; outline:none; }
+  .w { display:inline-block; padding:0 2px; border-radius:6px; cursor:pointer; }
+  .w.sel1 { background:var(--sel); }
+  .w.sel2 { background:var(--sel2); }
+  .w.orn { color:var(--gold); cursor:default; opacity:.85; }
+  .w.dim { opacity:.35; }
+  .legend { font-family:system-ui,sans-serif; font-size:12px; color:var(--muted); margin-top:4px; direction:ltr; text-align:left;}
+
+  /* source translation */
+  textarea.tr { width:100%; direction:rtl; text-align:right; resize:vertical; min-height:64px;
+    font-family:"Noto Nastaliq Urdu", serif; font-size:19px; line-height:1.9;
+    border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu); }
+  textarea.tr:focus { outline:2px solid var(--sel2); }
+  textarea.tr[readonly] { background:#f4efdd; }
+
+  .btnrow { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; direction:ltr; }
+  .btnrow button { font-family:system-ui,sans-serif; font-size:13px; padding:6px 12px;
+    border:1px solid var(--gold); border-radius:8px; background:#fff; cursor:pointer; }
+  .btnrow button.primary{ background:var(--gold); color:#fff; }
+
+  /* ---------- segments table ---------- */
+  .segrows { display:grid; gap:8px; }
+  .segrow { display:flex; flex-direction:row; gap:10px; border:1px solid var(--border);
+    border-radius:10px; background:var(--paper2); padding:8px; align-items:stretch; }
+  .segrow .leftcol, .segrow .rightcol { display:flex; flex-direction:column; }
+  .segrow .rightcol { flex:1 1 58%; }        /* Arabic side */
+  .segrow .leftcol  { flex:1 1 42%; }        /* Urdu side   */
+  .segrow .num { font-family:system-ui,sans-serif; color:var(--gold); font-size:13px; width:44px; text-align:center; }
+  .segrow .ar { font-family:"IndoPak Quran", serif; font-size:24px; line-height:2;
+    direction:rtl; text-align:right; }
+  .segrow .rowactions { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; direction:ltr; }
+  .segrow .rowactions button { font-family:system-ui,sans-serif; font-size:12px; padding:2px 8px;
+    border:1px solid var(--border); border-radius:6px; background:#fff; cursor:pointer; }
+  .segrow .rowactions button:disabled { opacity:.4; cursor:default; }
+  .segrow .rowactions button.hot { background:var(--amber); border-color:var(--gold); }
+
+  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:60;
+    background:#241f17; color:#fff; font-family:system-ui,sans-serif; font-size:14px;
+    padding:10px 16px; border-radius:10px; max-width:80vw; direction:ltr; text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.3); opacity:0; pointer-events:none; transition:opacity .2s; }
+  .toast.show { opacity:1; }
+  .toast.warn { background:var(--err); }
+  .toast.ok { background:#1b7a34; }
+
+  .meta { font-family:system-ui,sans-serif; font-size:12px; color:var(--muted); direction:ltr; text-align:left; margin-top:6px; }
+
+  /* help */
+  .help { display:none; background:#fff; border:1px solid var(--gold); border-radius:10px; padding:16px 18px; }
+  .help.open { display:block; }
+  .help h2 { font-family:system-ui,sans-serif; margin:0 0 8px; color:var(--gold); }
+  .help h4 { font-family:system-ui,sans-serif; margin:14px 0 4px; color:var(--ink); }
+  .help p, .help li { font-size:15px; line-height:1.8; }
+  .help ul { margin:4px 0; }
+  .help kbd { background:#efe9db; border:1px solid #cbbf9f; border-radius:5px; padding:0 5px; font-family:system-ui,sans-serif; font-size:12px; }
+  .help .rtl { direction:rtl; text-align:right; }
+
+  .pill { display:inline-block; font-family:system-ui,sans-serif; font-size:12px; border-radius:20px;
+    padding:2px 10px; margin-inline-start:6px; background:#efe9db; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="bar" dir="ltr">
+  <label>Surah
+    <select id="surahSel" title="Choose a surah by name"></select>
+  </label>
+  <label>Ayah
+    <select id="ayahSel" title="Choose a verse within this surah"></select>
+  </label>
+  <label>Translation
+    <select id="trSel" title="Which translation you are segmenting">
+      <option value="1">bayan-ul-quran</option>
+      <option value="2" selected>fateh-muhammad-jalandhry</option>
+    </select>
+  </label>
+  <button id="btnPrev" title="Previous ayah (keyboard: P)">◀ Prev</button>
+  <button id="btnNext" title="Next ayah — when AutoSave is ON, the current ayah is saved first (keyboard: N)">Next ▶</button>
+  <label title="When ON, pressing Next/Prev saves the current ayah automatically before navigating, so you never lose work and don't have to click Save repeatedly.">
+    <input type="checkbox" id="autoSave" /> AutoSave
+  </label>
+  <button id="btnSave" class="primary" title="Save ALL segments of this ayah (overwrites what is in the database). Any un-assigned words + remaining translation are auto-added as the final segment. (keyboard: Alt+S)">Save</button>
+  <button id="btnClear" class="danger" title="Clear all segments of this ayah and start over. The whole ayah translation is merged and put back into the script + translation boxes above; the table below is emptied. NOT saved until you press Save.">Start over</button>
+  <button id="btnHelp" title="Show / hide the detailed usage guide">?</button>
+</div>
+
+<div class="wrap">
+  <!-- ============ SOURCE / WORK AREA ============ -->
+  <div class="panel">
+    <h3>1 · Work area — remaining script &amp; translation
+      <span class="pill">un-assigned words appear here</span>
+    </h3>
+    <div class="ayah-tag" id="ayahTag"></div>
+
+    <div class="hint rtl" id="scriptHint">Script (قرآن) — click one word, then shift+click another to select a range; only whole words can be selected.</div>
+    <div class="chiprow" id="chiprow" tabindex="0" dir="rtl" lang="ar"
+         title="The remaining Arabic words. Click to select, shift+click for a range, or use ←/→ with shift. The golden ayah-end ornament is shown automatically and is NOT selectable."></div>
+    <div class="legend">Sel: click = single word &nbsp;·&nbsp; shift+click / shift+←→ = range &nbsp;·&nbsp; the ayah marker (gold) is auto and never part of a segment</div>
+
+    <div style="height:10px"></div>
+    <div class="hint rtl" id="trHint">Translation (ترجمہ) — select the text that belongs to the words you chose above. Read-only by default; press “Edit translation” to type/edit (e.g. when the source translation is empty).</div>
+    <textarea id="srcTr" class="tr" readonly spellcheck="false" dir="rtl" lang="ur"
+      title="Remaining translation text. Select the portion that matches your selected script words, then press “+ Add segment” (or Enter)."></textarea>
+    <div class="btnrow">
+      <button id="btnEditTr" title="Toggle editing of the translation box above (read-only by default so text isn’t changed by accident).">
+        ✎ Edit translation
+      </button>
+      <button id="btnAdd" class="primary" title="Create a segment from the currently selected script words + the currently selected translation text. The selected words and text are removed from this work area and appended (in order) to the segments table below. (keyboard: Alt+A, or Enter inside the translation box)">
+        + Add segment
+      </button>
+      <span class="meta">Selected script words: <b id="selWordsCount">0</b> &nbsp;·&nbsp; Selected translation chars: <b id="selTrCount">0</b></span>
+    </div>
+  </div>
+
+  <!-- ============ SEGMENTS TABLE ============ -->
+  <div class="panel">
+    <h3>2 · Segments of this ayah
+      <span class="pill">script is on the right · translation on the left</span>
+    </h3>
+    <div class="segrows" id="segrows">
+      <p class="hint">No segments yet — make your first segment above.</p>
+    </div>
+  </div>
+</div>
+
+<div class="help" id="helpPanel" dir="ltr"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Bayaan Segment Editor  (vanilla JS — no framework)
+   ---------------------------------------------------------------------
+   Purpose: create/edit word-anchored translation segments for one ayah.
+   Data comes from GET /surah/{surah}?translation_id=... and saving uses
+   POST /segments (overwrite-all for (translation, surah, ayah)).
+   ===================================================================== */
+
+/* ---------------- helpers ---------------- */
+const $ = (id) => document.getElementById(id);
+const AR_LETTER = /[\u0621-\u064a\u0671-\u06d3]/;      // Arabic letter ⇒ real word
+const isWordTok = (t) => AR_LETTER.test(t || "");
+const isOrn = (t) => !isWordTok(t);
+function toUrdu(n){ return String(n).replace(/[0-9]/g,(d)=>"۰۱۲۳۴۵۶۷۸۹"[+d]); }
+function esc(s){ return String(s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+let toastTimer = null;
+function toast(msg, kind){
+  const t = $("toast"); t.textContent = msg; t.className = "toast show" + (kind?" "+kind:"");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ t.className="toast"; }, 3600);
+}
+
+/* ---------------- global state ---------------- */
+const S = {
+  surahs: [],                 // [{id,name_arabic,name_english,ayah_count}]
+  surahId: 1, ayahNumber: 1, translationId: 2,
+  ayahMap: null,              // { [ayahNumber]: { words:[{id,word_index,text,is_word}], segments:[{...}] } }
+  cur: null,                  // current ayah working state, see resetAyahState()
+};
+
+/* cur fields:
+   allWords  : [{id,word_index,text}] real words only (ornaments excluded), in order
+   orn       : [{id,word_index,text}] ornament tokens (not segmentable)
+   segs      : [{startId,endId,text}] segments sorted by startId (in-memory edits)
+   wholeText : full ayah translation when un-segmented ("" once user has segmented)
+*/
+
+/* ---------------- dropdowns ---------------- */
+function fillSurahSel(){
+  const sel = $("surahSel"); sel.innerHTML = "";
+  for (const s of S.surahs){
+    const o = document.createElement("option");
+    o.value = s.id;
+    o.textContent = `${String(s.id).padStart(3,"0")} — ${s.name_arabic} (${s.name_english})`;
+    o.title = s.name_english;
+    sel.appendChild(o);
+  }
+  sel.value = String(S.surahId);
+}
+function fillAyahSel(){
+  const sel = $("ayahSel"); sel.innerHTML = "";
+  if (!S.ayahMap) return;
+  const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
+  for (const n of nums){
+    const o = document.createElement("option");
+    o.value = n; o.textContent = `${toUrdu(n)} (آیت ${n})`;
+    sel.appendChild(o);
+  }
+  sel.value = String(S.ayahNumber);
+}
+
+/* ---------------- load surah data ---------------- */
+async function loadSurahs(initial){
+  const r = await fetch("/surahs");
+  S.surahs = await r.json();
+  fillSurahSel();
+  await loadSurah(initial);
+}
+async function loadSurah(initial){
+  const r = await fetch(`/surah/${S.surahId}?translation_id=${S.translationId}`);
+  const data = await r.json();
+  S.ayahMap = {};
+  for (const a of data.ayahs){
+    const words = a.words.map(w=>({id:w.id, word_index:w.word_index, text:w.text}));
+    S.ayahMap[a.ayah_number] = { words, segments: a.segments };
+  }
+  if (!S.ayahMap[S.ayahNumber]) S.ayahNumber = 1;
+  fillAyahSel();
+  loadAyah(S.ayahNumber, initial);
+}
+
+/* classify an ayah's word list and load its working state */
+function loadAyah(num){
+  S.ayahNumber = num;
+  pushUrl();
+  const meta = S.ayahMap[num];
+  if (!meta) return;
+  const words = meta.words;
+  const allWords = words.filter(w => isWordTok(w.text));
+  const orn = words.filter(w => isOrn(w.text));
+  const dbSegs = meta.segments || [];
+  const whole = isWholeAyahSegment(dbSegs, allWords);
+
+  S.cur = { allWords, orn, segs: [], wholeText: "" };
+
+  if (whole && dbSegs.length === 1){
+    // Treat a single whole-ayah segment as "not yet segmented":
+    // show the full text in the work area so the user can split it.
+    S.cur.wholeText = dbSegs[0].translation_text || "";
+  } else {
+    // Already segmented → show segments table; any un-covered words are leftovers.
+    S.cur.segs = dbSegs.map(d => ({ startId:d.word_start, endId:d.word_end, text:d.translation_text }))
+                      .filter(s => s.startId && s.endId)
+                      .sort((a,b)=>a.startId-b.startId);
+    // remainder text for leftover words (typically empty)
+    const covered = new Set();
+    for (const s of S.cur.segs) for (const w of wordsIn(s)) covered.add(w.id);
+    const leftover = allWords.filter(w => !covered.has(w.id));
+    S.cur.wholeText = leftover.length ? "" : "";
+  }
+  renderAll();
+}
+
+function isWholeAyahSegment(segs, allWords){
+  if (!segs || segs.length !== 1) return false;
+  const s = segs[0];
+  if (!allWords.length) return false;
+  // A stored single segment is "whole" if it starts at the first real word and
+  // reaches at least the last real word (some rows also include the trailing
+  // end-of-ayah ornament id as word_end — treat that as whole too).
+  return s.word_start === allWords[0].id &&
+         s.word_end >= allWords[allWords.length - 1].id;
+}
+function wordsIn(seg){ return S.cur.allWords.filter(w => seg.startId<=w.id && w.id<=seg.endId); }
+
+/* which real words are NOT inside any segment */
+function leftoverWords(){
+  const covered = new Set();
+  for (const s of S.cur.segs) for (const w of wordsIn(s)) covered.add(w.id);
+  return S.cur.allWords.filter(w => !covered.has(w.id));
+}
+
+/* ---------------- render ---------------- */
+function renderAll(){
+  renderAyahTag();
+  renderChips();
+  renderSegments();
+  $("srcTr").value = S.cur.wholeText;
+  updateSelCounts();
+}
+
+function renderAyahTag(){
+  const s = S.surahs.find(x=>x.id===S.surahId);
+  const a = S.ayahMap[S.ayahNumber];
+  const trName = $("trSel").selectedOptions[0]?.textContent || "";
+  $("ayahTag").innerHTML =
+    `<b>${esc(s? s.name_arabic : S.surahId)}</b> (${esc(s? s.name_english:"")}) — آیت <b>${toUrdu(S.ayahNumber)}</b> · ترجمہ: ${esc(trName)}`;
+}
+
+/* --- script word chips for the remaining (leftover) words --- */
+let selA = null, selB = null;   // indices into leftoverWords()
+function renderChips(){
+  const box = $("chiprow");
+  const leftover = leftoverWords();
+  if (selA !== null && selA >= leftover.length) selA = null;
+  if (selB !== null && selB >= leftover.length) selB = null;
+  box.innerHTML = "";
+  if (!leftover.length){
+    const i = document.createElement("i"); i.textContent = "— تمام الفاظ تقسیم ہو چکے —"; i.style.opacity=".5"; box.appendChild(i);
+  }
+  leftover.forEach((w, i)=>{
+    const sp = document.createElement("span");
+    sp.className = "w";
+    sp.textContent = w.text;
+    sp.dataset.i = i;
+    sp.title = `word ${w.id} (word_index ${w.word_index})`;
+    box.appendChild(sp);
+    if (i < leftover.length-1) box.appendChild(document.createTextNode(" "));
+  });
+  // ornament shown dim after leftovers (auto at ayah end)
+  for (const o of S.cur.orn){
+    const sp = document.createElement("span");
+    sp.className = "w orn"; sp.textContent = o.text;
+    sp.title = "End-of-ayah marker — added automatically, never part of a segment";
+    box.appendChild(document.createTextNode(" ")); box.appendChild(sp);
+  }
+  applySelClass(box);
+}
+
+function applySelClass(box){
+  const lo = rangeStart(), hi = rangeEnd();
+  box.querySelectorAll(".w[data-i]").forEach(sp=>{
+    const i = +sp.dataset.i;
+    sp.classList.remove("sel1","sel2");
+    if (lo===null||hi===null||i<lo||i>hi) return;
+    sp.classList.add(i===lo?"sel1":(i===hi?"sel2":"sel1"));
+  });
+}
+function rangeStart(){ return selA===null?null:Math.min(selA,selB); }
+function rangeEnd(){   return selB===null?null:Math.max(selA,selB); }
+
+/* chip mouse interaction */
+$("chiprow").addEventListener("mousedown", e=>{
+  const sp = e.target.closest(".w[data-i]");
+  if (!sp) return;
+  e.preventDefault();
+  const i = +sp.dataset.i;
+  if (e.shiftKey && selA!==null){ selB = i; }
+  else { selA = i; selB = i; }
+  applySelClass($("chiprow"));
+  updateSelCounts();
+});
+
+/* chip keyboard interaction (arrows + shift) */
+$("chiprow").addEventListener("keydown", e=>{
+  const n = leftoverWords().length; if (!n) return;
+  if (e.key==="ArrowRight" || e.key==="ArrowLeft"){
+    e.preventDefault();
+    const dir = e.key==="ArrowRight"?1:-1;
+    if (e.shiftKey && selA!==null){ selB = Math.max(0, Math.min(n-1, (selB??selA)+dir)); }
+    else { selA = selB = Math.max(0, Math.min(n-1, (selA??0)+dir)); }
+    applySelClass($("chiprow")); updateSelCounts();
+  }
+  if (e.key==="Enter"){ e.preventDefault(); addSegment(); }
+});
+
+function updateSelCounts(){
+  const lo = rangeStart(), hi = rangeEnd();
+  const nw = (lo===null||hi===null)?0:(hi-lo+1);
+  $("selWordsCount").textContent = nw;
+  const ta = $("srcTr");
+  const ns = (ta.selectionEnd-ta.selectionStart);
+  $("selTrCount").textContent = Math.max(0,ns);
+}
+
+/* --- translation box events --- */
+$("srcTr").addEventListener("keyup", updateSelCounts);
+$("srcTr").addEventListener("mouseup", updateSelCounts);
+$("srcTr").addEventListener("keydown", e=>{
+  if (e.key==="Enter" && $("srcTr").readOnly){ e.preventDefault(); addSegment(); }
+});
+
+$("btnEditTr").addEventListener("click", ()=>{
+  const ta = $("srcTr");
+  ta.readOnly = !ta.readOnly;
+  ta.focus();
+  toast(ta.readOnly? "Translation box is now read-only (select, don’t type)."
+                   : "Translation box is now editable — type/paste the remaining translation.", "ok");
+});
+
+/* =====================================================================
+   Add a segment from current script + translation selections
+   ===================================================================== */
+function addSegment(){
+  const leftover = leftoverWords();
+  const lo = rangeStart(), hi = rangeEnd();
+  const selWords = (lo===null||hi===null)?[]:leftover.slice(lo, hi+1);
+  if (!selWords.length){
+    toast("Select some script words first (click a word, shift+click for a range).","warn"); return;
+  }
+  const ta = $("srcTr");
+  const a0 = ta.selectionStart, a1 = ta.selectionEnd;
+  const selText = (a1>a0)? ta.value.slice(a0,a1) : "";
+  if (!selText.trim().length){
+    toast("Now select the matching translation text in the box below the script.","warn");
+    ta.focus(); return;
+  }
+  // remove selected translation from the remaining text
+  const before = ta.value.slice(0,a0), after = ta.value.slice(a1);
+  ta.value = before + after;
+  S.cur.wholeText = ta.value;
+
+  const seg = {
+    startId: selWords[0].id,
+    endId:   selWords[selWords.length-1].id,
+    text:    selText,
+  };
+  S.cur.segs.push(seg);
+  S.cur.segs.sort((x,y)=>x.startId-y.startId);
+  selA = selB = null;
+  renderChips(); renderSegments(); updateSelCounts();
+
+  if (!leftoverWords().length){
+    toast("Ayah fully segmented — moving focus to Next.","ok");
+    $("btnNext").focus();
+  } else {
+    toast("Segment added. Select the next words + translation, or Save to auto-add the remainder.","ok");
+  }
+}
+$("btnAdd").addEventListener("click", addSegment);
+
+/* =====================================================================
+   Segments table
+   ===================================================================== */
+let editingRow = -1;       // index whose translation is being edited
+let splitRow = -1;         // index in split mode
+let splitWordIdx = null;   // local word index (inside that segment) = last word of part 1
+function renderSegments(){
+  const box = $("segrows");
+  box.innerHTML = "";
+  if (!S.cur.segs.length){
+    box.innerHTML = '<p class="hint">No segments yet — make your first segment above.</p>';
+    return;
+  }
+  S.cur.segs.forEach((seg, i)=>{
+    const ws = wordsIn(seg);
+    const row = document.createElement("div");
+    row.className = "segrow"; row.dir = "rtl"; row.dataset.i = i;
+
+    /* Arabic column (right in RTL) */
+    const rc = document.createElement("div"); rc.className = "rightcol";
+    const num = document.createElement("div");
+    num.className = "num"; num.style.marginInlineEnd="auto"; num.textContent = `${toUrdu(i+1)}`;
+    const ar = document.createElement("div"); ar.className = "ar"; ar.lang="ar"; ar.dir="rtl";
+    ws.forEach((w,wi)=>{
+      const sp = document.createElement("span");
+      sp.className = "w"; sp.dataset.si = wi; sp.textContent = w.text;
+      sp.title = `word ${w.id} — click to set it as the split boundary`;
+      ar.appendChild(sp);
+      if (wi<ws.length-1) ar.appendChild(document.createTextNode(" "));
+    });
+    // ayah ornament appended to last segment visual only
+    if (i === S.cur.segs.length-1) for (const o of S.cur.orn){
+      const sp=document.createElement("span"); sp.className="w orn"; sp.textContent=o.text; ar.appendChild(document.createTextNode(" ")); ar.appendChild(sp);
+    }
+    rc.appendChild(num); rc.appendChild(ar);
+
+    const ra = document.createElement("div"); ra.className="rowactions";
+    ra.appendChild(mkBtn("✎ Edit", ()=>toggleEditRow(i), editRowTitle(i)));
+    ra.appendChild(mkBtn("✂ Split", ()=>enterSplit(i), "Split this segment into two. Steps: (1) in the Arabic above, click the word that should be the LAST word of the first part; (2) click into the translation box and place the caret at the end of the first part’s text (or select it); (3) press Split again."));
+    ra.appendChild(mkBtn("⇄ Merge next", ()=>mergeSegs(i), "Merge this segment with the one below it (text is joined)."));
+    ra.appendChild(mkBtn("✕ Delete", ()=>deleteSeg(i), "Delete this segment — it is merged with the NEXT segment (or the previous one if it is last), so the ayah is never left with a hole."));
+    if (splitRow===i){
+      ra.appendChild(mkBtn("✓ Split here", ()=>doSplit(i), "Confirm splitting at the chosen word + caret position.", true));
+      ra.appendChild(mkBtn("✕ Cancel split", ()=>{splitRow=-1;splitWordIdx=null;renderSegments();}));
+    }
+    rc.appendChild(ra);
+    row.appendChild(rc);
+
+    /* Urdu column (left in RTL) */
+    const lc = document.createElement("div"); lc.className="leftcol";
+    const ta = document.createElement("textarea");
+    ta.className = "tr"; ta.value = seg.text; ta.spellcheck=false; ta.dir="rtl"; ta.lang="ur";
+    ta.readOnly = (editingRow !== i);
+    ta.dataset.i = i;
+    ta.style.minHeight = "3.2em";
+    autoGrow(ta);
+    ta.addEventListener("input", ()=>{ autoGrow(ta); seg.text = ta.value; });
+    lc.appendChild(ta);
+    if (editingRow===i){
+      const ok = document.createElement("div"); ok.className="rowactions";
+      ok.appendChild(mkBtn("✓ Done editing", ()=>{editingRow=-1;renderSegments();}));
+      lc.appendChild(ok);
+    }
+    row.appendChild(lc);
+
+    if (splitRow===i){
+      ar.addEventListener("click", (e)=>{
+        const sp = e.target.closest(".w[data-si]");
+        if (!sp) return;
+        splitWordIdx = +sp.dataset.si;
+        highlightSplit(ar, ws.length);
+      });
+    }
+    box.appendChild(row);
+  });
+}
+
+function mkBtn(label, fn, title, hot){
+  const b = document.createElement("button");
+  b.textContent = label; if (hot) b.classList.add("hot");
+  if (title) b.title = title;
+  b.addEventListener("click", fn);
+  return b;
+}
+function autoGrow(ta){ ta.style.height = "auto"; ta.style.height = (ta.scrollHeight+6)+"px"; }
+function highlightSplit(ar, n){
+  ar.querySelectorAll(".w[data-si]").forEach(sp=>{
+    const i=+sp.dataset.si; sp.classList.toggle("sel2", splitWordIdx!==null && i<=splitWordIdx);
+  });
+}
+function editRowTitle(i){ return "Toggle editing for this segment’s translation (read-only by default so it isn’t changed by accident)."; }
+function toggleEditRow(i){
+  editingRow = (editingRow===i)? -1 : i;
+  splitRow = -1; splitWordIdx = null;
+  renderSegments();
+}
+function enterSplit(i){
+  if (splitRow===i){ doSplit(i); return; }
+  splitRow = i; splitWordIdx = null;
+  renderSegments();
+  toast("Split mode: click the last Arabic word of the FIRST part, then set the caret/selection in the translation, then press “Split here”.","");
+}
+function doSplit(i){
+  const seg = S.cur.segs[i];
+  const ws = wordsIn(seg);
+  const rowTa = document.querySelector(`.segrow[data-i="${i}"] textarea.tr`);
+  if (splitWordIdx===null || splitWordIdx < 0 || splitWordIdx >= ws.length-1){
+    toast("Click an Arabic word inside this segment that is NOT the very last word (it becomes the last word of the first part).","warn"); return;
+  }
+  const caret = rowTa ? rowTa.selectionStart : -1;
+  if (caret<=0 || caret>=seg.text.length){
+    toast("In the translation box, put the caret (or a selection ending) at the end of the FIRST part’s text.","warn"); return;
+  }
+  const t1 = seg.text.slice(0, caret).trim();
+  const t2 = seg.text.slice(caret).trim();
+  if (!t1 || !t2){ toast("Both parts need non-empty translation text.","warn"); return; }
+  const boundaryId = ws[splitWordIdx].id;
+  const a = { startId: seg.startId, endId: boundaryId, text: t1 };
+  const b = { startId: ws[splitWordIdx+1].id, endId: seg.endId, text: t2 };
+  S.cur.segs.splice(i, 1, a, b);
+  splitRow=-1; splitWordIdx=null; editingRow=-1;
+  renderSegments();
+  toast("Segment split into two.","ok");
+}
+function mergeSegs(i){
+  if (i >= S.cur.segs.length-1){ toast("This is the last segment — there is no next one to merge with.","warn"); return; }
+  const a = S.cur.segs[i], b = S.cur.segs[i+1];
+  a.endId = b.endId;
+  a.text = [a.text, b.text].filter(Boolean).join(" ");
+  S.cur.segs.splice(i+1, 1);
+  editingRow=-1; splitRow=-1; renderSegments();
+  toast("Merged with the next segment.","ok");
+}
+function deleteSeg(i){
+  if (S.cur.segs.length<=1){ toast("Deleting the only segment would empty the ayah — use “Start over” instead.","warn"); return; }
+  if (i < S.cur.segs.length-1){ mergeSegs(i); }
+  else { // last segment: merge it into the previous one
+    const p = S.cur.segs[i-1], b = S.cur.segs[i];
+    p.endId = b.endId;
+    p.text = [p.text, b.text].filter(Boolean).join(" ");
+    S.cur.segs.splice(i,1);
+    editingRow=-1; splitRow=-1; renderSegments();
+    toast("Deleted (merged into previous).","ok");
+  }
+}
+
+/* =====================================================================
+   Start over / Clear
+   ===================================================================== */
+$("btnClear").addEventListener("click", ()=>{
+  const all = S.cur.segs.map(s=>s.text).filter(Boolean).concat(S.cur.wholeText?[S.cur.wholeText]:[]);
+  S.cur.segs = [];
+  S.cur.wholeText = all.join(" ").trim();
+  selA = selB = null; editingRow = -1; splitRow = -1;
+  renderAll();
+  toast("All segments cleared — the whole ayah is back in the work area above (not saved yet).","");
+});
+
+/* =====================================================================
+   Save (overwrite all) with auto-finalize + coverage validation
+   ===================================================================== */
+function finalizeSegments(){
+  // Auto-finalize: if any words are left un-assigned, make them the final segment
+  // using the remaining text from the translation box (if any).
+  const leftover = leftoverWords();
+  if (leftover.length){
+    const remText = ($("srcTr").value||"").trim();
+    if (!remText){
+      // If there is no leftover text, but every earlier word is covered and the
+      // leftover is only a decorative remainder, we still need text — warn.
+      return { ok:false, msg:"Some script words are still un-assigned and there is no remaining translation text for them. Select them + their translation and Add, or type the translation, before saving." };
+    }
+    S.cur.segs.push({ startId: leftover[0].id, endId: leftover[leftover.length-1].id, text: remText });
+    $("srcTr").value = ""; S.cur.wholeText = "";
+    S.cur.segs.sort((a,b)=>a.startId-b.startId);
+  }
+  // Coverage check: every real word in order must be covered by exactly one segment
+  const all = S.cur.allWords;
+  const segs = [...S.cur.segs].sort((a,b)=>a.startId-b.startId);
+  let prevEnd = null;
+  for (const s of segs){
+    if (!s.text || !s.text.trim()) return { ok:false, msg:"Every segment needs translation text." };
+    if (prevEnd !== null && s.startId !== prevEnd+1){
+      return { ok:false, msg:"There is a GAP or OVERLAP between segments (words are missing or duplicated). Fix with merge/delete, or use Start over." };
+    }
+    const wlist = wordsIn(s);
+    if (!wlist.length) return { ok:false, msg:"A segment contains no words." };
+    prevEnd = s.endId;
+  }
+  if (prevEnd !== null && prevEnd !== all[all.length-1].id) return { ok:false, msg:"Segments do not reach the end of the ayah." };
+  if (!segs.length) return { ok:false, msg:"There are no segments to save." };
+  return { ok:true, segs };
+}
+
+async function saveAyah(){
+  const res = finalizeSegments();
+  if (!res.ok){ toast(res.msg, "warn"); return false; }
+  const payload = {
+    translation_id: S.translationId,
+    surah_id: S.surahId,
+    ayah_number: S.ayahNumber,
+    segments: res.segs.map(s=>({ start:s.startId, end:s.endId, text:s.text.trim() })),
+  };
+  try {
+    const r = await fetch("/segments", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok){ toast("Save failed: HTTP "+r.status, "warn"); return false; }
+    toast(`Saved ${res.segs.length} segment(s) for ayah ${S.ayahNumber}.`, "ok");
+    // reload this ayah from DB → shows the persisted segmented state
+    await loadSurah(); // lightweight enough; keeps state consistent
+    return true;
+  } catch(err){ toast("Save error: "+err.message, "warn"); return false; }
+}
+$("btnSave").addEventListener("click", ()=>saveAyah());
+
+/* =====================================================================
+   Navigation (prev / next) + AutoSave
+   ===================================================================== */
+async function nav(delta){
+  const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
+  const idx = nums.indexOf(S.ayahNumber);
+  const next = nums[idx+delta];
+  if (next === undefined){ toast(delta>0?"This is the last ayah of the surah.":"This is the first ayah.", "warn"); return; }
+  if ($("autoSave").checked){
+    const ok = await saveAyah();
+    if (!ok) return;
+  } else if (isDirty()){
+    toast("Warning: unsaved changes were discarded (enable AutoSave to save on Next/Prev).","warn");
+  }
+  selA=selB=null; editingRow=-1; splitRow=-1;
+  loadAyah(next);
+}
+async function saveAndGo(delta){
+  const ok = await saveAyah();
+  if (!ok) return;
+  const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
+  const idx = nums.indexOf(S.ayahNumber);
+  const next = nums[idx+delta];
+  if (next !== undefined){ selA=selB=null; editingRow=-1; splitRow=-1; loadAyah(next); }
+}
+$("btnNext").addEventListener("click", ()=>nav(+1));
+$("btnPrev").addEventListener("click", ()=>nav(-1));
+
+function isDirty(){
+  // crude dirtiness: DB single whole-segment vs in-memory segs
+  const meta = S.ayahMap && S.ayahMap[S.ayahNumber];
+  const dbSegs = meta? meta.segments || [] : [];
+  return S.cur.segs.length !== dbSegs.length;
+}
+
+/* =====================================================================
+   Address bar / URL state
+   ===================================================================== */
+function pushUrl(){
+  const p = new URLSearchParams();
+  p.set("translation_id", S.translationId);
+  p.set("surah", S.surahId);
+  p.set("ayah", S.ayahNumber);
+  history.replaceState(null, "", "/editor?"+p.toString());
+}
+
+/* =====================================================================
+   Event wiring for dropdowns + help
+   ===================================================================== */
+$("surahSel").addEventListener("change", async (e)=>{
+  S.surahId = +e.target.value; S.ayahNumber = 1;
+  await loadSurah();
+});
+$("ayahSel").addEventListener("change", (e)=>{
+  loadAyah(+e.target.value);
+});
+$("trSel").addEventListener("change", async (e)=>{
+  S.translationId = +e.target.value;
+  await loadSurah();
+});
+$("btnHelp").addEventListener("click", ()=>{
+  const p = $("helpPanel");
+  p.classList.toggle("open");
+  if (p.classList.contains("open") && !p.dataset.built){ p.innerHTML = HELP_HTML; p.dataset.built="1"; }
+});
+
+/* keyboard shortcuts (when not typing in a text field) */
+document.addEventListener("keydown", (e)=>{
+  const typing = /TEXTAREA|INPUT|SELECT/.test((e.target.tagName||""));
+  if (e.altKey && !e.ctrlKey){
+    const k = e.key.toLowerCase();
+    if (k==="s"){ e.preventDefault(); saveAyah(); }
+    if (k==="a"){ e.preventDefault(); addSegment(); }
+    return;
+  }
+  if (e.ctrlKey && e.key==="Enter"){ e.preventDefault(); saveAndGo(+1); }
+  if (typing) return;
+  const k = e.key.toLowerCase();
+  if (k==="n") nav(+1);
+  if (k==="p") nav(-1);
+});
+
+/* =====================================================================
+   Init
+   ===================================================================== */
+async function init(){
+  // read URL params
+  const q = new URLSearchParams(location.search);
+  if (q.get("translation_id")) S.translationId = +q.get("translation_id");
+  if (q.get("surah")) S.surahId = +q.get("surah");
+  if (q.get("ayah")) S.ayahNumber = +q.get("ayah");
+  $("trSel").value = String(S.translationId);
+  $("ayahSel").value = String(S.ayahNumber);
+  await loadSurahs();
+}
+init();
+
+/* =====================================================================
+   Detailed help text (shown when pressing “?”)
+   ===================================================================== */
+const HELP_HTML = `
+<h2>How the segment editor works</h2>
+<p class="rtl"><b>مقصد:</b> ایک آیت کو اس کے عربی الفاظ کے مطابق چھوٹے حصّوں (segments) میں تقسیم کریں۔ ہر حصّہ = عربی الفاظ کی ایک حد (word range) + اس کا اردو ترجمہ۔ ہر حصّہ درست ترتیب سے آیت کے تمام الفاظ کو ڈھانپتا ہے۔</p>
+
+<h4>1 · Choosing what to edit</h4>
+<ul>
+  <li><b>Surah</b> — dropdown lists every surah <i>by name</i> (not just a number).</li>
+  <li><b>Ayah</b> — dropdown of the verses in that surah; it is populated when the surah loads.</li>
+  <li><b>Translation</b> — which translation you are segmenting (2 = Jalandhri has data now).</li>
+  <li>The URL always reflects <code>translation_id</code>, <code>surah</code>, <code>ayah</code> — copy it to jump straight back to the same place.</li>
+  <li><b>◀ Prev / Next ▶</b> move between verses. When <b>AutoSave</b> is ON, the current ayah is saved first, so you never have to click Save repeatedly.</li>
+</ul>
+
+<h4>2 · Work area (top)</h4>
+<p>When an ayah has not been segmented yet, the whole ayah is shown here: its <b>script words</b> as clickable chips (right), and its full <b>translation</b> in the box (left/below).</p>
+<ul>
+  <li><b>Selecting script words:</b> click one word = single word; <b>shift+click</b> another = whole range; keyboard: focus the script box, <b>←/→</b> to move, <b>shift+←/→</b> to extend. Only <i>whole words</i> are selectable (a segment boundary is always between two words).</li>
+  <li>The golden <b>end-of-ayah ornament</b> is shown automatically at the end. It is never part of a segment and is not selectable.</li>
+  <li><b>Selecting translation text:</b> drag (or shift+click) inside the translation box to select the exact Urdu that matches the words you selected. The box is <b>read-only by default</b> so text is not changed by accident — press <b>✎ Edit translation</b> only when you need to type/paste.</li>
+  <li>Press <b>+ Add segment</b> (keyboard <b>Alt+A</b>, or <b>Enter</b> while in the translation box). The selected words + text are removed from the work area and appended to the segments table below, in order.</li>
+  <li>If you only made ONE segment (or a few) and there are still words/text left, <b>Save</b> (or Next with AutoSave) automatically turns the remainder into the final segment — so a partial edit ends up as two segments, never a hole.</li>
+  <li>If you did not select words or text, a non-blocking alert explains what to select.</li>
+</ul>
+
+<h4>3 · Segments table (below)</h4>
+<p>Each row = one segment: <b>script on the right</b>, its <b>translation on the left</b> (like deen.pk). The script is read-only; the translation is read-only until you press that row’s <b>✎ Edit</b>.</p>
+<ul>
+  <li><b>✎ Edit</b> — allow editing that row’s translation text, then <b>✓ Done editing</b>. Editing is intentionally gated so you can’t change translation by accident.</li>
+  <li><b>⇄ Merge next</b> — join this segment with the one directly below it (texts are joined). Merging repeatedly reduces segment count.</li>
+  <li><b>✕ Delete</b> — deletes this segment by merging it into the <i>next</i> segment (into the previous one if it is the last). Deleting one-by-one therefore merges everything back into a single ayah.</li>
+  <li><b>✂ Split</b> — split this segment into two (a <b>new</b> segment is inserted in the correct position; later segments shift down). Steps:
+    1) in the segment’s Arabic, click the word that should be the <b>last word of the first part</b>;
+    2) click into the translation box and place the caret (or a selection ending) at the end of the first part’s text;
+    3) press <b>✓ Split here</b>.</li>
+  <li>When the whole ayah is fully segmented, focus jumps to <b>Next</b> so you can keep moving.</li>
+</ul>
+
+<h4>4 · Start over</h4>
+<p><b>Start over</b> empties the segments table and merges the whole translation back into the work area above (every word + the full joined translation), leaving the table empty — like the ayah was never segmented. Nothing is written until you press <b>Save</b>.</p>
+
+<h4>5 · Save &amp; validation</h4>
+<ul>
+  <li><b>Save</b> overwrites <b>all</b> segments of this (translation, surah, ayah) in one go.</li>
+  <li>Before writing, the page checks that <b>no script word is missing</b>: segments must be ordered, non-overlapping, gap-free, and together cover every real Arabic word exactly once (the auto ornament is ignored). If a problem is found you get a non-blocking alert and nothing is written.</li>
+  <li>If some words are left un-assigned with remaining translation, Save auto-creates the final segment for them (see §2).</li>
+  <li>Translations may differ in wording from the source after edits — that is allowed; only the <b>script words</b> are validated for completeness.</li>
+</ul>
+
+<h4>6 · Keyboard shortcuts</h4>
+<ul>
+  <li><kbd>Alt+A</kbd> — add a segment from the current selections.</li>
+  <li><kbd>Enter</kbd> (in translation box) — add a segment.</li>
+  <li><kbd>Alt+S</kbd> — save all segments of this ayah.</li>
+  <li><kbd>Ctrl+Enter</kbd> — save &amp; go to next ayah.</li>
+  <li><kbd>N</kbd> / <kbd>P</kbd> — next / previous ayah (when not typing).</li>
+  <li><kbd>←</kbd>/<kbd>→</kbd> in the script box — move word selection; add <kbd>Shift</kbd> to extend the range.</li>
+  <li><kbd>Tab</kbd> — move focus between script box → translation box → controls.</li>
+</ul>
+
+<h4>7 · Notes</h4>
+<ul>
+  <li>Surah 1’s ayah 1 (the basmala) is edited like any other ayah.</li>
+  <li>Segments store <code>word_start</code>/<code>word_end</code> as <code>ayah_words.id</code> values (the DB enforces this via foreign keys).</li>
+  <li>If you open an already-segmented ayah, the work area is empty and the segments table shows what is stored; edit via the table (merge/split/delete/edit) or Start over.</li>
+</ul>
+`;
+</script>
+</body>
+</html>
