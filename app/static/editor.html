@@ -269,6 +269,7 @@ function loadAyah(num){
   // Pure model built by the shared (unit-tested) logic module.
   const model = Editor.buildModel(meta.words, meta.segments || []);
   S.cur = model;
+  dirty = false;   // fresh ayah state from the DB — nothing edited yet
   renderAll();
 }
 
@@ -302,6 +303,12 @@ function renderAyahTag(){
 
 /* --- script word chips for the remaining (leftover) words --- */
 let selA = null, selB = null;   // indices into leftoverWords()
+/* Edit tracking: becomes true the moment the user actually changes anything for
+   the current ayah (add/merge/delete/split/edit translation/start-over), and is
+   reset on load & successful save. Lets Next/AutoSave skip pointless saves and
+   stops the “unsaved changes” warning when nothing was edited. */
+let dirty = false;
+const markDirty = () => { dirty = true; };
 function renderChips(){
   const box = $("chiprow");
   const leftover = leftoverWords();
@@ -382,6 +389,7 @@ $("srcTr").addEventListener("mouseup", updateSelCounts);
 $("srcTr").addEventListener("keydown", e=>{
   if (e.key==="Enter" && $("srcTr").readOnly){ e.preventDefault(); addSegment(); }
 });
+$("srcTr").addEventListener("input", ()=>{ if (!$("srcTr").readOnly) markDirty(); });
 
 $("btnEditTr").addEventListener("click", ()=>{
   const ta = $("srcTr");
@@ -432,6 +440,7 @@ function addSegment(){
   S.cur.segs = res.segs;
   ta.value = res.wholeText;
   S.cur.wholeText = res.wholeText;
+  markDirty();
   selA = selB = null;
   renderChips(); renderSegments(); updateSelCounts();
 
@@ -503,7 +512,7 @@ function renderSegments(){
     ta.dataset.i = i;
     ta.style.minHeight = "3.2em";
     autoGrow(ta);
-    ta.addEventListener("input", ()=>{ autoGrow(ta); seg.text = ta.value; });
+    ta.addEventListener("input", ()=>{ autoGrow(ta); seg.text = ta.value; markDirty(); });
     lc.appendChild(ta);
     if (editingRow===i){
       const ok = document.createElement("div"); ok.className="rowactions";
@@ -561,6 +570,7 @@ function doSplit(i){
   splitRow = -1; splitWordIdx = null; editingRow = -1;
   if (!res.ok){ toast(res.msg, "warn"); return; }
   S.cur.segs = res.segs;
+  markDirty();
   renderSegments();
   toast("Segment split into two.","ok");
 }
@@ -568,6 +578,7 @@ function mergeSegs(i){
   const res = Editor.mergeAt(S.cur.segs, i);
   if (!res.ok){ toast(res.msg, "warn"); return; }
   S.cur.segs = res.segs;
+  markDirty();
   editingRow = -1; splitRow = -1; renderSegments();
   toast("Merged with the next segment.","ok");
 }
@@ -575,6 +586,7 @@ function deleteSeg(i){
   const res = Editor.deleteAt(S.cur.segs, i);
   if (!res.ok){ toast(res.msg, "warn"); return; }
   S.cur.segs = res.segs;
+  markDirty();
   editingRow = -1; splitRow = -1; renderSegments();
   toast("Segment deleted (merged with its neighbour).","ok");
 }
@@ -587,6 +599,7 @@ $("btnClear").addEventListener("click", ()=>{
   S.cur.segs = [];
   S.cur.wholeText = all.join(" ").trim();
   selA = selB = null; editingRow = -1; splitRow = -1;
+  markDirty();
   renderAll();
   toast("All segments cleared — the whole ayah is back in the work area above (not saved yet).","");
 });
@@ -619,6 +632,7 @@ async function saveAyah(){
     });
     if (!r.ok){ toast("Save failed: HTTP "+r.status, "warn"); return false; }
     toast(`Saved ${res.segs.length} segment(s) for ayah ${S.ayahNumber}.`, "ok");
+    dirty = false;
     // reload this ayah from DB → shows the persisted segmented state
     await loadSurah(); // lightweight enough; keeps state consistent
     return true;
@@ -634,18 +648,22 @@ async function nav(delta){
   const idx = nums.indexOf(S.ayahNumber);
   const next = nums[idx+delta];
   if (next === undefined){ toast(delta>0?"This is the last ayah of the surah.":"This is the first ayah.", "warn"); return; }
-  if ($("autoSave").checked){
-    const ok = await saveAyah();
-    if (!ok) return;
-  } else if (isDirty()){
-    toast("Warning: unsaved changes were discarded (enable AutoSave to save on Next/Prev).","warn");
+  if (dirty){   // only save / warn when the user actually changed something
+    if ($("autoSave").checked){
+      const ok = await saveAyah();
+      if (!ok) return;
+    } else {
+      toast("Warning: unsaved changes were discarded (enable AutoSave to save on Next/Prev).","warn");
+    }
   }
   selA=selB=null; editingRow=-1; splitRow=-1;
   loadAyah(next);
 }
 async function saveAndGo(delta){
-  const ok = await saveAyah();
-  if (!ok) return;
+  if (dirty){
+    const ok = await saveAyah();
+    if (!ok) return;
+  }
   const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
   const idx = nums.indexOf(S.ayahNumber);
   const next = nums[idx+delta];
@@ -654,12 +672,7 @@ async function saveAndGo(delta){
 $("btnNext").addEventListener("click", ()=>nav(+1));
 $("btnPrev").addEventListener("click", ()=>nav(-1));
 
-function isDirty(){
-  // crude dirtiness: DB single whole-segment vs in-memory segs
-  const meta = S.ayahMap && S.ayahMap[S.ayahNumber];
-  const dbSegs = meta? meta.segments || [] : [];
-  return S.cur.segs.length !== dbSegs.length;
-}
+function isDirty(){ return dirty; }
 
 /* =====================================================================
    Address bar / URL state
