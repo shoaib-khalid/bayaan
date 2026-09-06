@@ -319,6 +319,14 @@ def reader_page():
     return FileResponse(index)
 
 
+@app.get("/reader-mushaf", response_class=HTMLResponse, include_in_schema=False)
+def reader_mushaf_page():
+    index = STATIC_DIR / "reader-mushaf.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="reader-mushaf.html not built")
+    return FileResponse(index)
+
+
 @app.get("/editor", response_class=HTMLResponse, include_in_schema=False)
 def editor_page():
     index = STATIC_DIR / "editor.html"
