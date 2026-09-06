@@ -178,7 +178,7 @@ Covers: word vs. ornament classification, whole-ayah detection, `buildModel`, `l
 
 ## 7. Roadmap / next steps (priority order)
 
-1. **Sentence-level segmentation (the big one, ongoing).** A working **editor MVP shipped at `/editor`** (`app/static/editor.html`) splits each ayah into segments, each with `translation_text` + exact `word_start`/`word_end` (`ayah_words.id`). The remaining work is **editorial**: actually splitting the long continuous Jalandhri ayahs into sentence/phrase segments using the editor (translation_id=2), plus polishing editor UX (keyboard breadth, translation-1 onboarding, undo).
+1. **Sentence-level segmentation (the big one, ongoing).** A working **editor MVP shipped at `/editor`** (`app/static/editor.html`) splits each ayah into segments, each with `translation_text` + exact `word_start`/`word_end` (`ayah_words.id`). The remaining work is **editorial**: actually splitting the long continuous Jalandhri ayahs into sentence/phrase segments using the editor (translation_id=2), plus polishing editor UX (keyboard breadth, translation-1 onboarding, undo). A reusable **segmentation kit lives in `segmentation/`** (`PROMPT.md`, `GUIDE.md`, `SAMPLES.md`, `segment_ayahs.py`) so batches and other translations can be done cheaply by a fresh agent with human review every 50 ayahs.
 2. **Proper ornament classification + word-range fix** (see `TODO.md`): re-derive `is_symbol` from the Arabic-letter rule and correct the 2,798 segment `word_end`s so ranges contain only real words.
 3. Load segments for `translation_id = 1` (`bayan-ul-quran`) the same way.
 4. Paginate Layout A into mushaf-like pages; surah navigation; tune line spacing/empty-space behavior.

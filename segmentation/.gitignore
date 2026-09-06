@@ -1,0 +1,9 @@
+# Generated work-sheets and automatic backups (regenerable)
+work/*
+backups/*
+!work/.gitkeep
+!backups/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
