@@ -2,7 +2,7 @@
 
 Quran reading app: renders the Arabic text of the Qur'an with **Urdu translations that are aligned to word ranges within each ayah** (segment-based alignment), instead of dumping one whole translation under the whole ayah.
 
-> **Handoff note (2026‑09‑05):** This file is the single source of truth / handoff document. If you are a new agent starting here, read this whole file plus `TODO.md`. The live MySQL database `bayaan` (127.0.0.1:3212, root/root) is **fully loaded** and the minimal renderer works — see [Quick start](#quick-start).
+> **Handoff note (2026‑09‑05):** This file is the single source of truth / handoff document. If you are a new agent starting here, read this whole file plus `TODO.md`. The live MySQL database `bayaan` (127.0.0.1:3212, root/root) is **fully loaded** and the minimal renderer works — see **[HowToRun.md](HowToRun.md)** for the exact commands to start the server and open the UI.
 
 ---
 
@@ -134,6 +134,8 @@ python -m uvicorn app.app:app --host 127.0.0.1 --port 8000
 ```
 
 DB connection is read from `app/config.py` ← `app/.env` (defaults already match the live DB: `127.0.0.1:3212`, root/root, db `bayaan`).
+
+> Full prerequisites, UI URLs, restart/troubleshooting steps: **[HowToRun.md](HowToRun.md)**.
 
 | Endpoint | Purpose |
 |----------|---------|
