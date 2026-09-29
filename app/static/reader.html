@@ -101,9 +101,10 @@
     margin: 12px auto 0;
     background: linear-gradient(90deg, transparent, var(--frame), transparent);
   }
-  .content { padding: 8px 28px 36px; }
+  .content { padding: 2px 26px 28px; }
 
-  /* ---- Phrase stream: Arabic over Urdu, wrapping like a printed page ---- */
+  /* Printed-page rhythm: a full Arabic line, its Urdu tucked close under it,
+     then a slightly larger even breath before the next Arabic line. */
   .ayah {
     margin: 0.35em 0 0.15em;
     padding-bottom: 0.35em;
@@ -111,40 +112,50 @@
   }
   .ayah:last-child { border-bottom: 0; }
   .stream {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: flex-start;
+    --ar: clamp(28px, 3.25vw, 36px);
+    --ur: clamp(15px, 1.68vw, 18px);
     direction: rtl;
-    column-gap: 1.35em;
-    row-gap: 0.35em;
-    padding: 0.2em 0 0.45em;
+    padding: 0.55em 0 0.2em;
   }
-  .pair {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex: 0 0 auto;
-    max-width: 100%;
-    margin: 0 0 0.65em;
-  }
-  .pair .ar {
+  .couplet { margin: 0; }
+  .couplet .ar,
+  .probe .ar {
     font-family: "IndoPak Quran", serif;
-    font-size: clamp(26px, 3.1vw, 34px);
-    line-height: 1.7;
-    text-align: center;
+    font-size: var(--ar);
+    line-height: 1.58;
+    margin: 0 0 -0.2em;
+    text-align: right;
+    text-justify: inter-word;
     white-space: nowrap;
   }
-  .pair .ur {
-    margin-top: 0.05em;
-    font-size: clamp(14px, 1.65vw, 17px);
-    line-height: 1.95;
-    text-align: center;
+  .couplet .ur,
+  .probe .ur {
+    font-family: "Noto Nastaliq Urdu", serif;
+    font-size: var(--ur);
+    line-height: 1.72;
+    margin: 0 0 0.28em;
+    text-align: right;
+    text-justify: inter-word;
+    white-space: nowrap;
   }
-  .pair .orn { color: var(--gold); }
+  .probe .ar,
+  .probe .ur { margin: 0; }
+  .couplet.full .ar,
+  .couplet .ur.flush {
+    text-align: justify;
+    text-align-last: justify;
+  }
+  .couplet .w { white-space: nowrap; }
+  .couplet .orn { color: var(--gold); white-space: nowrap; }
   .ink0 { color: var(--ink0); }
   .ink1 { color: var(--ink1); }
   .ink2 { color: var(--ink2); }
+  .probe {
+    position: absolute;
+    visibility: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+  }
 
   /* ---- Line bands (sentence-sized segments) ---- */
   .band { margin: 0.7em 0 1em; }
@@ -186,8 +197,7 @@
 
   @media (max-width: 640px) {
     .book { margin: 12px 8px 28px; }
-    .content { padding: 6px 14px 24px; }
-    .pair { margin-inline: 0.3em; }
+    .content { padding: 2px 14px 24px; }
   }
 </style>
 </head>
@@ -276,10 +286,12 @@
     const data = window._data;
     if (!data) return;
     content.innerHTML = "";
-    for (const ayah of data.ayahs) {
-      if (layout === "phrase") content.appendChild(renderPhrase(ayah));
-      else if (layout === "inter") content.appendChild(renderInterlinear(ayah));
-      else content.appendChild(renderFlow(ayah));
+    if (layout === "phrase") {
+      content.appendChild(renderPhraseSurah(data.ayahs));
+    } else {
+      for (const ayah of data.ayahs) {
+        content.appendChild(layout === "inter" ? renderInterlinear(ayah) : renderFlow(ayah));
+      }
     }
     if (layout === "phrase") {
       fitPhraseWidths();
@@ -289,21 +301,239 @@
     }
   }
 
-  /* Size each pair to its Arabic so the Urdu wraps directly underneath it. */
-  function fitPhraseWidths() {
-    const max = content.clientWidth || 640;
-    document.querySelectorAll(".pair").forEach((pair) => {
-      const ar = pair.querySelector(".ar");
-      if (!ar) return;
-      ar.style.whiteSpace = "nowrap";
-      const needed = ar.scrollWidth;
-      if (needed > max) {
-        pair.style.width = "100%";
-        ar.style.whiteSpace = "normal";
-      } else {
-        pair.style.width = needed + "px";
+  /* One Arabic word plus the Urdu tokens that belong with it. */
+  function buildUnits(ayahs) {
+    const units = [];
+    let n = 0;
+    for (const ayah of ayahs) {
+      const { orn } = wordsAndOrnament(ayah);
+      const ornText = orn.map((o) => o.text).join(" ");
+      const last = ayah.segments[ayah.segments.length - 1];
+      for (const seg of ayah.segments) {
+        const words = segmentWords(ayah, seg);
+        const ink = INKS[n % INKS.length];
+        n += 1;
+        const urTokens = (seg.translation_text || "").trim().split(/\s+/).filter(Boolean);
+        const count = Math.max(words.length, 1);
+        words.forEach((w, i) => {
+          const from = Math.floor((i * urTokens.length) / count);
+          const to = Math.floor(((i + 1) * urTokens.length) / count);
+          const endOfAyah = seg === last && i === words.length - 1;
+          units.push({
+            ink,
+            ar: w.text,
+            ur: urTokens.slice(from, to).join(" "),
+            orn: endOfAyah ? ornText : "",
+          });
+        });
       }
+    }
+    return units;
+  }
+
+  function textWidth(el, text) {
+    el.textContent = text;
+    return el.getBoundingClientRect().width;
+  }
+
+  /* Printed mushafs fill a short Arabic line by elongating letters (kashida),
+     not by opening large gaps between words. */
+  const RIGHT_JOINING = new Set("اأإآٱءدذرزوؤةڈڑژے".split(""));
+  const ALEF_LIKE = new Set("اأإآٱ".split(""));
+
+  function letterClusters(word) {
+    const out = [];
+    for (const ch of word) {
+      if (/\p{M}/u.test(ch) && out.length) out[out.length - 1].marks += ch;
+      else out.push({ base: ch, marks: "" });
+    }
+    return out;
+  }
+
+  function kashidaSpots(clusters) {
+    const spots = [];
+    for (let i = 0; i < clusters.length - 1; i++) {
+      const base = clusters[i].base;
+      const next = clusters[i + 1].base;
+      if (RIGHT_JOINING.has(base)) continue;
+      if (base === "ل" && ALEF_LIKE.has(next)) continue;
+      if (!/\p{L}/u.test(next)) continue;
+      let pri = 1;
+      if ("سشصضطظ".includes(base)) pri = 5;
+      else if ("بتثنيئىیپ".includes(base)) pri = 4;
+      else if ("كکفقگ".includes(base)) pri = 3;
+      else if ("عغ".includes(base)) pri = 2;
+      spots.push({ i, pri });
+    }
+    return spots;
+  }
+
+  function paintKashida(word, perSpot) {
+    const clusters = letterClusters(word);
+    let out = "";
+    for (let i = 0; i < clusters.length; i++) {
+      out += clusters[i].base + clusters[i].marks;
+      const n = perSpot[i] || 0;
+      if (n) out += "\u0640".repeat(n);
+    }
+    return out;
+  }
+
+  function stretchArabic(words, target, tatweelW, probe) {
+    const plain = words.slice();
+    const natural = textWidth(probe, words.join(" "));
+    plain._fill = target > 0 ? natural / target : 1;
+    if (words.length < 2 || tatweelW < 1) return plain;
+    const extra = target - natural;
+    if (extra < 14) return plain;
+
+    const analyzed = words.map((w) => {
+      const clusters = letterClusters(w);
+      return { clusters, spots: kashidaSpots(clusters) };
     });
+    const order = [];
+    analyzed.forEach((a, wi) => {
+      a.spots.forEach((sp) => order.push({ wi, i: sp.i, pri: sp.pri }));
+    });
+    if (!order.length) return plain;
+    order.sort((a, b) => b.pri - a.pri || a.wi - b.wi || b.i - a.i);
+
+    const maxEach = 3;
+    const apply = (count) => {
+      const used = analyzed.map((a) => new Array(a.clusters.length).fill(0));
+      let left = count;
+      while (left > 0) {
+        let moved = false;
+        for (const sp of order) {
+          if (left <= 0) break;
+          if (used[sp.wi][sp.i] >= maxEach) continue;
+          used[sp.wi][sp.i] += 1;
+          left -= 1;
+          moved = true;
+        }
+        if (!moved) break;
+      }
+      return analyzed.map((a, wi) => paintKashida(words[wi], used[wi]));
+    };
+
+    let count = Math.min(order.length * maxEach, Math.floor((extra * 0.92) / tatweelW));
+    let result = apply(count);
+    let width = textWidth(probe, result.join(" "));
+    let tries = 0;
+    while (width > target - 2 && count > 0 && tries < 5) {
+      count = Math.max(0, count - Math.max(1, Math.ceil((width - (target - 8)) / tatweelW)));
+      result = apply(count);
+      width = textWidth(probe, result.join(" "));
+      tries += 1;
+    }
+    result._fill = target > 0 ? width / target : 1;
+    return result;
+  }
+
+  /* Pack words into full lines. Arabic fills the measure; Urdu of those
+     words must still fit on the line beneath at the Urdu size. */
+  function fitPhraseWidths() {
+    const stream = content.querySelector(".stream");
+    if (!stream || !stream._units) return;
+    const units = stream._units;
+    const max = stream.clientWidth || content.clientWidth || 640;
+    if (max < 40 || !units.length) return;
+
+    const probe = document.createElement("div");
+    probe.className = "probe";
+    const arProbe = document.createElement("span");
+    arProbe.className = "ar";
+    const urProbe = document.createElement("span");
+    urProbe.className = "ur";
+    probe.append(arProbe, urProbe);
+    stream.appendChild(probe);
+
+    const arSpace = Math.max(0, textWidth(arProbe, "ب ب") - textWidth(arProbe, "بب"));
+    const urSpace = Math.max(0, textWidth(urProbe, "ب ب") - textWidth(urProbe, "بب"));
+    const tatweelW = Math.max(1, textWidth(arProbe, "بـب") - textWidth(arProbe, "بب"));
+    const arW = new Array(units.length);
+    const urW = new Array(units.length);
+    const ornW = new Array(units.length);
+    for (let i = 0; i < units.length; i++) {
+      const u = units[i];
+      arW[i] = textWidth(arProbe, u.ar);
+      urW[i] = u.ur ? textWidth(urProbe, u.ur) : 0;
+      ornW[i] = u.orn ? textWidth(arProbe, u.orn) : 0;
+    }
+    const lines = [];
+    let i = 0;
+    while (i < units.length) {
+      let j = i;
+      let aSum = 0;
+      let uSum = 0;
+      let aWords = 0;
+      let uWords = 0;
+      while (j < units.length) {
+        const nextA = aSum + (aWords ? arSpace : 0) + arW[j] + (ornW[j] ? arSpace + ornW[j] : 0);
+        const uAdd = urW[j];
+        const nextU = uSum + (uWords && uAdd ? urSpace : 0) + uAdd;
+        const limit = max * 0.985;
+        if (j > i && (nextA > limit || nextU > limit)) break;
+        aSum = nextA;
+        uSum = nextU;
+        aWords += 1;
+        if (uAdd) uWords += 1;
+        j += 1;
+      }
+      if (j === i) j = i + 1;
+      lines.push({ i, j, aSum, uSum });
+      i = j;
+    }
+
+    stream.replaceChildren();
+    stream.appendChild(probe);
+    for (let li = 0; li < lines.length; li++) {
+      const ln = lines[li];
+      const slice = units.slice(ln.i, ln.j);
+      const ornWidth = slice.reduce((sum, u) => (u.orn ? sum + arSpace + textWidth(arProbe, u.orn) : sum), 0);
+      const target = Math.max(40, max - ornWidth - 8);
+      const stretched = stretchArabic(slice.map((u) => u.ar), target, tatweelW, arProbe);
+      const couplet = document.createElement("div");
+      const arabicFull = slice.length > 1 && stretched._fill >= 0.9;
+      couplet.className = "couplet" + (arabicFull ? " full" : "");
+
+      const ar = document.createElement("div");
+      ar.className = "ar";
+      ar.lang = "ar";
+      slice.forEach((u, k) => {
+        if (k) ar.appendChild(document.createTextNode(" "));
+        const s = document.createElement("span");
+        s.className = "w " + u.ink;
+        s.textContent = stretched[k];
+        ar.appendChild(s);
+        if (u.orn) {
+          ar.appendChild(document.createTextNode(" "));
+          const o = document.createElement("span");
+          o.className = "orn";
+          o.textContent = u.orn;
+          ar.appendChild(o);
+        }
+      });
+
+      const ur = document.createElement("div");
+      ur.className = "ur" + (ln.uSum >= max * 0.78 ? " flush" : "");
+      ur.lang = "ur";
+      let wroteUr = false;
+      slice.forEach((u) => {
+        if (!u.ur) return;
+        if (wroteUr) ur.appendChild(document.createTextNode(" "));
+        wroteUr = true;
+        const s = document.createElement("span");
+        s.className = u.ink;
+        s.textContent = u.ur;
+        ur.appendChild(s);
+      });
+
+      couplet.appendChild(ar);
+      if (wroteUr) couplet.appendChild(ur);
+      stream.appendChild(couplet);
+    }
+    probe.remove();
   }
 
   function wordsAndOrnament(ayah) {
@@ -339,39 +569,12 @@
     }
   }
 
-  /* Phrase: each Urdu line is locked to the width of its own Arabic. */
-  function renderPhrase(ayah) {
-    const article = document.createElement("article");
-    article.className = "ayah";
+  /* One continuous stream: ayahs do not start a new line. */
+  function renderPhraseSurah(ayahs) {
     const stream = document.createElement("div");
     stream.className = "stream";
-
-    const { orn } = wordsAndOrnament(ayah);
-    const last = ayah.segments[ayah.segments.length - 1];
-    ayah.segments.forEach((seg) => {
-      const words = segmentWords(ayah, seg);
-      const ink = INKS[(seg.segment_index - 1) % INKS.length];
-      const pair = document.createElement("span");
-      pair.className = "pair";
-
-      const ar = document.createElement("span");
-      ar.className = "ar " + ink;
-      ar.lang = "ar";
-      fillArabic(ar, words);
-      if (seg === last) appendOrnament(ar, orn);
-
-      const ur = document.createElement("span");
-      ur.className = "ur " + ink;
-      ur.lang = "ur";
-      ur.textContent = seg.translation_text;
-
-      pair.appendChild(ar);
-      pair.appendChild(ur);
-      stream.appendChild(pair);
-    });
-
-    article.appendChild(stream);
-    return article;
+    stream._units = buildUnits(ayahs);
+    return stream;
   }
 
   function renderInterlinear(ayah) {
