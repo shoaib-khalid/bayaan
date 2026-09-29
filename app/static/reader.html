@@ -14,116 +14,180 @@
     font-display: swap;
   }
   :root {
-    --paper: #fbf7ea;
-    --ink: #241f17;
-    --muted: #756b5a;
-    --gold: #9c7c3e;
-    --urdu: #40392f;
-    --seg-blue: #dbeafe;
-    --seg-blue-ink: #1e3a8a;
-    --seg-amber: #fef3c7;
-    --seg-amber-ink: #92400e;
+    --desk: #e7dcc6;
+    --paper: #fbf6ea;
+    --ink: #1c1915;
+    --muted: #7a6e5c;
+    --frame: #8d3a32;
+    --gold: #a07c3a;
+    --rule: rgba(141, 58, 50, 0.22);
+    --ink0: #1c1915;
+    --ink1: #9b2c2c;
+    --ink2: #1b6a42;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #efe9db;
+    min-height: 100vh;
     color: var(--ink);
     font-family: "Noto Nastaliq Urdu", serif;
+    background:
+      radial-gradient(1200px 500px at 50% -10%, #f3ead6, transparent 60%),
+      var(--desk);
   }
+
   .controls {
     position: sticky;
     top: 0;
     z-index: 5;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 10px 14px;
     align-items: center;
     justify-content: center;
-    padding: 10px 12px;
-    background: #fffdf5;
-    border-bottom: 1px solid var(--gold);
-    font-family: system-ui, sans-serif;
+    padding: 10px 16px;
+    background: rgba(251, 246, 234, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(141, 58, 50, 0.28);
+    font-family: "Segoe UI", system-ui, sans-serif;
     direction: ltr;
   }
-  .controls label { font-size: 13px; color: var(--muted); }
+  .controls label { font-size: 12px; letter-spacing: .04em; color: var(--muted); }
   .controls select, .controls button {
     font: inherit;
-    font-size: 14px;
-    padding: 5px 8px;
-    border: 1px solid rgba(156,124,62,.5);
-    border-radius: 8px;
-    background: #fff;
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 1px solid rgba(141, 58, 50, 0.35);
+    border-radius: 999px;
+    background: #fffdf8;
+    color: var(--ink);
     cursor: pointer;
   }
-  .controls button.active { background: var(--gold); color: #fff; }
+  .controls button.active {
+    background: var(--frame);
+    border-color: var(--frame);
+    color: #fffdf8;
+  }
+
   .book {
-    max-width: 900px;
-    margin: 18px auto;
+    max-width: 980px;
+    margin: 28px auto 48px;
+    padding: 10px;
     background: var(--paper);
-    border: 1px solid var(--gold);
-    box-shadow: 0 10px 30px rgba(42,34,21,.15);
+    border: 1.5px solid var(--frame);
+    box-shadow:
+      inset 0 0 0 6px var(--paper),
+      inset 0 0 0 7px rgba(160, 124, 58, 0.55),
+      0 18px 50px rgba(60, 36, 18, 0.16);
   }
   .page-head {
     text-align: center;
-    padding: 18px 18px 6px;
-    border-bottom: 1px dashed rgba(156,124,62,.4);
+    padding: 22px 28px 8px;
   }
-  .page-head .ar { font-family: "IndoPak Quran", serif; font-size: 30px; line-height: 1.6; }
-  .page-head .en { font-family: "Noto Nastaliq Urdu", serif; color: var(--muted); margin-top: 2px; }
-  .page-head .tr { font-size: 15px; color: var(--gold); margin-top: 2px; }
-  .content { padding: 16px 20px 26px; }
-
-  /* ---- Style 1: interlinear (line-per-segment) ---- */
-  .seg { margin: 10px 0; }
-  .ar-line {
+  .page-head .ar {
     font-family: "IndoPak Quran", serif;
-    font-size: 30px;
-    line-height: 2;
-    /* no justify => leftover space stays empty at the line end, as desired */
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.7;
   }
-  .ar-line .w { white-space: nowrap; }
-  .ur-line {
-    font-size: 19px;
-    line-height: 1.9;
-    color: var(--urdu);
-    max-width: 96%;
+  .page-head .en {
+    margin-top: 2px;
+    font-size: 16px;
+    color: var(--muted);
   }
-  .orn { color: var(--gold); }
-  .ayah-num {
-    display: inline-block;
-    vertical-align: middle;
-    font-family: "Noto Nastaliq Urdu", serif;
-    font-size: 15px;
-    color: var(--gold);
-    margin-inline-end: 8px;
+  .page-head .tr { margin-top: 2px; font-size: 15px; color: var(--frame); }
+  .rule {
+    height: 1px;
+    width: min(72%, 520px);
+    margin: 12px auto 0;
+    background: linear-gradient(90deg, transparent, var(--frame), transparent);
   }
+  .content { padding: 8px 28px 36px; }
 
-  /* ---- Style 2: flowing + alternating highlight ---- */
-  .flow-ayah { margin: 14px 0; }
+  /* ---- Phrase stream: Arabic over Urdu, wrapping like a printed page ---- */
+  .ayah {
+    margin: 0.35em 0 0.15em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ayah:last-child { border-bottom: 0; }
+  .stream {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    direction: rtl;
+    column-gap: 1.35em;
+    row-gap: 0.35em;
+    padding: 0.2em 0 0.45em;
+  }
+  .pair {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 0 0 auto;
+    max-width: 100%;
+    margin: 0 0 0.65em;
+  }
+  .pair .ar {
+    font-family: "IndoPak Quran", serif;
+    font-size: clamp(26px, 3.1vw, 34px);
+    line-height: 1.7;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .pair .ur {
+    margin-top: 0.05em;
+    font-size: clamp(14px, 1.65vw, 17px);
+    line-height: 1.95;
+    text-align: center;
+  }
+  .pair .orn { color: var(--gold); }
+  .ink0 { color: var(--ink0); }
+  .ink1 { color: var(--ink1); }
+  .ink2 { color: var(--ink2); }
+
+  /* ---- Line bands (sentence-sized segments) ---- */
+  .band { margin: 0.7em 0 1em; }
+  .band .ar-line {
+    font-family: "IndoPak Quran", serif;
+    font-size: clamp(26px, 3.2vw, 34px);
+    line-height: 1.9;
+  }
+  .band .ar-line .w { white-space: nowrap; }
+  .band .ur-line {
+    margin: 0 0 0.35em;
+    font-size: 18px;
+    line-height: 2;
+  }
+  .band .orn { color: var(--gold); }
+
+  /* ---- Continuous Arabic, translation under the ayah ---- */
+  .flow-ayah { margin: 0.9em 0 1.1em; }
   .flow-ar {
     font-family: "IndoPak Quran", serif;
-    font-size: 28px;
-    line-height: 2.1;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 2.15;
     text-align: justify;
   }
-  .flow-ar .w { border-radius: 6px; padding: 0 2px; }
-  .hl-blue { background: var(--seg-blue); color: var(--seg-blue-ink); }
-  .hl-amber { background: var(--seg-amber); color: var(--seg-amber-ink); }
-  .flow-tr { margin-top: 4px; font-size: 18px; line-height: 1.9; color: var(--urdu); }
-  .flow-tr .chip {
-    display: inline-block;
-    width: .7em; height: .7em;
-    border-radius: 50%;
-    margin-inline-end: 6px;
-    vertical-align: middle;
+  .flow-ar .w { padding: 0 1px; }
+  .flow-ar .orn { color: var(--gold); }
+  .flow-tr {
+    margin-top: 0.15em;
+    font-size: 17px;
+    line-height: 2;
   }
-  .chip.blue { background: var(--seg-blue-ink); }
-  .chip.amber { background: var(--seg-amber-ink); }
 
   .note {
-    text-align: center; color: var(--muted);
-    font-family: "Noto Nastaliq Urdu", serif; font-size: 16px; padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 17px;
+    padding: 28px 12px;
+  }
+
+  @media (max-width: 640px) {
+    .book { margin: 12px 8px 28px; }
+    .content { padding: 6px 14px 24px; }
+    .pair { margin-inline: 0.3em; }
   }
 </style>
 </head>
@@ -138,7 +202,8 @@
         <option value="2" selected>fateh-muhammad-jalandhry</option>
       </select>
     </label>
-    <button id="btnInter" class="active" type="button">Interlinear</button>
+    <button id="btnPhrase" class="active" type="button">Phrase</button>
+    <button id="btnInter" type="button">Lines</button>
     <button id="btnFlow" type="button">Flowing</button>
   </div>
 
@@ -150,18 +215,14 @@
   </div>
 
 <script>
-  const PALETTE = [
-    { cls: "hl-blue",  chip: "blue"  },
-    { cls: "hl-amber", chip: "amber" },
-  ];
+  const INKS = ["ink0", "ink1", "ink2"];
 
   const surahSel = document.getElementById("surahSel");
   const trSel = document.getElementById("trSel");
   const head = document.getElementById("pageHead");
   const content = document.getElementById("content");
-  let layout = "inter";
+  let layout = "phrase";
 
-  // populate surah list 1..114
   for (let s = 1; s <= 114; s++) {
     const o = document.createElement("option");
     o.value = s;
@@ -170,15 +231,27 @@
   }
 
   const params = new URLSearchParams(location.search);
-  let surah = parseInt(params.get("surah") || "1", 10);
+  let surah = parseInt(params.get("surah") || "2", 10);
   let trId = parseInt(params.get("translation_id") || "2", 10);
+  if (params.get("layout") === "inter" || params.get("layout") === "flow") {
+    layout = params.get("layout");
+  }
   surahSel.value = surah;
   trSel.value = trId;
+  syncLayoutButtons();
+
+  function syncLayoutButtons() {
+    document.getElementById("btnPhrase").classList.toggle("active", layout === "phrase");
+    document.getElementById("btnInter").classList.toggle("active", layout === "inter");
+    document.getElementById("btnFlow").classList.toggle("active", layout === "flow");
+  }
 
   function setLayout(name) {
     layout = name;
-    document.getElementById("btnInter").classList.toggle("active", name === "inter");
-    document.getElementById("btnFlow").classList.toggle("active", name === "flow");
+    syncLayoutButtons();
+    const url = new URL(location.href);
+    url.searchParams.set("layout", name);
+    history.replaceState(null, "", url.pathname + url.search);
     render();
   }
 
@@ -193,7 +266,8 @@
     head.innerHTML = `
       <div class="ar">${data.surah.name_arabic || ""}</div>
       <div class="en">${data.surah.name_english || ""} — سورۃ ${toUrdu(surah)}</div>
-      <div class="tr">ترجمہ: ${data.translation.name}</div>`;
+      <div class="tr">${labelFor(data.translation)}</div>
+      <div class="rule"></div>`;
     window._data = data;
     render();
   }
@@ -203,114 +277,176 @@
     if (!data) return;
     content.innerHTML = "";
     for (const ayah of data.ayahs) {
-      content.appendChild(layout === "inter" ? renderInterlinear(ayah) : renderFlow(ayah));
+      if (layout === "phrase") content.appendChild(renderPhrase(ayah));
+      else if (layout === "inter") content.appendChild(renderInterlinear(ayah));
+      else content.appendChild(renderFlow(ayah));
+    }
+    if (layout === "phrase") {
+      fitPhraseWidths();
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => { if (layout === "phrase") fitPhraseWidths(); });
+      }
     }
   }
 
-  // words of an ayah filtered to real words, plus the trailing ornament token (if any)
+  /* Size each pair to its Arabic so the Urdu wraps directly underneath it. */
+  function fitPhraseWidths() {
+    const max = content.clientWidth || 640;
+    document.querySelectorAll(".pair").forEach((pair) => {
+      const ar = pair.querySelector(".ar");
+      if (!ar) return;
+      ar.style.whiteSpace = "nowrap";
+      const needed = ar.scrollWidth;
+      if (needed > max) {
+        pair.style.width = "100%";
+        ar.style.whiteSpace = "normal";
+      } else {
+        pair.style.width = needed + "px";
+      }
+    });
+  }
+
   function wordsAndOrnament(ayah) {
-    const words = ayah.words.filter((w) => w.is_word);
-    const orn = ayah.words.filter((w) => !w.is_word);
-    return { words, orn };
+    return {
+      words: ayah.words.filter((w) => w.is_word),
+      orn: ayah.words.filter((w) => !w.is_word),
+    };
   }
 
   function segmentWords(ayah, seg) {
-    // real words whose word_index falls inside the segment range
     const lo = seg.word_start_index ?? 1;
     const hi = seg.word_end_index ?? Infinity;
     return ayah.words.filter((w) => w.is_word && w.word_index >= lo && w.word_index <= hi);
   }
 
-  // ---------- Style 1 : interlinear ----------
-  function renderInterlinear(ayah) {
+  function fillArabic(parent, words) {
+    words.forEach((w, i) => {
+      const s = document.createElement("span");
+      s.className = "w";
+      s.textContent = w.text;
+      parent.appendChild(s);
+      if (i < words.length - 1) parent.appendChild(document.createTextNode(" "));
+    });
+  }
+
+  function appendOrnament(parent, orn) {
+    for (const o of orn) {
+      const s = document.createElement("span");
+      s.className = "orn";
+      s.textContent = o.text;
+      parent.appendChild(document.createTextNode(" "));
+      parent.appendChild(s);
+    }
+  }
+
+  /* Phrase: each Urdu line is locked to the width of its own Arabic. */
+  function renderPhrase(ayah) {
     const article = document.createElement("article");
-    article.className = "seg";
-    const num = document.createElement("span");
-    num.className = "ayah-num";
-    num.textContent = `۝${toUrdu(ayah.ayah_number)}`;
+    article.className = "ayah";
+    const stream = document.createElement("div");
+    stream.className = "stream";
 
     const { orn } = wordsAndOrnament(ayah);
-    for (const seg of ayah.segments) {
-      const ar = document.createElement("div");
-      ar.className = "ar-line";
-      ar.dir = "rtl";
-      ar.lang = "ar";
+    const last = ayah.segments[ayah.segments.length - 1];
+    ayah.segments.forEach((seg) => {
       const words = segmentWords(ayah, seg);
-      words.forEach((w, i) => {
-        const s = document.createElement("span");
-        s.className = "w";
-        s.textContent = w.text;
-        ar.appendChild(s);
-        if (i < words.length - 1) ar.appendChild(document.createTextNode(" "));
-      });
-      // the ayah-end ornament goes after the LAST segment's words
-      if (seg.segment_index === ayah.segments[ayah.segments.length - 1].segment_index) {
-        for (const o of orn) {
-          const s = document.createElement("span");
-          s.className = "orn";
-          s.textContent = o.text;
-          ar.appendChild(document.createTextNode(" "));
-          ar.appendChild(s);
-        }
-      }
-      const ur = document.createElement("div");
-      ur.className = "ur-line";
-      ur.dir = "rtl";
+      const ink = INKS[(seg.segment_index - 1) % INKS.length];
+      const pair = document.createElement("span");
+      pair.className = "pair";
+
+      const ar = document.createElement("span");
+      ar.className = "ar " + ink;
+      ar.lang = "ar";
+      fillArabic(ar, words);
+      if (seg === last) appendOrnament(ar, orn);
+
+      const ur = document.createElement("span");
+      ur.className = "ur " + ink;
       ur.lang = "ur";
       ur.textContent = seg.translation_text;
-      article.appendChild(ar);
-      article.appendChild(ur);
-    }
-    article.insertBefore(num, article.firstChild);
+
+      pair.appendChild(ar);
+      pair.appendChild(ur);
+      stream.appendChild(pair);
+    });
+
+    article.appendChild(stream);
     return article;
   }
 
-  // ---------- Style 2 : flowing + alternating highlight ----------
+  function renderInterlinear(ayah) {
+    const article = document.createElement("article");
+    article.className = "ayah";
+    const { orn } = wordsAndOrnament(ayah);
+    const last = ayah.segments[ayah.segments.length - 1];
+
+    ayah.segments.forEach((seg) => {
+      const ink = INKS[(seg.segment_index - 1) % INKS.length];
+      const band = document.createElement("div");
+      band.className = "band";
+      const ar = document.createElement("div");
+      ar.className = "ar-line " + ink;
+      ar.lang = "ar";
+      fillArabic(ar, segmentWords(ayah, seg));
+      if (seg === last) appendOrnament(ar, orn);
+      const ur = document.createElement("div");
+      ur.className = "ur-line " + ink;
+      ur.lang = "ur";
+      ur.textContent = seg.translation_text;
+      band.appendChild(ar);
+      band.appendChild(ur);
+      article.appendChild(band);
+    });
+    return article;
+  }
+
   function renderFlow(ayah) {
     const article = document.createElement("article");
-    article.className = "flow-ayah";
-
+    article.className = "ayah flow-ayah";
     const { orn } = wordsAndOrnament(ayah);
+
     const ar = document.createElement("div");
     ar.className = "flow-ar";
-    ar.dir = "rtl";
     ar.lang = "ar";
 
-    // map each real word to its segment color by scanning segments in order
-    const colorOf = new Map(); // word_index -> palette idx
-    ayah.segments.forEach((seg, idx) => {
-      const pal = PALETTE[idx % PALETTE.length];
-      for (const w of segmentWords(ayah, seg)) colorOf.set(w.word_index, pal);
+    const colorOf = new Map();
+    ayah.segments.forEach((seg) => {
+      const ink = INKS[(seg.segment_index - 1) % INKS.length];
+      for (const w of segmentWords(ayah, seg)) colorOf.set(w.word_index, ink);
     });
-    let putSpace = false;
+
+    let first = true;
     for (const w of ayah.words) {
-      if (putSpace) ar.appendChild(document.createTextNode(" "));
-      putSpace = true;
+      if (!first) ar.appendChild(document.createTextNode(" "));
+      first = false;
       const s = document.createElement("span");
-      const pal = colorOf.get(w.word_index);
-      if (w.is_word && pal) s.className = "w " + pal.cls;
-      else if (w.is_word) s.className = "w";
-      else { s.className = "orn"; s.textContent = w.text; ar.appendChild(s); continue; }
-      s.textContent = w.text;
+      if (w.is_word) {
+        s.className = "w " + (colorOf.get(w.word_index) || "ink0");
+        s.textContent = w.text;
+      } else {
+        s.className = "orn";
+        s.textContent = w.text;
+      }
       ar.appendChild(s);
     }
-    // ensure ornament rendered even if it came before putSpace handling
+    if (!orn.length) { /* ornaments already walked via ayah.words */ }
     article.appendChild(ar);
 
-    // translations below, each tagged with the matching color chip
-    ayah.segments.forEach((seg, idx) => {
-      const pal = PALETTE[idx % PALETTE.length];
+    ayah.segments.forEach((seg) => {
+      const ink = INKS[(seg.segment_index - 1) % INKS.length];
       const tr = document.createElement("div");
-      tr.className = "flow-tr";
-      tr.dir = "rtl";
+      tr.className = "flow-tr " + ink;
       tr.lang = "ur";
-      const chip = document.createElement("span");
-      chip.className = "chip " + pal.chip;
-      tr.appendChild(chip);
-      tr.appendChild(document.createTextNode(seg.translation_text));
+      tr.textContent = seg.translation_text;
       article.appendChild(tr);
     });
     return article;
+  }
+
+  function labelFor(translation) {
+    if (translation.id === 1) return "بیان القرآن";
+    if (translation.id === 2) return "فتح محمد جالندھری";
+    return translation.name || "";
   }
 
   function toUrdu(n) {
@@ -320,14 +456,16 @@
   function go() {
     surah = parseInt(surahSel.value, 10);
     trId = parseInt(trSel.value, 10);
-    history.replaceState(null, "", `/reader?translation_id=${trId}&surah=${surah}`);
+    history.replaceState(null, "", `/reader?translation_id=${trId}&surah=${surah}&layout=${layout}`);
     load();
   }
 
   surahSel.addEventListener("change", go);
   trSel.addEventListener("change", go);
+  document.getElementById("btnPhrase").addEventListener("click", () => setLayout("phrase"));
   document.getElementById("btnInter").addEventListener("click", () => setLayout("inter"));
   document.getElementById("btnFlow").addEventListener("click", () => setLayout("flow"));
+  window.addEventListener("resize", () => { if (layout === "phrase") fitPhraseWidths(); });
 
   load();
 </script>
