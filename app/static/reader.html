@@ -21,9 +21,8 @@
     --frame: #8d3a32;
     --gold: #a07c3a;
     --rule: rgba(141, 58, 50, 0.22);
-    --ink0: #1c1915;
-    --ink1: #9b2c2c;
-    --ink2: #1b6a42;
+    --green: #1b6a42;
+    --red: #9b2c2c;
   }
   * { box-sizing: border-box; }
   body {
@@ -118,44 +117,35 @@
     padding: 0.55em 0 0.2em;
   }
   .couplet { margin: 0; }
-  .couplet .ar,
-  .probe .ar {
+  .couplet .ar {
     font-family: "IndoPak Quran", serif;
     font-size: var(--ar);
-    line-height: 1.58;
-    margin: 0 0 -0.2em;
-    text-align: right;
-    text-justify: inter-word;
-    white-space: nowrap;
+    line-height: 1.7;
+    margin: 0;
   }
-  .couplet .ur,
-  .probe .ur {
+  .couplet .ur {
     font-family: "Noto Nastaliq Urdu", serif;
     font-size: var(--ur);
-    line-height: 1.72;
-    margin: 0 0 0.28em;
-    text-align: right;
-    text-justify: inter-word;
+    line-height: 1.95;
+    margin: 0.16em 0 0.42em;
+  }
+  /* Even gap. Stretching a short line open is what made the white patches. */
+  .couplet .ar,
+  .couplet .ur {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: baseline;
     white-space: nowrap;
   }
-  .probe .ar,
-  .probe .ur { margin: 0; }
-  .couplet.full .ar,
-  .couplet .ur.flush {
-    text-align: justify;
-    text-align-last: justify;
-  }
+  .couplet .ar { column-gap: 0.28em; }
+  .couplet .ur { column-gap: 0.32em; }
+  .couplet .ar.even { justify-content: space-between; }
+  .couplet .ur.even { justify-content: space-between; }
   .couplet .w { white-space: nowrap; }
   .couplet .orn { color: var(--gold); white-space: nowrap; }
-  .ink0 { color: var(--ink0); }
-  .ink1 { color: var(--ink1); }
-  .ink2 { color: var(--ink2); }
-  .probe {
-    position: absolute;
-    visibility: hidden;
-    white-space: nowrap;
-    pointer-events: none;
-  }
+  .ink-green { color: var(--green); }
+  .ink-red { color: var(--red); }
 
   /* ---- Line bands (sentence-sized segments) ---- */
   .band { margin: 0.7em 0 1em; }
@@ -225,7 +215,7 @@
   </div>
 
 <script>
-  const INKS = ["ink0", "ink1", "ink2"];
+  const INKS = ["ink-green", "ink-red"];
 
   const surahSel = document.getElementById("surahSel");
   const trSel = document.getElementById("trSel");
@@ -295,8 +285,13 @@
     }
     if (layout === "phrase") {
       fitPhraseWidths();
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => { if (layout === "phrase") fitPhraseWidths(); });
+      const again = () => { if (layout === "phrase") fitPhraseWidths(); };
+      if (document.fonts) {
+        document.fonts.ready.then(again);
+        Promise.all([
+          document.fonts.load(getComputedStyle(document.body).fontSize + ' "Noto Nastaliq Urdu"'),
+          document.fonts.load('36px "IndoPak Quran"'),
+        ]).then(again);
       }
     }
   }
@@ -331,107 +326,86 @@
     return units;
   }
 
-  function textWidth(el, text) {
-    el.textContent = text;
-    return el.getBoundingClientRect().width;
+  /* A short line keeps its natural gap. Only a nearly full line may
+     spread the leftover, and only when that adds a few pixels per word. */
+  function canEven(slack, gaps, em) {
+    if (gaps <= 0 || slack < 0) return false;
+    return slack / gaps <= em * 0.24;
   }
 
-  /* Printed mushafs fill a short Arabic line by elongating letters (kashida),
-     not by opening large gaps between words. */
-  const RIGHT_JOINING = new Set("اأإآٱءدذرزوؤةڈڑژے".split(""));
-  const ALEF_LIKE = new Set("اأإآٱ".split(""));
+  function usedWidth(el) {
+    const kids = el.children;
+    const n = kids.length;
+    if (!n) return 0;
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+    let sum = gap * (n - 1);
+    for (let i = 0; i < n; i++) sum += kids[i].getBoundingClientRect().width;
+    return sum;
+  }
 
-  function letterClusters(word) {
-    const out = [];
-    for (const ch of word) {
-      if (/\p{M}/u.test(ch) && out.length) out[out.length - 1].marks += ch;
-      else out.push({ base: ch, marks: "" });
+  function makeCouplet() {
+    const couplet = document.createElement("div");
+    couplet.className = "couplet";
+    const ar = document.createElement("div");
+    ar.className = "ar";
+    ar.lang = "ar";
+    const ur = document.createElement("div");
+    ur.className = "ur";
+    ur.lang = "ur";
+    couplet.append(ar, ur);
+    return couplet;
+  }
+
+  function addUnit(couplet, unit) {
+    const ar = couplet.querySelector(".ar");
+    const word = document.createElement("span");
+    word.className = "w " + unit.ink;
+    word.textContent = unit.ar;
+    ar.appendChild(word);
+    if (unit.orn) {
+      const orn = document.createElement("span");
+      orn.className = "orn";
+      orn.textContent = unit.orn;
+      ar.appendChild(orn);
     }
-    return out;
-  }
-
-  function kashidaSpots(clusters) {
-    const spots = [];
-    for (let i = 0; i < clusters.length - 1; i++) {
-      const base = clusters[i].base;
-      const next = clusters[i + 1].base;
-      if (RIGHT_JOINING.has(base)) continue;
-      if (base === "ل" && ALEF_LIKE.has(next)) continue;
-      if (!/\p{L}/u.test(next)) continue;
-      let pri = 1;
-      if ("سشصضطظ".includes(base)) pri = 5;
-      else if ("بتثنيئىیپ".includes(base)) pri = 4;
-      else if ("كکفقگ".includes(base)) pri = 3;
-      else if ("عغ".includes(base)) pri = 2;
-      spots.push({ i, pri });
+    if (unit.ur) {
+      const ur = couplet.querySelector(".ur");
+      const bit = document.createElement("span");
+      bit.className = unit.ink;
+      bit.textContent = unit.ur;
+      ur.appendChild(bit);
     }
-    return spots;
   }
 
-  function paintKashida(word, perSpot) {
-    const clusters = letterClusters(word);
-    let out = "";
-    for (let i = 0; i < clusters.length; i++) {
-      out += clusters[i].base + clusters[i].marks;
-      const n = perSpot[i] || 0;
-      if (n) out += "\u0640".repeat(n);
+  function popUnit(couplet, unit) {
+    const ar = couplet.querySelector(".ar");
+    if (unit.orn && ar.lastElementChild) ar.lastElementChild.remove();
+    if (ar.lastElementChild) ar.lastElementChild.remove();
+    if (unit.ur) {
+      const ur = couplet.querySelector(".ur");
+      if (ur && ur.lastElementChild) ur.lastElementChild.remove();
     }
-    return out;
   }
 
-  function stretchArabic(words, target, tatweelW, probe) {
-    const plain = words.slice();
-    const natural = textWidth(probe, words.join(" "));
-    plain._fill = target > 0 ? natural / target : 1;
-    if (words.length < 2 || tatweelW < 1) return plain;
-    const extra = target - natural;
-    if (extra < 14) return plain;
-
-    const analyzed = words.map((w) => {
-      const clusters = letterClusters(w);
-      return { clusters, spots: kashidaSpots(clusters) };
-    });
-    const order = [];
-    analyzed.forEach((a, wi) => {
-      a.spots.forEach((sp) => order.push({ wi, i: sp.i, pri: sp.pri }));
-    });
-    if (!order.length) return plain;
-    order.sort((a, b) => b.pri - a.pri || a.wi - b.wi || b.i - a.i);
-
-    const maxEach = 3;
-    const apply = (count) => {
-      const used = analyzed.map((a) => new Array(a.clusters.length).fill(0));
-      let left = count;
-      while (left > 0) {
-        let moved = false;
-        for (const sp of order) {
-          if (left <= 0) break;
-          if (used[sp.wi][sp.i] >= maxEach) continue;
-          used[sp.wi][sp.i] += 1;
-          left -= 1;
-          moved = true;
-        }
-        if (!moved) break;
-      }
-      return analyzed.map((a, wi) => paintKashida(words[wi], used[wi]));
-    };
-
-    let count = Math.min(order.length * maxEach, Math.floor((extra * 0.92) / tatweelW));
-    let result = apply(count);
-    let width = textWidth(probe, result.join(" "));
-    let tries = 0;
-    while (width > target - 2 && count > 0 && tries < 5) {
-      count = Math.max(0, count - Math.max(1, Math.ceil((width - (target - 8)) / tatweelW)));
-      result = apply(count);
-      width = textWidth(probe, result.join(" "));
-      tries += 1;
+  function closeCouplet(couplet, max) {
+    const ar = couplet.querySelector(".ar");
+    const ur = couplet.querySelector(".ur");
+    const arEm = parseFloat(getComputedStyle(ar).fontSize) || 32;
+    if (canEven(max - usedWidth(ar), Math.max(0, ar.children.length - 1), arEm)) {
+      ar.classList.add("even");
     }
-    result._fill = target > 0 ? width / target : 1;
-    return result;
+    if (!ur.children.length) {
+      ur.remove();
+      return;
+    }
+    const urEm = parseFloat(getComputedStyle(ur).fontSize) || 18;
+    if (canEven(max - usedWidth(ur), Math.max(0, ur.children.length - 1), urEm)) {
+      ur.classList.add("even");
+    }
   }
 
-  /* Pack words into full lines. Arabic fills the measure; Urdu of those
-     words must still fit on the line beneath at the Urdu size. */
+  /* Pack by the width on screen. A fixed gap, so a short line is never
+     pulled open into a white patch. */
   function fitPhraseWidths() {
     const stream = content.querySelector(".stream");
     if (!stream || !stream._units) return;
@@ -439,101 +413,26 @@
     const max = stream.clientWidth || content.clientWidth || 640;
     if (max < 40 || !units.length) return;
 
-    const probe = document.createElement("div");
-    probe.className = "probe";
-    const arProbe = document.createElement("span");
-    arProbe.className = "ar";
-    const urProbe = document.createElement("span");
-    urProbe.className = "ur";
-    probe.append(arProbe, urProbe);
-    stream.appendChild(probe);
-
-    const arSpace = Math.max(0, textWidth(arProbe, "ب ب") - textWidth(arProbe, "بب"));
-    const urSpace = Math.max(0, textWidth(urProbe, "ب ب") - textWidth(urProbe, "بب"));
-    const tatweelW = Math.max(1, textWidth(arProbe, "بـب") - textWidth(arProbe, "بب"));
-    const arW = new Array(units.length);
-    const urW = new Array(units.length);
-    const ornW = new Array(units.length);
-    for (let i = 0; i < units.length; i++) {
-      const u = units[i];
-      arW[i] = textWidth(arProbe, u.ar);
-      urW[i] = u.ur ? textWidth(urProbe, u.ur) : 0;
-      ornW[i] = u.orn ? textWidth(arProbe, u.orn) : 0;
-    }
-    const lines = [];
-    let i = 0;
-    while (i < units.length) {
-      let j = i;
-      let aSum = 0;
-      let uSum = 0;
-      let aWords = 0;
-      let uWords = 0;
-      while (j < units.length) {
-        const nextA = aSum + (aWords ? arSpace : 0) + arW[j] + (ornW[j] ? arSpace + ornW[j] : 0);
-        const uAdd = urW[j];
-        const nextU = uSum + (uWords && uAdd ? urSpace : 0) + uAdd;
-        const limit = max * 0.985;
-        if (j > i && (nextA > limit || nextU > limit)) break;
-        aSum = nextA;
-        uSum = nextU;
-        aWords += 1;
-        if (uAdd) uWords += 1;
-        j += 1;
-      }
-      if (j === i) j = i + 1;
-      lines.push({ i, j, aSum, uSum });
-      i = j;
-    }
-
     stream.replaceChildren();
-    stream.appendChild(probe);
-    for (let li = 0; li < lines.length; li++) {
-      const ln = lines[li];
-      const slice = units.slice(ln.i, ln.j);
-      const ornWidth = slice.reduce((sum, u) => (u.orn ? sum + arSpace + textWidth(arProbe, u.orn) : sum), 0);
-      const target = Math.max(40, max - ornWidth - 8);
-      const stretched = stretchArabic(slice.map((u) => u.ar), target, tatweelW, arProbe);
-      const couplet = document.createElement("div");
-      const arabicFull = slice.length > 1 && stretched._fill >= 0.9;
-      couplet.className = "couplet" + (arabicFull ? " full" : "");
-
-      const ar = document.createElement("div");
-      ar.className = "ar";
-      ar.lang = "ar";
-      slice.forEach((u, k) => {
-        if (k) ar.appendChild(document.createTextNode(" "));
-        const s = document.createElement("span");
-        s.className = "w " + u.ink;
-        s.textContent = stretched[k];
-        ar.appendChild(s);
-        if (u.orn) {
-          ar.appendChild(document.createTextNode(" "));
-          const o = document.createElement("span");
-          o.className = "orn";
-          o.textContent = u.orn;
-          ar.appendChild(o);
-        }
-      });
-
-      const ur = document.createElement("div");
-      ur.className = "ur" + (ln.uSum >= max * 0.78 ? " flush" : "");
-      ur.lang = "ur";
-      let wroteUr = false;
-      slice.forEach((u) => {
-        if (!u.ur) return;
-        if (wroteUr) ur.appendChild(document.createTextNode(" "));
-        wroteUr = true;
-        const s = document.createElement("span");
-        s.className = u.ink;
-        s.textContent = u.ur;
-        ur.appendChild(s);
-      });
-
-      couplet.appendChild(ar);
-      if (wroteUr) couplet.appendChild(ur);
-      stream.appendChild(couplet);
+    let couplet = makeCouplet();
+    stream.appendChild(couplet);
+    let count = 0;
+    for (const unit of units) {
+      addUnit(couplet, unit);
+      count += 1;
+      const ar = couplet.querySelector(".ar");
+      const ur = couplet.querySelector(".ur");
+      const spills = usedWidth(ar) > max || usedWidth(ur) > max;
+      if (count > 1 && spills) {
+        popUnit(couplet, unit);
+        closeCouplet(couplet, max);
+        couplet = makeCouplet();
+        stream.appendChild(couplet);
+        addUnit(couplet, unit);
+        count = 1;
+      }
     }
-    probe.remove();
+    closeCouplet(couplet, max);
   }
 
   function wordsAndOrnament(ayah) {
@@ -624,7 +523,7 @@
       first = false;
       const s = document.createElement("span");
       if (w.is_word) {
-        s.className = "w " + (colorOf.get(w.word_index) || "ink0");
+        s.className = "w " + (colorOf.get(w.word_index) || "ink-green");
         s.textContent = w.text;
       } else {
         s.className = "orn";
