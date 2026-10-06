@@ -14,9 +14,9 @@
     --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
     --edge:#a8946e; --gold:#9c7c3e; --cA:#e8eef7; --cB:#f4ecd9;
     /* Ruled lines and the divider under the surah name share this, so the two
-       can never drift apart. Raise the alpha to make them stronger, lower it
-       to make them fainter. */
-    --rule:rgba(138,106,47,.62);
+       can never drift apart. Solid and dark enough to read clearly against
+       the cream paper; lighten the hex if it starts to look heavy. */
+    --rule:#7a5c28;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
@@ -71,7 +71,7 @@
   }
   .page-head{
     position:absolute;left:40px;right:40px;top:34px;height:84px;
-    text-align:center;border-bottom:1px dashed var(--rule);
+    text-align:center;border-bottom:1px solid var(--rule);
   }
   .page-head .ar{font-family:"IndoPak Quran",serif;font-size:26px;line-height:1.5;}
   .page-head .en{font-size:14px;color:var(--muted);}
@@ -90,7 +90,7 @@
      absolutely positioned so they take no part in the inline flow: the text
      wraps exactly as it would if they were not there. */
   .flow .rules{position:absolute;top:0;left:0;right:0;pointer-events:none;}
-  .flow .rules .rule{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--rule);}
+  .flow .rules .rule{position:absolute;left:0;right:0;height:0;border-top:1px solid var(--rule);}
   .page-foot{
     position:absolute;left:0;right:0;bottom:26px;text-align:center;
     color:var(--muted);font-size:14px;font-family:system-ui,sans-serif;
