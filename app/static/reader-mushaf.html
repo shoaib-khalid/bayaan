@@ -82,6 +82,11 @@
   .flow .w.segA{background:var(--cA);}
   .flow .w.segB{background:var(--cB);}
   .flow .orn{color:var(--gold);white-space:nowrap;}
+  /* Ruled lines, matching the dashed rule under the surah name. They are
+     absolutely positioned so they take no part in the inline flow: the text
+     wraps exactly as it would if they were not there. */
+  .flow .rules{position:absolute;top:0;left:0;right:0;pointer-events:none;}
+  .flow .rules .rule{position:absolute;left:0;right:0;height:0;border-top:1px dashed rgba(156,124,62,.35);}
   .page-foot{
     position:absolute;left:0;right:0;bottom:26px;text-align:center;
     color:var(--muted);font-size:14px;font-family:system-ui,sans-serif;
@@ -262,6 +267,18 @@ function measureLines() {
     }
   });
 
+  /* Where the rule closing each line goes. An inline box is a full line-height
+     tall, so consecutive lines sit flush against each other and the gap
+     between boxes is ~0 — the usable measure is the line advance (top to
+     top). Placing the rule just above the next line's box lands it in the
+     lower leading of the current line, i.e. visually under the text. */
+  const advance = lines.length > 1
+    ? (lines[lines.length - 1].top - lines[0].top) / (lines.length - 1)
+    : (lines[0].bottom - lines[0].top);
+  lines.forEach((ln, i) => {
+    ln.ruleY = (i + 1 < lines.length ? lines[i + 1].top : ln.top + advance) - 1;
+  });
+
   return { lines, flowH: flow.getBoundingClientRect().height / k };
 }
 
@@ -284,17 +301,35 @@ function paginate(lines) {
     let last = -1, j = li;
     while (j < lines.length && lines[j].bottom <= limit) { last = j; j++; }
     if (last === -1) last = li;                    // a line taller than a whole page
-    const bottom = lines[last].bottom;
+    const edge = lines[last].ruleY;                // the rule that closes this page
     pages.push({
       offset,
-      height: Math.max(0, Math.min(bottom - offset, FLOW_H)),
+      // +1 carries the closing rule's own pixel inside the window, since a
+      // rule sitting on the boundary is clipped by overflow:hidden. The next
+      // page resumes past it, so a rule is never drawn on two pages.
+      height: Math.max(0, Math.min(edge - offset + 1, FLOW_H)),
       startIdx: lines[li].firstIdx,
     });
-    offset = bottom;
+    offset = edge + 1;
     li = last + 1;
     if (pages.length > 20000) break;               // runaway guard
   }
   return pages;
+}
+
+/* A dashed rule under every line, plus one closing the last line. They live
+   inside the flow so they translate with it and are clipped to the page,
+   which is what keeps "a line between every line" true across page breaks. */
+function renderRules() {
+  const layer = document.createElement("div");
+  layer.className = "rules";
+  for (const ln of S.lines) {
+    const rule = document.createElement("div");
+    rule.className = "rule";
+    rule.style.top = ln.ruleY + "px";
+    layer.appendChild(rule);
+  }
+  $("flow").appendChild(layer);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -312,6 +347,7 @@ async function layoutFlow() {
   const { lines } = measureLines();
   S.lines = lines;
   S.pages = paginate(lines);
+  renderRules();
 }
 
 function render() {
