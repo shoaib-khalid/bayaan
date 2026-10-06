@@ -337,13 +337,7 @@ def editor_page():
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index_page():
-    return HTMLResponse(
-        "<html lang='en'><body style='font-family:sans-serif'>"
-        "<h2>Bayaan API</h2>"
-        "<ul>"
-        "<li>Interactive docs: <a href='/docs'>/docs</a></li>"
-        "<li>Segment editor: <a href='/editor?translation_id=2&surah=2&ayah=2'>/editor?translation_id=2&amp;surah=2&amp;ayah=2</a></li>"
-        "<li>Reader: <a href='/reader?translation_id=2&surah=2&layout=phrase'>/reader?translation_id=2&amp;surah=2&amp;layout=phrase</a></li>"
-        "<li>Data endpoint: <a href='/surah/2?translation_id=2'>/surah/2?translation_id=2</a></li>"
-        "</ul></body></html>"
-    )
+    index = STATIC_DIR / "index.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="index.html not built")
+    return FileResponse(index)
