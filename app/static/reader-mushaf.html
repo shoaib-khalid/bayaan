@@ -364,8 +364,14 @@ function render() {
 
 function syncUrl() {
   const url = new URL(location.href);
+  // The text size belongs in the URL because it is what decides how much fits
+  // on a page: without it a shared link lands the reader on different text,
+  // since their own saved size (or the default) would be used instead. It also
+  // depends on translation_id, so the link carries that explicitly too.
+  url.searchParams.set("translation_id", S.translationId);
   url.searchParams.set("surah", S.surahId);
   url.searchParams.set("page", S.cur + 1);
+  url.searchParams.set("zoom", String(zoom()));
   history.replaceState(null, "", url.pathname + url.search);
 }
 
