@@ -1,0 +1,96 @@
+# ============================================================================
+# Bayaan — repo-wide ignore rules
+#
+# Directory-scoped files still apply on top of this one:
+#   app/.gitignore            env files + Python caches under app/
+#   segmentation/.gitignore   generated work-sheets and backups (with .gitkeep)
+#   .venv/.gitignore          auto-written by `python -m venv`; contains `*`
+#
+# A pattern containing a slash is relative to this file; one without a slash
+# matches at any depth. This file is the single source of truth for repo-wide
+# rules — the rules below used to live only in app/.gitignore, which applied
+# to app/ alone and left the repo root unprotected.
+# ============================================================================
+
+# --- Python: virtual environments -------------------------------------------
+# `python -m venv .venv` self-ignores via its own .gitignore, but a venv built
+# elsewhere or with --without-pip may not. Belt and braces.
+.venv/
+venv/
+env/
+ENV/
+
+# --- Python: bytecode, caches, packaging ------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+MANIFEST
+
+# --- Local configuration and secrets ----------------------------------------
+# app/.env holds this machine's live DB credentials (127.0.0.1:3212, root/root).
+# .env.example is deliberately NOT matched, so it stays tracked.
+.env
+.env.local
+.env.*.local
+
+# --- Databases and logs ------------------------------------------------------
+# Schema and migrations live in data/*.sql and ARE tracked; these rules only
+# cover engine files and log output.
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# --- Tests and coverage ------------------------------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Node (used only for `npm test`) ----------------------------------------
+node_modules/
+
+# --- Editors -----------------------------------------------------------------
+# Share the run/debug configuration, ignore personal editor state. tasks.json
+# and launch.json are whitelisted so the server run task can be committed.
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+*.iws
+*.ipr
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+.vim/
+*.swp
+*.swo
+*~
+
+# --- OS ----------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+.DS_Store
+.AppleDouble
+.LSOverride
+.directory
