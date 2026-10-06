@@ -79,7 +79,7 @@
 
     <li><a class="row" href="/reader-mushaf?translation_id=2&surah=1">
       <span class="path">/reader-mushaf?translation_id=2&amp;surah=1</span>
-      <span class="desc">Mushaf reader (Layout B): continuous Arabic, each word tinted by its segment, alternating colours. Already paginated — see note below.</span></a></li>
+      <span class="desc">Mushaf reader (Layout B): each word tinted by its segment, laid out on a fixed portrait page with page-turn navigation, A−/A+ text size, and swipe/keyboard paging across surahs.</span></a></li>
 
     <li><a class="row" href="/editor?translation_id=2&surah=1&ayah=1">
       <span class="path">/editor?translation_id=2&amp;surah=1&amp;ayah=1</span>
@@ -124,9 +124,10 @@
   </ul>
 
   <p class="note">
-    <b>Note on pagination:</b> <code>/reader</code> renders a whole surah as one continuous scroll.
-    <code>/reader-mushaf</code> is the only page that paginates today, and it breaks between whole ayahs,
-    so a single very long ayah (e.g. 2:282) overflows its page. Reworking this is the next task.
+    <b>Note on pagination:</b> <code>/reader-mushaf</code> draws a fixed portrait page and divides it by
+    measured line boundaries, so a page may break mid-ayah or mid-segment but never slices a line in half.
+    Page contents depend only on the text size, not the window: resizing scales the page like an image.
+    <code>/reader</code> still renders a whole surah as one continuous scroll.
   </p>
 </div>
 

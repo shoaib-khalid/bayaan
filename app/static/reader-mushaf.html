@@ -3,64 +3,126 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bayaan — Quran Reader</title>
+<title>Bayaan — Mushaf Reader</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
   @font-face{font-family:"IndoPak Quran";src:url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");font-display:swap;}
-  :root{--paper:#fbf7ea;--paper2:#fffdf5;--ink:#241f17;--muted:#756b5a;--border:#a8946e;--gold:#9c7c3e;
-    --cA:#e8eef7;--cB:#f4ecd9;}
+
+  :root{
+    --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
+    --edge:#a8946e; --gold:#9c7c3e; --cA:#e8eef7; --cB:#f4ecd9;
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
-  body{background:#efe9db;color:var(--ink);font-family:"Noto Nastaliq Urdu",serif;overflow:hidden;
-    display:flex;flex-direction:column;height:100svh;}
-  .bar{flex:0 0 auto;display:flex;gap:10px;align-items:center;justify-content:center;
-    padding:8px 12px;background:#fffdf5;border-bottom:1px solid var(--gold);font-family:system-ui,sans-serif;direction:ltr;}
-  .bar label{font-size:13px;color:var(--muted);}
-  .bar select{font:inherit;font-size:14px;padding:5px 9px;border:1px solid rgba(156,124,62,.5);border-radius:8px;background:#fff;cursor:pointer;}
-  .bar .hint{font-size:12px;color:var(--muted);}
-  .stage{flex:1 1 auto;min-height:0;display:flex;align-items:stretch;justify-content:center;padding:10px 10px 0;overflow:hidden;}
-  .book{width:min(calc(100vw - 24px),920px);height:100%;background:var(--paper);border:1px solid var(--border);
-    box-shadow:0 12px 34px rgba(42,34,21,.18);display:flex;flex-direction:column;overflow:hidden;}
-  .page-head{flex:0 0 auto;text-align:center;padding:10px 18px 4px;border-bottom:1px dashed rgba(156,124,62,.35);}
-  .page-head .ar{font-family:"IndoPak Quran",serif;font-size:24px;line-height:1.6;}
-  .page-head .en{font-size:15px;color:var(--muted);}
-  /* scrollable as a safety net so a word is never clipped away */
-  .page-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 16px 8px;
-    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
-  .page-foot{flex:0 0 auto;text-align:center;color:var(--muted);padding:6px 0 8px;font-family:system-ui,sans-serif;direction:ltr;}
-  .navbottom{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:8px 16px calc(8px + env(safe-area-inset-bottom));background:#fffdf5;border-top:1px solid var(--gold);
-    font-family:system-ui,sans-serif;direction:ltr;user-select:none;-webkit-user-select:none;touch-action:pan-y;}
-  .navbtn{font:inherit;font-size:22px;line-height:1;min-width:120px;padding:10px 14px;border:1px solid rgba(156,124,62,.55);
-    border-radius:10px;background:#fff;color:var(--ink);cursor:pointer;}
+  body{
+    background:#efe9db;color:var(--ink);font-family:"Noto Nastaliq Urdu",serif;
+    display:flex;flex-direction:column;height:100svh;overflow:hidden;
+  }
+
+  /* ---------------------------------------------------------------------
+     Chrome. Never scaled — it is the interface, not the page.
+     --------------------------------------------------------------------- */
+  .bar{
+    flex:0 0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;
+    padding:6px 10px;background:var(--paper2);border-bottom:1px solid var(--gold);
+    font-family:system-ui,sans-serif;direction:ltr;
+  }
+  .bar label{font-size:12px;color:var(--muted);}
+  .bar select{
+    font:inherit;font-size:13px;padding:4px 8px;border:1px solid rgba(156,124,62,.5);
+    border-radius:8px;background:#fff;cursor:pointer;max-width:190px;
+  }
+  .bar button{
+    font:inherit;font-size:13px;padding:4px 10px;border:1px solid rgba(156,124,62,.5);
+    border-radius:8px;background:#fff;color:var(--ink);cursor:pointer;
+  }
+  .bar button:disabled{opacity:.4;cursor:default;}
+  .bar .sep{width:1px;height:20px;background:rgba(156,124,62,.35);}
+  .bar .hint{font-size:11px;color:var(--muted);}
+  #zoomLabel{font-size:12px;color:var(--muted);min-width:40px;text-align:center;}
+
+  /* ---------------------------------------------------------------------
+     Stage = the crop area the fixed-size page is fitted into.
+     Nothing here depends on the page contents.
+     --------------------------------------------------------------------- */
+  .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;}
+
+  /* ---------------------------------------------------------------------
+     The logical page. A fixed 620x880 portrait rectangle (ratio 0.705).
+     It NEVER reflows on resize: the whole box is scaled as a single unit,
+     exactly like zooming an image. Only the font controls change how much
+     text fits, because they change the content's own font size before the
+     page is divided up.
+     --------------------------------------------------------------------- */
+  .book{
+    position:absolute;left:50%;top:50%;
+    width:620px;height:880px;
+    transform-origin:center center;
+    background:var(--paper);
+    box-shadow:
+      inset 0 0 0 1px var(--edge),
+      0 12px 34px rgba(42,34,21,.20);
+  }
+  .page-head{
+    position:absolute;left:40px;right:40px;top:34px;height:84px;
+    text-align:center;border-bottom:1px dashed rgba(156,124,62,.35);
+  }
+  .page-head .ar{font-family:"IndoPak Quran",serif;font-size:26px;line-height:1.5;}
+  .page-head .en{font-size:14px;color:var(--muted);}
+  /* The window is the page's content area. Its height is set per page so a
+     line is never sliced in half at a page boundary. */
+  .window{position:absolute;left:40px;top:118px;width:540px;height:710px;overflow:hidden;}
+  .flow{
+    position:absolute;top:0;left:0;width:100%;
+    text-align:justify;font-family:"IndoPak Quran",serif;line-height:2.05;color:var(--ink);
+  }
+  .flow .w{white-space:nowrap;border-radius:5px;padding:0 1px;}
+  .flow .w.segA{background:var(--cA);}
+  .flow .w.segB{background:var(--cB);}
+  .flow .orn{color:var(--gold);white-space:nowrap;}
+  .page-foot{
+    position:absolute;left:0;right:0;bottom:26px;text-align:center;
+    color:var(--muted);font-size:14px;font-family:system-ui,sans-serif;
+  }
+
+  /* bottom nav */
+  .navbottom{
+    flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:6px 14px calc(6px + env(safe-area-inset-bottom));background:var(--paper2);
+    border-top:1px solid var(--gold);font-family:system-ui,sans-serif;direction:ltr;
+    user-select:none;-webkit-user-select:none;touch-action:pan-y;
+  }
+  .navbtn{
+    font:inherit;font-size:20px;line-height:1;min-width:104px;padding:8px 12px;
+    border:1px solid rgba(156,124,62,.55);border-radius:10px;background:#fff;
+    color:var(--ink);cursor:pointer;
+  }
   .navbtn:disabled{opacity:.35;cursor:default;}
   .navbtn:not(:disabled):active{background:#f0ead8;}
   .navbtn .lbl{display:block;font-size:11px;color:var(--muted);margin-top:2px;}
-  #pageInfo{font-size:16px;color:var(--muted);white-space:nowrap;}
-
-  .quran{text-align:justify;font-family:"IndoPak Quran",serif;
-    font-size:clamp(22px,4.2cqw,42px);line-height:2.05;color:var(--ink);}
-  .quran .w{white-space:nowrap;border-radius:6px;padding:0 2px;}
-  .quran .w.segA{background:var(--cA);}
-  .quran .w.segB{background:var(--cB);}
-  .quran .orn{color:var(--gold);white-space:nowrap;}
-
-  .measure{position:absolute;left:-20000px;top:0;visibility:hidden;}
+  #pageInfo{font-size:14px;color:var(--muted);white-space:nowrap;}
 </style>
 </head>
 <body>
   <div class="bar" dir="ltr">
     <label>Surah <select id="surahSel"></select></label>
-    <span style="flex:1"></span>
-    <span class="hint">Arrows ← → · swipe</span>
+    <span class="sep"></span>
+    <button id="fontMinus" title="Smaller text — more fits on each page">A−</button>
+    <span id="zoomLabel">100%</span>
+    <button id="fontPlus" title="Larger text — less fits on each page">A+</button>
+    <span class="sep"></span>
+    <span class="hint">swipe right = next · swipe left = prev</span>
   </div>
 
   <div class="stage">
-    <div class="book">
-      <div class="page-head"><div class="ar" id="headAr"></div><div class="en" id="headEn"></div></div>
-      <div class="page-body" id="pageBody"><div class="quran" id="page"></div></div>
+    <div class="book" id="book">
+      <div class="page-head">
+        <div class="ar" id="headAr"></div>
+        <div class="en" id="headEn"></div>
+      </div>
+      <div class="window" id="window"><div class="flow" id="flow"></div></div>
       <div class="page-foot" id="foot"></div>
     </div>
   </div>
@@ -70,125 +132,371 @@
     <span id="pageInfo">–</span>
     <button class="navbtn" id="btnPrev" aria-label="Previous page" title="Previous page">▶<span class="lbl">prev</span></button>
   </div>
-  <div class="measure"><div class="quran" id="measureQuran"></div></div>
 
 <script>
 "use strict";
-const $=id=>document.getElementById(id);
-const AR=/[\u0621-\u064a\u0671-\u06d3]/;
-const isWord=t=>AR.test(t||"");
-function toUrdu(n){return String(n).replace(/[0-9]/g,d=>"۰۱۲۳۴۵۶۷۸۹"[+d]);}
+const $ = (id) => document.getElementById(id);
+const AR = /[\u0621-\u064a\u0671-\u06d3]/;
+const isWord = (t) => AR.test(t || "");
+const toUrdu = (n) => String(n).replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[+d]);
 
-const S={surahs:[],surahId:2,ayahs:[],spans:[],pages:[],cur:0};
+/* ---------------------------------------------------------------------------
+   Page geometry, in LOGICAL units. These numbers define the shape of a page
+   and are completely independent of the viewport: the page is always these
+   dimensions and is scaled to fit whatever room it is given.
+   --------------------------------------------------------------------------- */
+const PAGE_W = 620, PAGE_H = 880;          // portrait, ratio 0.705
+const PAD_X = 40, PAD_TOP = 34;
+const HEAD_H = 84;                          // surah name block
+const FOOT_H = 52;                          // page number strip
+const WIN_TOP = PAD_TOP + HEAD_H;           // 118
+const FLOW_W = PAGE_W - 2 * PAD_X;          // 540
+const FLOW_H = PAGE_H - WIN_TOP - FOOT_H;   // 710
 
-async function loadSurahs(){S.surahs=await(await fetch("/surahs")).json();
-  const sel=$("surahSel");sel.innerHTML="";
-  for(const s of S.surahs){const o=document.createElement("option");o.value=s.id;
-    o.textContent=`${String(s.id).padStart(3,"0")} — ${s.name_arabic} (${s.name_english})`;sel.appendChild(o);}
-  sel.value=String(S.surahId);}
+const SAFETY = 6;          // logical px kept clear above the cut
+const BASE_FONT = 30;      // logical font px at zoom 1
+const ZOOMS = [0.7, 0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2];
 
-async function loadSurah(){
-  const data=await(await fetch(`/surah/${S.surahId}?translation_id=2`)).json();
-  const s=S.surahs.find(x=>x.id===S.surahId)||{};
-  $("headAr").textContent=s.name_arabic||"";$("headEn").textContent=s.name_english||"";
-  S.ayahs=data.ayahs; buildSpans();
+const S = {
+  surahs: [], surahId: 2, translationId: 2,
+  ayahs: [], lines: [], pages: [], cur: 0,
+  zoomIdx: 3, scale: 1, busy: false,
+};
+const zoom = () => ZOOMS[S.zoomIdx];
+
+/* ---------------------------------------------------------------------------
+   Fitting. Pure viewport maths — no content is touched, so changing the
+   window size can never change which words are on a page.
+   --------------------------------------------------------------------------- */
+function fit() {
+  const st = document.querySelector(".stage");
+  const w = st.clientWidth, h = st.clientHeight;
+  if (w < 1 || h < 1) return;
+  const k = Math.min(w / PAGE_W, h / PAGE_H);
+  S.scale = k;
+  $("book").style.transform = `translate(-50%, -50%) scale(${k})`;
 }
 
-/* Each ayah renders its ORIGINAL tokens in order: real words are coloured by
-   segment (alternating), while the genuine pause/ruku/end-of-ayah glyph tokens
-   (e.g. ج, لا, and the ayah medallion) are shown as-is in gold — so there is
-   exactly ONE ayah ornament and no separate duplicate number. */
-function buildAyahSpan(ayah){
-  const segs=ayah.segments||[];
-  const color={}; // word_index -> segment colour
-  segs.forEach((seg,si)=>{
-    const cls=(si%2===0)?"segA":"segB";
-    const lo=seg.word_start_index??1, hi=seg.word_end_index??Infinity;
-    ayah.words.forEach(w=>{ if(isWord(w.text)&&w.word_index>=lo&&w.word_index<=hi) color[w.word_index]=cls; });
+function applyGeometry() {
+  const book = $("book");
+  book.style.width = PAGE_W + "px";
+  book.style.height = PAGE_H + "px";
+  const win = $("window");
+  win.style.left = PAD_X + "px";
+  win.style.top = WIN_TOP + "px";
+  win.style.width = FLOW_W + "px";
+  win.style.height = FLOW_H + "px";
+}
+
+/* ---------------------------------------------------------------------------
+   Rendering one ayah: its original tokens in order. Real words are tinted by
+   segment (alternating), while the genuine pause / end-of-ayah glyph tokens
+   are shown as-is in gold — so exactly one ayah medallion appears per ayah.
+   --------------------------------------------------------------------------- */
+function buildAyahSpan(ayah) {
+  const color = {};
+  (ayah.segments || []).forEach((seg, si) => {
+    const cls = si % 2 === 0 ? "segA" : "segB";
+    const lo = seg.word_start_index ?? 1;
+    const hi = seg.word_end_index ?? Infinity;
+    ayah.words.forEach((w) => {
+      if (isWord(w.text) && w.word_index >= lo && w.word_index <= hi) color[w.word_index] = cls;
+    });
   });
-  const span=document.createElement("span"); span.className="ayah";
-  let first=true;
-  ayah.words.forEach(w=>{
-    const sp=document.createElement("span");
-    if(isWord(w.text)){ sp.className="w "+(color[w.word_index]||"segA"); }
-    else{ sp.className="orn"; }
-    sp.textContent=w.text;
-    if(!first) span.appendChild(document.createTextNode(" "));
-    first=false;
+  const span = document.createElement("span");
+  let first = true;
+  ayah.words.forEach((w) => {
+    const sp = document.createElement("span");
+    sp.className = isWord(w.text) ? "w " + (color[w.word_index] || "segA") : "orn";
+    sp.textContent = w.text;
+    if (!first) span.appendChild(document.createTextNode(" "));
+    first = false;
     span.appendChild(sp);
   });
   return span;
 }
-function buildSpans(){S.spans=S.ayahs.map(buildAyahSpan); document.fonts.ready.then(measure);}
 
-function contentWidth(){const b=document.querySelector(".page-body").getBoundingClientRect();return Math.max(200,b.width-8);}
-function measure(){
-  const q=$("measureQuran"); q.innerHTML="";
-  q.style.width=contentWidth()+"px"; q.style.display="block";
-  const top=q.getBoundingClientRect().top;
-  S.spans.forEach((s,k)=>{ if(k) q.appendChild(document.createTextNode(" ")); q.appendChild(s.cloneNode(true)); });
-  // record each ayah's vertical extent inside the continuous flow
-  const rects=Array.from(q.children).map(c=>{const r=c.getBoundingClientRect();return {top:r.top-top,bottom:r.bottom-top};});
-  const H=document.querySelector(".page-body").clientHeight-26; // minus paddings + safety margin
-  const pages=[];let start=0,i=0;
-  for(i=0;i<rects.length;){
-    let j=i;while(j<rects.length && rects[j].bottom-rects[i].top<=H+1){j++;}
-    j--; // last fitting
-    if(j<i)j=i; // single tall ayah
-    pages.push(rangeArr(i,j));
-    i=j+1;
+/* ---------------------------------------------------------------------------
+   Fonts must be settled before measuring, or Nastaliq metrics shift and the
+   recorded line boundaries are wrong.
+   --------------------------------------------------------------------------- */
+async function fontsReady() {
+  try {
+    if (!document.fonts) return;
+    const size = BASE_FONT * zoom() + "px";
+    await Promise.all([
+      document.fonts.load(size + ' "IndoPak Quran"'),
+      document.fonts.load('26px "IndoPak Quran"'),
+      document.fonts.load('16px "Noto Nastaliq Urdu"'),
+    ]);
+    await document.fonts.ready;
+  } catch (e) { /* measurement still proceeds with fallback metrics */ }
+}
+
+/* ---------------------------------------------------------------------------
+   Group the flow's inline boxes into visual lines.
+
+   The flow is the real, rendered content and it is inside the scaled page, so
+   every rect comes back multiplied by the fit scale. Both the reference point
+   (the flow's own top) and the boxes scale identically, so dividing the delta
+   by the scale recovers logical units exactly.
+   --------------------------------------------------------------------------- */
+function measureLines() {
+  const flow = $("flow");
+  const k = S.scale || 1;
+  const originY = flow.getBoundingClientRect().top;
+  const nodes = flow.querySelectorAll(".w, .orn");
+
+  const lines = [];
+  nodes.forEach((el, idx) => {
+    const r = el.getBoundingClientRect();
+    if (!r.height) return;
+    const top = (r.top - originY) / k;
+    const bottom = (r.bottom - originY) / k;
+    const last = lines[lines.length - 1];
+    if (last && Math.abs(top - last.top) <= 1.5) {
+      if (bottom > last.bottom) last.bottom = bottom;
+      last.lastIdx = idx;
+    } else {
+      lines.push({ top, bottom, firstIdx: idx, lastIdx: idx });
+    }
+  });
+
+  return { lines, flowH: flow.getBoundingClientRect().height / k };
+}
+
+/* ---------------------------------------------------------------------------
+   Divide the flow into pages by walking its lines.
+
+   The cut always lands between two lines — never inside one — so a page can
+   break in the middle of an ayah or a segment (the user's requirement) while
+   no line is ever sliced in half. Pages therefore have slightly varying
+   heights, exactly like printed pages where the last line falls short of the
+   bottom margin.
+   --------------------------------------------------------------------------- */
+function paginate(lines) {
+  const pages = [];
+  if (!lines.length) return [{ offset: 0, height: 0, startIdx: 0 }];
+
+  let offset = 0, li = 0;
+  while (li < lines.length) {
+    const limit = offset + FLOW_H - SAFETY;
+    let last = -1, j = li;
+    while (j < lines.length && lines[j].bottom <= limit) { last = j; j++; }
+    if (last === -1) last = li;                    // a line taller than a whole page
+    const bottom = lines[last].bottom;
+    pages.push({
+      offset,
+      height: Math.max(0, Math.min(bottom - offset, FLOW_H)),
+      startIdx: lines[li].firstIdx,
+    });
+    offset = bottom;
+    li = last + 1;
+    if (pages.length > 20000) break;               // runaway guard
   }
-  S.pages=pages.length?pages:[[]]; S.cur=Math.min(S.cur,S.pages.length-1);
+  return pages;
+}
+
+/* --------------------------------------------------------------------------- */
+async function layoutFlow() {
+  const flow = $("flow");
+  flow.style.fontSize = BASE_FONT * zoom() + "px";
+  flow.replaceChildren();
+  S.ayahs.forEach((ayah, i) => {
+    if (i) flow.appendChild(document.createTextNode(" "));
+    flow.appendChild(buildAyahSpan(ayah));
+  });
+
+  await fontsReady();
+  fit();
+  const { lines } = measureLines();
+  S.lines = lines;
+  S.pages = paginate(lines);
+}
+
+function render() {
+  const p = S.pages[S.cur];
+  if (!p) return;
+  $("window").style.height = p.height + "px";
+  $("flow").style.transform = `translateY(${-p.offset}px)`;
+  $("pageInfo").textContent = `${S.cur + 1} / ${S.pages.length}`;
+  $("foot").textContent = `${toUrdu(S.cur + 1)} / ${toUrdu(S.pages.length)}`;
+  $("btnPrev").disabled = S.busy || (S.surahId === 1 && S.cur === 0);
+  $("btnNext").disabled = S.busy || (S.surahId === 114 && S.cur === S.pages.length - 1);
+  syncUrl();
+}
+
+function syncUrl() {
+  const url = new URL(location.href);
+  url.searchParams.set("surah", S.surahId);
+  url.searchParams.set("page", S.cur + 1);
+  history.replaceState(null, "", url.pathname + url.search);
+}
+
+function setBusy(on) {
+  S.busy = on;
+  if (on) $("pageInfo").textContent = "…";
+}
+
+/* ---------------------------------------------------------------------------
+   Navigation. "Next" past the last page of a surah continues into the next
+   surah, and "prev" before the first page steps back into the previous surah
+   at its last page — like turning the page of a book.
+   --------------------------------------------------------------------------- */
+async function nextPage() {
+  if (S.busy) return;
+  if (S.cur < S.pages.length - 1) { S.cur++; render(); return; }
+  if (S.surahId < 114) await loadSurah(S.surahId + 1, { page: 0 });
+}
+
+async function prevPage() {
+  if (S.busy) return;
+  if (S.cur > 0) { S.cur--; render(); return; }
+  if (S.surahId > 1) await loadSurah(S.surahId - 1, { toLast: true });
+}
+
+/* ---------------------------------------------------------------------------
+   Zoom. Changing the font size is the ONLY thing that changes how much text
+   fits on a page, and it re-divides the pages. The reading position is kept
+   by remembering the first word of the current page: the flow's node order
+   never changes, only its metrics, so that index still means the same word.
+   --------------------------------------------------------------------------- */
+async function changeZoom(delta) {
+  const next = S.zoomIdx + delta;
+  if (S.busy || next < 0 || next >= ZOOMS.length) return;
+  const anchor = S.pages[S.cur] ? S.pages[S.cur].startIdx : 0;
+  S.zoomIdx = next;
+  saveZoom();
+  $("zoomLabel").textContent = Math.round(zoom() * 100) + "%";
+  setBusy(true);
+  await layoutFlow();
+  let p = 0;
+  for (let i = 0; i < S.pages.length; i++) if (S.pages[i].startIdx <= anchor) p = i;
+  S.cur = p;
+  setBusy(false);
   render();
 }
-function rangeArr(a,b){const out=[];for(let k=a;k<=b;k++)out.push(k);return out;}
-function render(){
-  const page=$("page"); page.innerHTML="";
-  const idxs=S.pages[S.cur]||[];
-  idxs.forEach((k,i)=>{ if(i) page.appendChild(document.createTextNode(" ")); page.appendChild(S.spans[k].cloneNode(true)); });
-  $("pageInfo").textContent=`${S.cur+1} / ${S.pages.length}`;
-  $("foot").textContent=`${toUrdu(S.cur+1)} / ${toUrdu(S.pages.length)}`;
-  $("btnPrev").disabled=S.pages.length<=1||S.cur===0;
-  $("btnNext").disabled=S.pages.length<=1||S.cur===S.pages.length-1;
-  const pb=$("pageBody"); if(pb) pb.scrollTop=0;
+
+function loadZoom() {
+  const q = new URLSearchParams(location.search);
+  const qz = parseFloat(q.get("zoom"));
+  if (!isNaN(qz)) {
+    let best = 0;
+    for (let i = 1; i < ZOOMS.length; i++) {
+      if (Math.abs(ZOOMS[i] - qz) < Math.abs(ZOOMS[best] - qz)) best = i;
+    }
+    S.zoomIdx = best;
+    return;
+  }
+  try {
+    const saved = parseInt(localStorage.getItem("bayaan.mushaf.zoom"), 10);
+    if (!isNaN(saved) && saved >= 0 && saved < ZOOMS.length) S.zoomIdx = saved;
+  } catch (e) { /* storage unavailable; keep the default */ }
+}
+function saveZoom() {
+  try { localStorage.setItem("bayaan.mushaf.zoom", String(S.zoomIdx)); } catch (e) {}
 }
 
-function nextPage(){S.cur=Math.min(S.cur+1,S.pages.length-1);render();}
-function prevPage(){S.cur=Math.max(S.cur-1,0);render();}
-function go(){S.cur=0;loadSurah();}
+/* --------------------------------------------------------------------------- */
+async function loadSurahs() {
+  try {
+    S.surahs = await (await fetch("/surahs")).json();
+  } catch (e) { S.surahs = []; return; }
+  const sel = $("surahSel");
+  sel.innerHTML = "";
+  for (const s of S.surahs) {
+    const o = document.createElement("option");
+    o.value = s.id;
+    o.textContent = `${String(s.id).padStart(3, "0")} — ${s.name_arabic} (${s.name_english})`;
+    sel.appendChild(o);
+  }
+}
 
-$("surahSel").addEventListener("change",e=>{S.surahId=+e.target.value;go();});
-// RTL mushaf: moving forward = to the LEFT, so the LEFT arrow is “next”.
-$("btnNext").addEventListener("click",nextPage);
-$("btnPrev").addEventListener("click",prevPage);
+async function loadSurah(id, opts = {}) {
+  S.surahId = Math.max(1, Math.min(114, id));
+  $("surahSel").value = String(S.surahId);
+  setBusy(true);
+  try {
+    const res = await fetch(`/surah/${S.surahId}?translation_id=${S.translationId}`);
+    const data = await res.json();
+    S.ayahs = data.ayahs || [];
+  } catch (e) {
+    S.ayahs = [];
+  }
+  const meta = S.surahs.find((x) => x.id === S.surahId) || {};
+  $("headAr").textContent = meta.name_arabic || "";
+  $("headEn").textContent = meta.name_english || "";
 
-// Keyboard navigation (skip while the select is focused).
-document.addEventListener("keydown",e=>{
-  const tag=(e.target.tagName||"").toLowerCase();
-  if(tag==="select"||tag==="input")return;
-  if(e.key==="ArrowLeft"||e.key==="PageDown"){nextPage();e.preventDefault();}
-  else if(e.key==="ArrowRight"||e.key==="PageUp"){prevPage();e.preventDefault();}
-  else if(e.key==="Home"){S.cur=0;render();e.preventDefault();}
-  else if(e.key==="End"){S.cur=S.pages.length-1;render();e.preventDefault();}
+  await layoutFlow();
+  S.cur = opts.toLast
+    ? S.pages.length - 1
+    : Math.max(0, Math.min(opts.page || 0, S.pages.length - 1));
+  setBusy(false);
+  render();
+}
+
+/* --------------------------------------------------------------------------- */
+$("surahSel").addEventListener("change", (e) => loadSurah(+e.target.value, { page: 0 }));
+$("btnNext").addEventListener("click", nextPage);
+$("btnPrev").addEventListener("click", prevPage);
+$("fontPlus").addEventListener("click", () => changeZoom(+1));
+$("fontMinus").addEventListener("click", () => changeZoom(-1));
+
+/* Arrow keys keep the RTL convention (the book advances leftwards), matching
+   the ◀ / ▶ buttons. Note the swipe gesture is the opposite direction by
+   design: you drag the page left-to-right to turn it, as with a real book. */
+document.addEventListener("keydown", (e) => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "select" || tag === "input") return;
+  if (e.key === "ArrowLeft" || e.key === "PageDown") { nextPage(); e.preventDefault(); }
+  else if (e.key === "ArrowRight" || e.key === "PageUp") { prevPage(); e.preventDefault(); }
+  else if (e.key === "Home") { S.cur = 0; render(); e.preventDefault(); }
+  else if (e.key === "End") { S.cur = S.pages.length - 1; render(); e.preventDefault(); }
+  else if (e.key === "+" || e.key === "=") { changeZoom(+1); e.preventDefault(); }
+  else if (e.key === "-" || e.key === "_") { changeZoom(-1); e.preventDefault(); }
 });
 
-// Touch swipe on the reading area: swipe LEFT = next, swipe RIGHT = prev.
-(function(){
-  const el=document.querySelector(".stage");
-  let x0=0,y0=0;
-  el.addEventListener("touchstart",e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
-  el.addEventListener("touchend",e=>{
-    const t=e.changedTouches[0];
-    const dx=t.clientX-x0, dy=t.clientY-y0;
-    if(Math.abs(dx)<40||Math.abs(dy)>Math.abs(dx))return; // too short / vertical scroll
-    if(dx<0) nextPage(); else prevPage();
-  },{passive:true});
+/* Swipe on the reading area. Arabic is RTL, so turning to the NEXT page is a
+   left-to-right drag — the direction the page itself moves in a real mushaf. */
+(function () {
+  const el = document.querySelector(".stage");
+  let x0 = 0, y0 = 0;
+  el.addEventListener("touchstart", (e) => {
+    x0 = e.touches[0].clientX;
+    y0 = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener("touchend", (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;  // too short / vertical
+    if (dx > 0) nextPage(); else prevPage();
+  }, { passive: true });
 })();
-let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(S.spans.length)measure();},150);});
 
-const q=new URLSearchParams(location.search);
-if(q.get("surah"))S.surahId=Math.max(1,Math.min(114,+q.get("surah")));
-(async()=>{await loadSurahs();await loadSurah();})();
+/* Resize only re-fits the page. It deliberately does NOT re-paginate: the
+   words on the page stay exactly the same and the page behaves like an image. */
+let rz;
+window.addEventListener("resize", () => {
+  clearTimeout(rz);
+  rz = setTimeout(fit, 120);
+});
+window.addEventListener("orientationchange", () => setTimeout(fit, 200));
+
+/* --------------------------------------------------------------------------- */
+(async function init() {
+  applyGeometry();
+  loadZoom();
+  $("zoomLabel").textContent = Math.round(zoom() * 100) + "%";
+
+  const q = new URLSearchParams(location.search);
+  if (q.get("translation_id")) S.translationId = Math.max(1, parseInt(q.get("translation_id"), 10) || 2);
+  const startSurah = Math.max(1, Math.min(114, parseInt(q.get("surah") || "2", 10) || 2));
+  const startPage = Math.max(0, (parseInt(q.get("page") || "1", 10) || 1) - 1);
+
+  fit();
+  await loadSurahs();
+  await loadSurah(startSurah, { page: startPage });
+})();
 </script>
 </body>
 </html>
