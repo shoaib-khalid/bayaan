@@ -166,10 +166,25 @@ const SAFETY = 6;          // logical px kept clear above the cut
 const BASE_FONT = 30;      // logical font px at zoom 1
 const ZOOMS = [0.7, 0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2];
 
+/* A row is: rule, script, rule, then empty space. The band hugs the script and
+   the space is a fraction of that band, so the proportions hold at every zoom.
+
+   The band is sized from the script's measured INK, not from the font's
+   declared box: the IndoPak Nastaliq font declares a content height of 2.11em
+   while its ink tops out near 1.47em, and the ink sits well above centre in
+   that box (ascent ~32px vs descent ~13px at 30px). Sizing from the declared
+   box costs roughly three rows per page and puts the rules noticeably far
+   above the script and tight below it. */
+const SCRIPT_SAMPLE =
+  "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِیْنَ صِرَاطَ الَّذِیْنَ اَنْعَمْتَ عَلَیْهِمْ وَلَا الضَّآلِّیْنَ";
+const BAND_PAD = 0.10;     // room above/below the ink, as a fraction of its height
+const SPACE_RATIO = 0.5;   // empty space after a band, as a fraction of the band
+
 const S = {
   surahs: [], surahId: 2, translationId: 2,
   ayahs: [], lines: [], pages: [], cur: 0,
   zoomIdx: 3, scale: 1, busy: false,
+  inkA: 0, inkD: 0, baselineFromTop: 0, band: 0, pitch: 0,
 };
 const zoom = () => ZOOMS[S.zoomIdx];
 
@@ -242,6 +257,24 @@ async function fontsReady() {
   } catch (e) { /* measurement still proceeds with fallback metrics */ }
 }
 
+/* The font's vertical metrics at a given size, read off a canvas.
+
+   boxA/boxD are the declared content box, which is what the browser centres
+   inside a line box, so boxA also tells us where the baseline sits. inkA/inkD
+   are how far the actual glyphs reach above and below that baseline, measured
+   over one representative string so every band ends up the same height. */
+function measureScriptMetrics(fontPx) {
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = fontPx + 'px "IndoPak Quran", serif';
+  const m = ctx.measureText(SCRIPT_SAMPLE);
+  return {
+    boxA: m.fontBoundingBoxAscent || fontPx,
+    boxD: m.fontBoundingBoxDescent || fontPx * 0.3,
+    inkA: m.actualBoundingBoxAscent || fontPx,
+    inkD: m.actualBoundingBoxDescent || fontPx * 0.3,
+  };
+}
+
 /* ---------------------------------------------------------------------------
    Group the flow's inline boxes into visual lines.
 
@@ -271,16 +304,14 @@ function measureLines() {
     }
   });
 
-  /* Where the rule closing each line goes. An inline box is a full line-height
-     tall, so consecutive lines sit flush against each other and the gap
-     between boxes is ~0 — the usable measure is the line advance (top to
-     top). Placing the rule just above the next line's box lands it in the
-     lower leading of the current line, i.e. visually under the text. */
-  const advance = lines.length > 1
-    ? (lines[lines.length - 1].top - lines[0].top) / (lines.length - 1)
-    : (lines[0].bottom - lines[0].top);
-  lines.forEach((ln, i) => {
-    ln.ruleY = (i + 1 < lines.length ? lines[i + 1].top : ln.top + advance) - 1;
+  /* Each line carries two independent rules: one just above the script and one
+     just below it. An inline box is a full line-height tall, so lineTop is the
+     top of the row; the baseline sits baselineFromTop below it, and the rules
+     bracket the ink around that baseline. What is left of the pitch is blank. */
+  const pad = (S.inkA + S.inkD) * BAND_PAD;
+  lines.forEach((ln) => {
+    ln.topRuleY = ln.top + S.baselineFromTop - S.inkA - pad;
+    ln.bottomRuleY = ln.top + S.baselineFromTop + S.inkD + pad;
   });
 
   return { lines, flowH: flow.getBoundingClientRect().height / k };
@@ -299,39 +330,41 @@ function paginate(lines) {
   const pages = [];
   if (!lines.length) return [{ offset: 0, height: 0, startIdx: 0 }];
 
-  let offset = 0, li = 0;
+  let li = 0;
   while (li < lines.length) {
-    const limit = offset + FLOW_H - SAFETY;
+    const offset = lines[li].topRuleY;
     let last = -1, j = li;
-    while (j < lines.length && lines[j].bottom <= limit) { last = j; j++; }
-    if (last === -1) last = li;                    // a line taller than a whole page
-    const edge = lines[last].ruleY;                // the rule that closes this page
+    while (j < lines.length && lines[j].bottomRuleY - offset <= FLOW_H - SAFETY) { last = j; j++; }
+    if (last === -1) last = li;                    // a band taller than a whole page
     pages.push({
       offset,
       // +1 carries the closing rule's own pixel inside the window, since a
-      // rule sitting on the boundary is clipped by overflow:hidden. The next
-      // page resumes past it, so a rule is never drawn on two pages.
-      height: Math.max(0, Math.min(edge - offset + 1, FLOW_H)),
+      // rule sitting on the boundary is clipped by overflow:hidden.
+      height: Math.max(0, Math.min(lines[last].bottomRuleY - offset + 1, FLOW_H)),
       startIdx: lines[li].firstIdx,
     });
-    offset = edge + 1;
+    // Resume at the next band's top rule, so the empty space between bands
+    // falls away at a page break, as it would in a printed book.
     li = last + 1;
     if (pages.length > 20000) break;               // runaway guard
   }
   return pages;
 }
 
-/* A dashed rule under every line, plus one closing the last line. They live
-   inside the flow so they translate with it and are clipped to the page,
-   which is what keeps "a line between every line" true across page breaks. */
+/* Two rules per line — one above the script, one below it — leaving the empty
+   space between one band and the next. They live inside the flow so they
+   translate with it and are clipped to the page, which is what keeps the
+   ruling correct across page breaks. */
 function renderRules() {
   const layer = document.createElement("div");
   layer.className = "rules";
   for (const ln of S.lines) {
-    const rule = document.createElement("div");
-    rule.className = "rule";
-    rule.style.top = ln.ruleY + "px";
-    layer.appendChild(rule);
+    for (const y of [ln.topRuleY, ln.bottomRuleY]) {
+      const rule = document.createElement("div");
+      rule.className = "rule";
+      rule.style.top = y + "px";
+      layer.appendChild(rule);
+    }
   }
   $("flow").appendChild(layer);
 }
@@ -341,12 +374,25 @@ async function layoutFlow() {
   const flow = $("flow");
   flow.style.fontSize = BASE_FONT * zoom() + "px";
   flow.replaceChildren();
+
+  await fontsReady();
+
+  // Band = the ink plus a little room; space = half the band; pitch = both.
+  // The baseline offset lets the rules bracket the ink evenly instead of
+  // bracketing the font's much taller declared box.
+  const met = measureScriptMetrics(BASE_FONT * zoom());
+  S.inkA = met.inkA;
+  S.inkD = met.inkD;
+  S.band = S.inkA + S.inkD + 2 * (S.inkA + S.inkD) * BAND_PAD;
+  S.pitch = S.band * (1 + SPACE_RATIO);
+  S.baselineFromTop = (S.pitch - (met.boxA + met.boxD)) / 2 + met.boxA;
+  flow.style.lineHeight = S.pitch + "px";
+
   S.ayahs.forEach((ayah, i) => {
     if (i) flow.appendChild(document.createTextNode(" "));
     flow.appendChild(buildAyahSpan(ayah));
   });
 
-  await fontsReady();
   fit();
   const { lines } = measureLines();
   S.lines = lines;
