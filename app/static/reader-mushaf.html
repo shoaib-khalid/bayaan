@@ -166,25 +166,26 @@ const SAFETY = 6;          // logical px kept clear above the cut
 const BASE_FONT = 30;      // logical font px at zoom 1
 const ZOOMS = [0.7, 0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2];
 
-/* A row is: rule, script, rule, then empty space. The band hugs the script and
-   the space is a fraction of that band, so the proportions hold at every zoom.
+/* A row is: rule, script, rule, then empty space.
 
-   The band is sized from the script's measured INK, not from the font's
-   declared box: the IndoPak Nastaliq font declares a content height of 2.11em
-   while its ink tops out near 1.47em, and the ink sits well above centre in
-   that box (ascent ~32px vs descent ~13px at 30px). Sizing from the declared
-   box costs roughly three rows per page and puts the rules noticeably far
-   above the script and tight below it. */
-const SCRIPT_SAMPLE =
-  "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِیْنَ صِرَاطَ الَّذِیْنَ اَنْعَمْتَ عَلَیْهِمْ وَلَا الضَّآلِّیْنَ";
-const BAND_PAD = 0.10;     // room above/below the ink, as a fraction of its height
+   The band must equal the height of the SEGMENT HIGHLIGHT, because that
+   highlight is the background of an inline span: CSS paints an inline box's
+   background over the font's CONTENT AREA, whose height is fixed by the font
+   metrics and is NOT affected by line-height. So the band is measured from a
+   real span, and the empty space is added on top of it as extra line-height —
+   the highlight cannot follow that extra leading, which is what makes the
+   space possible at all.
+
+   Sizing the band from the script's visible ink instead (1.47em here, against
+   a 2.11em content box) makes it shorter than the highlight, so the tint
+   spills above and below the rules. */
 const SPACE_RATIO = 0.5;   // empty space after a band, as a fraction of the band
 
 const S = {
   surahs: [], surahId: 2, translationId: 2,
   ayahs: [], lines: [], pages: [], cur: 0,
   zoomIdx: 3, scale: 1, busy: false,
-  inkA: 0, inkD: 0, baselineFromTop: 0, band: 0, pitch: 0,
+  band: 0, pitch: 0,
 };
 const zoom = () => ZOOMS[S.zoomIdx];
 
@@ -257,22 +258,22 @@ async function fontsReady() {
   } catch (e) { /* measurement still proceeds with fallback metrics */ }
 }
 
-/* The font's vertical metrics at a given size, read off a canvas.
+/* The height of the segment highlight, measured from a real span rather than
+   assumed from font metrics. Two things make this the right measure:
 
-   boxA/boxD are the declared content box, which is what the browser centres
-   inside a line box, so boxA also tells us where the baseline sits. inkA/inkD
-   are how far the actual glyphs reach above and below that baseline, measured
-   over one representative string so every band ends up the same height. */
-function measureScriptMetrics(fontPx) {
-  const ctx = document.createElement("canvas").getContext("2d");
-  ctx.font = fontPx + 'px "IndoPak Quran", serif';
-  const m = ctx.measureText(SCRIPT_SAMPLE);
-  return {
-    boxA: m.fontBoundingBoxAscent || fontPx,
-    boxD: m.fontBoundingBoxDescent || fontPx * 0.3,
-    inkA: m.actualBoundingBoxAscent || fontPx,
-    inkD: m.actualBoundingBoxDescent || fontPx * 0.3,
-  };
+   - An inline box's height IS the font content area, not the line-height. That
+     is why the tint does not follow the extra leading which makes the space.
+   - It is therefore also exactly what the measured line boxes report, so the
+     rules can be placed on ln.top and ln.top + band and land on the tint's
+     edges with no offset arithmetic. */
+function measureBandHeight(flow) {
+  const probe = document.createElement("span");
+  probe.className = "w";
+  probe.textContent = "اَلْحَمْدُ";
+  flow.appendChild(probe);
+  const h = probe.getBoundingClientRect().height / (S.scale || 1);
+  probe.remove();
+  return h;
 }
 
 /* ---------------------------------------------------------------------------
@@ -304,14 +305,13 @@ function measureLines() {
     }
   });
 
-  /* Each line carries two independent rules: one just above the script and one
-     just below it. An inline box is a full line-height tall, so lineTop is the
-     top of the row; the baseline sits baselineFromTop below it, and the rules
-     bracket the ink around that baseline. What is left of the pitch is blank. */
-  const pad = (S.inkA + S.inkD) * BAND_PAD;
+  /* Each line carries two independent rules: one on the top edge of the band,
+     one on the bottom edge. The measured box IS the highlight box (an inline
+     box is the font content area, not the line-height), so no offset is
+     needed here — anything else lands the rules off the tint. */
   lines.forEach((ln) => {
-    ln.topRuleY = ln.top + S.baselineFromTop - S.inkA - pad;
-    ln.bottomRuleY = ln.top + S.baselineFromTop + S.inkD + pad;
+    ln.topRuleY = ln.top;
+    ln.bottomRuleY = ln.top + S.band;
   });
 
   return { lines, flowH: flow.getBoundingClientRect().height / k };
@@ -377,15 +377,11 @@ async function layoutFlow() {
 
   await fontsReady();
 
-  // Band = the ink plus a little room; space = half the band; pitch = both.
-  // The baseline offset lets the rules bracket the ink evenly instead of
-  // bracketing the font's much taller declared box.
-  const met = measureScriptMetrics(BASE_FONT * zoom());
-  S.inkA = met.inkA;
-  S.inkD = met.inkD;
-  S.band = S.inkA + S.inkD + 2 * (S.inkA + S.inkD) * BAND_PAD;
+  // Band = the highlight height; space = half the band, carried as extra
+  // line-height. Measured from a span, so the rules land on the tint exactly.
+  fit();
+  S.band = measureBandHeight(flow);
   S.pitch = S.band * (1 + SPACE_RATIO);
-  S.baselineFromTop = (S.pitch - (met.boxA + met.boxD)) / 2 + met.boxA;
   flow.style.lineHeight = S.pitch + "px";
 
   S.ayahs.forEach((ayah, i) => {
