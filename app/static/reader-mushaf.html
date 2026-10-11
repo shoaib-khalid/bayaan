@@ -91,6 +91,14 @@
      wraps exactly as it would if they were not there. */
   .flow .rules{position:absolute;top:0;left:0;right:0;pointer-events:none;}
   .flow .rules .rule{position:absolute;left:0;right:0;height:0;border-top:1px solid var(--rule);}
+  /* Urdu translation layer. Each run is absolutely positioned so an ayah's
+     translation can begin at the same x as the ayah's own first word, which a
+     normal text flow cannot express. The family must be set here: the layer
+     would otherwise inherit the Arabic font from .flow, and the widths would
+     no longer match the ones measured for line filling. */
+  .flow .urdu{position:absolute;top:0;left:0;right:0;pointer-events:none;
+    font-family:"Noto Nastaliq Urdu",serif;line-height:1;}
+  .flow .urdu .u{position:absolute;white-space:nowrap;color:var(--muted);}
   .page-foot{
     position:absolute;left:0;right:0;bottom:26px;text-align:center;
     color:var(--muted);font-size:14px;font-family:system-ui,sans-serif;
@@ -179,13 +187,21 @@ const ZOOMS = [0.7, 0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2];
    Sizing the band from the script's visible ink instead (1.47em here, against
    a 2.11em content box) makes it shorter than the highlight, so the tint
    spills above and below the rules. */
-const SPACE_RATIO = 0.5;   // empty space after a band, as a fraction of the band
+
+/* The Urdu translation sits in the gap under each Arabic row. */
+const BASE_URDU = 19;      // logical Urdu px at zoom 1, shrunk to fit if needed
+const URDU_LINE = 1.9;     // one Urdu line's height, as a multiple of its font size
+const URDU_LINES = 1;      // one line of translation per line of Arabic
+const URDU_FIT = 0.95;     // of the room the Arabic leaves, how much to use
+const URDU_PAD = 0.20;     // gap between the Arabic band and the Urdu
+const ROW_GAP = 0.25;      // gap after the Urdu, as a fraction of the Arabic band
 
 const S = {
   surahs: [], surahId: 2, translationId: 2,
   ayahs: [], lines: [], pages: [], cur: 0,
   zoomIdx: 3, scale: 1, busy: false,
-  band: 0, pitch: 0,
+  band: 0, urduPx: 0, urduH: 0, urduPad: 0, urduBlockH: 0, urduLines: URDU_LINES, rowGapH: 0, rowH: 0, contentEnd: 0,
+  nodeInfo: [], rows: [], urduWords: [], urduAt: [], urduRuns: [], urduSig: '',
 };
 const zoom = () => ZOOMS[S.zoomIdx];
 
@@ -218,7 +234,7 @@ function applyGeometry() {
    segment (alternating), while the genuine pause / end-of-ayah glyph tokens
    are shown as-is in gold — so exactly one ayah medallion appears per ayah.
    --------------------------------------------------------------------------- */
-function buildAyahSpan(ayah) {
+function buildAyahSpan(ayah, ayahIdx) {
   const color = {};
   (ayah.segments || []).forEach((seg, si) => {
     const cls = si % 2 === 0 ? "segA" : "segB";
@@ -230,10 +246,16 @@ function buildAyahSpan(ayah) {
   });
   const span = document.createElement("span");
   let first = true;
+  let seenWord = false;
   ayah.words.forEach((w) => {
     const sp = document.createElement("span");
-    sp.className = isWord(w.text) ? "w " + (color[w.word_index] || "segA") : "orn";
+    const real = isWord(w.text);
+    sp.className = real ? "w " + (color[w.word_index] || "segA") : "orn";
     sp.textContent = w.text;
+    // Parallel to the .w/.orn node list, so a measured line can be traced back
+    // to the ayah and to the ayah's first word.
+    S.nodeInfo.push({ ayah: ayahIdx, isAyahStart: real && !seenWord });
+    if (real) seenWord = true;
     if (!first) span.appendChild(document.createTextNode(" "));
     first = false;
     span.appendChild(sp);
@@ -241,18 +263,42 @@ function buildAyahSpan(ayah) {
   return span;
 }
 
+/* The whole ayah's translation. Segments are joined because the Urdu does not
+   have to sit under its own segment. */
+function urduForAyah(ayah) {
+  const segs = ayah.segments || [];
+  if (!segs.length) return "";
+  return segs.map((s) => (s.translation_text || "").trim()).filter(Boolean).join(" ");
+}
+
 /* ---------------------------------------------------------------------------
    Fonts must be settled before measuring, or Nastaliq metrics shift and the
    recorded line boundaries are wrong.
    --------------------------------------------------------------------------- */
+/* document.fonts.ready only waits for PENDING loads. The Urdu face comes from
+   the Google Fonts stylesheet, so if that stylesheet has not been applied yet
+   nothing is pending and ready resolves immediately — measurements then
+   silently use the fallback font, about 12% narrower, and every filled run
+   overflows once the real font swaps in. document.fonts.load resolves with the
+   faces it matched, so an empty result means the family is not known yet. */
+async function ensureFont(font) {
+  if (!document.fonts) return false;
+  for (let i = 0; i < 60; i++) {
+    const faces = await document.fonts.load(font);
+    if (faces.length) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return false;
+}
+
 async function fontsReady() {
   try {
     if (!document.fonts) return;
     const size = BASE_FONT * zoom() + "px";
     await Promise.all([
-      document.fonts.load(size + ' "IndoPak Quran"'),
-      document.fonts.load('26px "IndoPak Quran"'),
-      document.fonts.load('16px "Noto Nastaliq Urdu"'),
+      ensureFont(size + ' "IndoPak Quran"'),
+      ensureFont('26px "IndoPak Quran"'),
+      ensureFont(S.urduPx + 'px "Noto Nastaliq Urdu"'),
     ]);
     await document.fonts.ready;
   } catch (e) { /* measurement still proceeds with fallback metrics */ }
@@ -312,6 +358,8 @@ function measureLines() {
   lines.forEach((ln) => {
     ln.topRuleY = ln.top;
     ln.bottomRuleY = ln.top + S.band;
+    ln.urduTopY = ln.bottomRuleY + S.urduPad;
+    ln.rowBottomY = ln.top + S.contentEnd;
   });
 
   return { lines, flowH: flow.getBoundingClientRect().height / k };
@@ -334,21 +382,274 @@ function paginate(lines) {
   while (li < lines.length) {
     const offset = lines[li].topRuleY;
     let last = -1, j = li;
-    while (j < lines.length && lines[j].bottomRuleY - offset <= FLOW_H - SAFETY) { last = j; j++; }
-    if (last === -1) last = li;                    // a band taller than a whole page
+    while (j < lines.length && lines[j].rowBottomY - offset <= FLOW_H - SAFETY) { last = j; j++; }
+    if (last === -1) last = li;                    // a row taller than a whole page
     pages.push({
       offset,
       // +1 carries the closing rule's own pixel inside the window, since a
       // rule sitting on the boundary is clipped by overflow:hidden.
-      height: Math.max(0, Math.min(lines[last].bottomRuleY - offset + 1, FLOW_H)),
+      height: Math.max(0, Math.min(lines[last].rowBottomY - offset + 1, FLOW_H)),
       startIdx: lines[li].firstIdx,
     });
-    // Resume at the next band's top rule, so the empty space between bands
-    // falls away at a page break, as it would in a printed book.
+    // Resume at the next row's top rule, so the trailing gap of a row falls
+    // away at a page break, as it would in a printed book.
     li = last + 1;
     if (pages.length > 20000) break;               // runaway guard
   }
   return pages;
+}
+
+/* For each Arabic row, which ayahs appear on it and where each one begins.
+   xFromRight is measured from the right content edge, so it is exactly where
+   that ayah's Urdu has to start. The row's leadAyah is the ayah whose Urdu is
+   mid-flow at the start of the row (a continuation from the row above). */
+function buildRows() {
+  const flow = $("flow");
+  const k = S.scale || 1;
+  const flowRight = flow.getBoundingClientRect().right;
+  const nodes = flow.querySelectorAll(".w, .orn");
+
+  S.rows = S.lines.map((ln) => {
+    const anchors = [];
+    let leadAyah = null;
+    for (let n = ln.firstIdx; n <= ln.lastIdx && n < nodes.length; n++) {
+      const info = S.nodeInfo[n];
+      if (!info) continue;
+      if (leadAyah === null) leadAyah = info.ayah;
+      if (info.isAyahStart) {
+        const r = nodes[n].getBoundingClientRect();
+        anchors.push({ ayah: info.ayah, xFromRight: Math.max(0, (flowRight - r.right) / k) });
+      }
+    }
+    return { top: ln.top, urduTopY: ln.urduTopY, leadAyah: leadAyah ?? 0, anchors, runs: [] };
+  });
+}
+
+/* Urdu widths are measured from the DOM, NOT from a canvas. A canvas context
+   resolves webfonts on its own schedule and returned fallback widths here even
+   after document.fonts.ready, so the runs were filled past the column and then
+   spilled off the page once the real font rendered them (measured: 614px of
+   Urdu inside a 540px column). Laying every distinct word out once, in a
+   single hidden pass, is exact and costs one layout. */
+function measureUrduWidths() {
+  const flow = $("flow");
+  const probe = document.createElement("div");
+  probe.style.cssText =
+    "position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;" +
+    "font-family:'Noto Nastaliq Urdu',serif;";
+  probe.style.fontSize = S.urduPx + "px";
+
+  const uniq = [...new Set(S.urduWords.flat())];
+  // Each word goes in its own inline-block. Adjacent spans of Arabic script get
+  // JOINED and re-shaped — one word's final form attaches to the next — so a
+  // plain row of spans measures the connected forms rather than the words as
+  // they render (کتاب measured 21.1px that way and 38.1px in isolation).
+  // Isolation also matches a real run, where every word but the last is
+  // followed by a space.
+  const spans = uniq.map((w) => {
+    const s = document.createElement("span");
+    s.style.display = "inline-block";
+    s.textContent = w;
+    probe.appendChild(s);
+    return s;
+  });
+  flow.appendChild(probe);
+
+  const k = S.scale || 1;
+  const wcache = new Map();
+  uniq.forEach((w, i) => wcache.set(w, spans[i].getBoundingClientRect().width / k));
+
+  // The space advance, from a real two-word pair minus its two words.
+  let spaceW = 0;
+  const pair = S.urduWords.find((a) => a.length >= 2);
+  if (pair) {
+    const s = document.createElement("span");
+    s.style.display = "inline-block";
+    s.textContent = pair[0] + " " + pair[1];
+    probe.appendChild(s);
+    spaceW = s.getBoundingClientRect().width / k - (wcache.get(pair[0]) || 0) - (wcache.get(pair[1]) || 0);
+  }
+  probe.remove();
+
+  // A cheap fingerprint of the measured widths, so a later font swap can be
+  // detected without re-measuring everything twice.
+  let sum = 0;
+  for (const v of wcache.values()) sum += v;
+  return { wcache, spaceW, sig: wcache.size + ':' + Math.round(sum) };
+}
+
+/* Lay the Urdu out one line per row. Each ayah's translation starts at the x
+   where that ayah starts, filling leftwards until the next ayah's anchor, and
+   whatever does not fit simply continues on the following row — which is what
+   leaves blank space under a short translation. */
+function buildUrduRuns() {
+  S.urduWords = S.ayahs.map((a) => urduForAyah(a).split(/\s+/).filter(Boolean));
+  S.urduAt = S.ayahs.map(() => 0);
+  S.urduRuns = [];
+
+  const measured = measureUrduWidths();
+  S.urduSig = measured.sig;
+  const widthOf = (text) => {
+    const parts = text.split(" ");
+    let w = 0;
+    for (let i = 0; i < parts.length; i++) {
+      w += (measured.wcache.get(parts[i]) || 0) + (i ? measured.spaceW : 0);
+    }
+    return w;
+  };
+
+  // The Urdu is laid out as ONE continuous stream, not per row: a single cursor
+  // walks the ayahs in order, and the rows only say WHERE each new ayah's
+  // translation has to start. When a translation is longer than the space its
+  // Arabic took, the overflow wraps onto the row's second line instead of
+  // pushing the next ayah along — that is what keeps every new ayah's
+  // translation starting directly beneath its own Arabic.
+  let cur = 0;
+  let wi = 0;
+  const wordsAt = (i) => S.urduWords[i] || [];
+
+  // The Urdu has to consume rows at the same rate the Arabic does. Wrapping
+  // freely lets it finish early and leave the last pages bare; never wrapping
+  // leaves it trailing off with the end of the surah untranslated. So the
+  // second line is used only as far as the translation has fallen behind this
+  // rate — which is also what the anchoring needs, since an ayah whose
+  // translation overruns its Arabic is exactly a row that is behind.
+  let placedWords = 0;
+  let rowIndex = 0;
+  const totalWords = S.urduWords.reduce((n, w) => n + w.length, 0);
+  const targetRate = totalWords / Math.max(1, S.rows.length);
+
+  for (const row of S.rows) {
+    let line = 0;
+    let x = 0;
+    let full = false;
+
+    // Place the current ayah's remaining words from x up to limitX on the
+    // current line. Stopping short of limitX is deliberate: the leftover space
+    // is exactly the padding the shorter of the two tracks absorbs.
+    const put = (limitX) => {
+      const words = wordsAt(cur);
+      const from = wi;
+      let text = "";
+      while (wi < words.length) {
+        const cand = text ? text + " " + words[wi] : words[wi];
+        if (x + widthOf(cand) > limitX) {
+          if (text || x > 0) break;
+          // A single word wider than the whole line: place it rather than spin.
+        }
+        text = cand;
+        wi++;
+      }
+      if (text) {
+        row.runs.push({ line, xFromRight: x, text });
+        x += widthOf(text);
+        placedWords += wi - from;
+      }
+    };
+    const wrap = () => {
+      if (line + 1 >= S.urduLines) { full = true; return false; }
+      line++;
+      x = 0;
+      return true;
+    };
+
+    for (const a of row.anchors) {
+      if (full) break;
+      if (a.ayah < cur) continue;                      // already translated
+      while (cur < a.ayah) {                           // catch up to this ayah
+        put(FLOW_W);
+        if (wi < wordsAt(cur).length) {
+          if (!wrap()) break;      // not one line: the rest continues on the next
+          put(FLOW_W);
+          if (wi < wordsAt(cur).length) { full = true; break; }
+        }
+        cur++;
+        wi = 0;
+      }
+      if (full || cur !== a.ayah) continue;
+      // An ayah starts here. If the translation has kept pace it is already at
+      // this x and lands exactly under its Arabic. If it has fallen behind, it
+      // cannot start here without leaving a hole — and a hole only pushes it
+      // further behind on every following line, so it never recovers. Carry on
+      // where it is and let it start mid-line instead.
+      put(FLOW_W);
+    }
+
+    // Top up the row's second line only while the translation is behind rate.
+    if (!full) {
+      put(FLOW_W);
+      const target = targetRate * (rowIndex + 1);
+      while (!full && placedWords < target) {
+        if (wi >= wordsAt(cur).length) {
+          if (cur + 1 >= S.urduWords.length) break;
+          cur++;
+          wi = 0;
+        }
+        if (!wrap()) break;
+        put(FLOW_W);
+      }
+    }
+
+    // Never let the stream stall. If this row ended up with no translation at
+    // all, the cursor was parked on an exhausted ayah and no remaining anchor
+    // was able to move it; the rest of the translation would then never be
+    // reached. Drop the anchor constraint for this one row and fill it.
+    if (!row.runs.length) {
+      if (wi >= wordsAt(cur).length && cur + 1 < S.urduWords.length) { cur++; wi = 0; }
+      line = 0;
+      x = 0;
+      full = false;
+      put(FLOW_W);
+      while (!full && wi < wordsAt(cur).length) { if (!wrap()) break; put(FLOW_W); }
+    }
+    rowIndex++;
+    // A row that ran out of lines hands the rest of the translation to the next
+    // row, which picks up exactly where this one stopped.
+
+    for (const r of row.runs) {
+      S.urduRuns.push({ top: row.urduTopY, line: r.line, right: r.xFromRight, text: r.text });
+    }
+  }
+
+  // How much of each ayah's translation actually got placed.
+  S.urduAt = S.urduWords.map((w, i) => (i < cur ? w.length : i === cur ? wi : 0));
+  S.urduPlaced = S.urduAt.reduce((a, b) => a + b, 0);
+  S.urduTotal = S.urduWords.reduce((n, w) => n + w.length, 0);
+}
+
+function renderUrdu() {
+  const layer = document.createElement("div");
+  layer.className = "urdu";
+  layer.style.fontSize = S.urduPx + "px";
+  for (const r of S.urduRuns) {
+    const sp = document.createElement("span");
+    sp.className = "u";
+    sp.textContent = r.text;
+    sp.style.top = r.top + (r.line || 0) * S.urduH + "px";
+    sp.style.right = r.right + "px";
+    layer.appendChild(sp);
+  }
+  $("flow").appendChild(layer);
+}
+
+/* The Urdu face often lands AFTER the first pass — later than document.fonts
+   .ready and later than a retry loop was willing to wait. The first pass then
+   measured, AND CHOSE THE FONT SIZE, against the fallback face, which is
+   narrower, so the size it settled on is too large and the translation runs out
+   of rows. When the browser reports that fonts finished loading, measure again
+   and, if the metrics really did change, lay the page out from scratch. */
+let urduReflows = 0;
+function refreshUrduIfStale() {
+  if (!S.lines.length || !S.rows.length) return;
+  const sig = measureUrduWidths().sig;
+  if (sig === S.urduSig) return;
+  if (urduReflows >= 3) return;              // give up rather than loop
+  urduReflows++;
+  layoutFlow();
+}
+
+if (document.fonts && document.fonts.addEventListener) {
+  document.fonts.addEventListener("loadingdone", refreshUrduIfStale);
 }
 
 /* Two rules per line — one above the script, one below it — leaving the empty
@@ -369,31 +670,339 @@ function renderRules() {
   $("flow").appendChild(layer);
 }
 
+/* ------------------------------------------------------------------------
+   Paired layout.
+
+   The Arabic and its translation are laid out TOGETHER, unit by unit, so a new
+   ayah can begin at the same x on both tracks. A unit is as much of one ayah as
+   fits on one row: it is as wide as whichever track needs more room, and the
+   narrower one is spread to match — spacing added to the Arabic when the
+   translation is longer, spacing added to the translation when the Arabic is
+   longer. Whatever is left over at the end of a row is shared out the same way,
+   which is also what justifies the Arabic.
+
+   This is the reason the two tracks cannot drift: neither one gets to choose
+   its own line breaks.
+   ------------------------------------------------------------------------ */
+
+/* The medallion token that closes an ayah: the last non-word token carrying a
+   digit or a medallion glyph, which is the one the reader sees as the ayah
+   number. The waqf marks packed into the same token are dropped — the marker
+   closing a translation is the number, not the pause. */
+function medallionText(ayah) {
+  const bad = (ayah.words || []).filter((w) => !isWord(w.text));
+  const last = [...bad].reverse().find((w) => /[0-9\u0660-\u0669\u06F0-\u06F9\uE000-\uF8FF]/.test(w.text));
+  if (!last) return "";
+  return (last.text || "").replace(/[\u0610-\u061A\u06D6-\u06ED]/g, "").trim();
+}
+
+/* Width of every Arabic word, measured in isolation. Adjacent spans of Arabic
+   script join and reshape, so a row of them measures the connected forms rather
+   than the words themselves — the same trap the translation fell into. */
+function measureArabicWidths() {
+  const flow = $("flow");
+  const probe = document.createElement("div");
+  probe.style.cssText =
+    "position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;" +
+    "font-family:'IndoPak Quran',serif;";
+  probe.style.fontSize = BASE_FONT * zoom() + "px";
+
+  const uniq = [...new Set(S.ayahs.flatMap((a) => a.words.map((w) => w.text)))];
+  const spans = uniq.map((t) => {
+    const s = document.createElement("span");
+    s.style.display = "inline-block";
+    s.textContent = t;
+    probe.appendChild(s);
+    return s;
+  });
+  flow.appendChild(probe);
+  const k = S.scale || 1;
+  const cache = new Map();
+  uniq.forEach((t, i) => cache.set(t, spans[i].getBoundingClientRect().width / k));
+
+  let spaceW = 0;
+  const pair = S.ayahs.find((a) => a.words.length > 1);
+  if (pair) {
+    const s = document.createElement("span");
+    s.style.display = "inline-block";
+    s.textContent = pair.words[0].text + " " + pair.words[1].text;
+    probe.appendChild(s);
+    spaceW = s.getBoundingClientRect().width / k -
+      (cache.get(pair.words[0].text) || 0) - (cache.get(pair.words[1].text) || 0);
+  }
+
+  // The medallions, measured with the ornament styling they render with, so the
+  // marker closing a translation takes exactly the room it needs.
+  const marks = [...new Set(S.ayahs.map(medallionText).filter(Boolean))];
+  const mSpans = marks.map((t) => {
+    const s = document.createElement("span");
+    s.className = "orn";
+    s.style.display = "inline-block";
+    // Set explicitly, because the marker renders inside the Urdu run and would
+    // otherwise inherit the Nastaliq face; it has to be measured in the face it
+    // will actually be drawn in.
+    s.style.fontFamily = "'IndoPak Quran', serif";
+    s.textContent = t;
+    probe.appendChild(s);
+    return s;
+  });
+  const markerCache = new Map();
+  marks.forEach((t, i) => markerCache.set(t, mSpans[i].getBoundingClientRect().width / k));
+  probe.remove();
+  return { cache, spaceW: Math.max(0, spaceW), markerCache };
+}
+
+/* Natural width of a run of words, the spaces between them included. */
+function natOf(words, spaceW) {
+  let w = 0;
+  for (let i = 0; i < words.length; i++) w += (i ? spaceW : 0) + (words[i].w || 0);
+  return w;
+}
+
+/* How many words fit inside `limit` — always at least one, so a single word
+   wider than the space offered cannot deadlock the walk. */
+function fitCount(words, limit, spaceW) {
+  let n = 0, w = 0;
+  while (n < words.length) {
+    const add = (n ? spaceW : 0) + (words[n].w || 0);
+    if (n > 0 && w + add > limit) break;
+    w += add;
+    n++;
+    if (w > limit) break;
+  }
+  return Math.max(1, n);
+}
+
+/* The Arabic of one unit, tinted by segment exactly as the flowing version was. */
+function buildWordsSpan(ayahIdx, from, to) {
+  const ayah = S.ayahs[ayahIdx];
+  const color = {};
+  (ayah.segments || []).forEach((seg, si) => {
+    const cls = si % 2 === 0 ? "segA" : "segB";
+    const lo = seg.word_start_index ?? 1;
+    const hi = seg.word_end_index ?? Infinity;
+    ayah.words.forEach((w) => {
+      if (isWord(w.text) && w.word_index >= lo && w.word_index <= hi) color[w.word_index] = cls;
+    });
+  });
+  const span = document.createElement("span");
+  let first = true;
+  for (let i = from; i < to; i++) {
+    const w = ayah.words[i];
+    if (!w) continue;
+    const sp = document.createElement("span");
+    sp.className = isWord(w.text) ? "w " + (color[w.word_index] || "segA") : "orn";
+    sp.textContent = w.text;
+    if (!first) span.appendChild(document.createTextNode(" "));
+    first = false;
+    span.appendChild(sp);
+  }
+  return span;
+}
+
+function buildPaired() {
+  const aw = measureArabicWidths();
+  const uw = measureUrduWidths();
+  S.urduSig = uw.sig;
+
+  const A = S.ayahs.map((a) => a.words.map((w) => ({ text: w.text, w: aw.cache.get(w.text) || 0 })));
+  const U = S.urduWords.map((ws) => ws.map((t) => ({ text: t, w: uw.wcache.get(t) || 0 })));
+  const M = S.ayahs.map((a) => { const t = medallionText(a); return { text: t, w: aw.markerCache.get(t) || 0 }; });
+  S.arabicWidths = A;
+  S.urduWidths = U;
+
+  const rows = [];
+  let row = null;
+  let p = 0;
+  const flush = () => {
+    if (row && row.units.length) {
+      // Share the leftover width out over the row's units. This is the
+      // justification, and it is what closes the gap the shorter track left.
+      const used = row.units.reduce((s, u) => s + u.w, 0);
+      const extra = FLOW_W - used;
+      if (extra > 0.01 && used > 0) for (const u of row.units) u.w += extra * (u.w / used);
+      rows.push(row);
+    }
+    row = null;
+    p = 0;
+  };
+
+  for (let k = 0; k < A.length; k++) {
+    let ai = 0, ui = 0;
+    const listU = U[k] || [];
+    while (ai < A[k].length || ui < listU.length) {
+      if (!row) row = { units: [] };
+      const room = FLOW_W - p;
+      const remA = A[k].slice(ai);
+      const remU = listU.slice(ui);
+      const natA = natOf(remA, aw.spaceW);
+      const natU = natOf(remU, uw.spaceW);
+      // The ayah medallion closes the ayah's translation, so its width has to be
+      // claimed here too — otherwise the next ayah's translation is laid
+      // straight on top of it.
+      const mark = remU.length ? M[k] : null;
+      const markW = mark ? uw.spaceW + mark.w : 0;
+      const need = Math.max(natA, natU + markW);
+      if (need > room && p > 0) {
+        // Not even this ayah's first word (plus the medallion) fits in what is
+        // left. Break the row rather than force a word past the left margin.
+        const firstA = remA.length ? remA[0].w : 0;
+        const firstU = remU.length ? remU[0].w + markW : 0;
+        if (Math.max(firstA, firstU) > room) { flush(); continue; }
+      }
+      if (need <= room) {
+        // The rest of the ayah fits here. Both tracks take the SAME width, so
+        // the next ayah begins level on both.
+        row.units.push({
+          ayah: k, aFrom: ai, aTo: A[k].length, uFrom: ui, uTo: listU.length,
+          natA, natU: natU + markW, uMark: mark, w: need, x: p,
+        });
+        p += need;
+        ai = A[k].length;
+        ui = listU.length;
+        if (p > FLOW_W - 0.5) flush();
+      } else {
+        // Not enough room. Both tracks take a share of the line in proportion
+        // to how much each still has, and continue together on the row below.
+        const share = room / (natA + natU + markW || 1);
+        const nA = fitCount(remA, share * natA, aw.spaceW);
+        const nU = remU.length ? fitCount(remU, share * natU, uw.spaceW) : 0;
+        const uMark = mark && nU >= remU.length ? mark : null;
+        row.units.push({
+          ayah: k, aFrom: ai, aTo: ai + nA, uFrom: ui, uTo: ui + nU,
+          natA: natOf(remA.slice(0, nA), aw.spaceW),
+          natU: natOf(remU.slice(0, nU), uw.spaceW) + (uMark ? markW : 0),
+          uMark,
+          w: room, x: p,
+        });
+        p = FLOW_W;
+        ai += nA;
+        ui += nU;
+        flush();
+      }
+    }
+  }
+  flush();
+
+  S.rows = rows;
+  S.lines = rows.map((r, i) => {
+    const top = i * S.rowH;
+    r.top = top;
+    r.urduTopY = top + S.band + S.urduPad;
+    return {
+      top, topRuleY: top, bottomRuleY: top + S.band,
+      urduTopY: r.urduTopY, rowBottomY: top + S.contentEnd,
+      firstIdx: i, lastIdx: i,
+    };
+  });
+}
+
+function renderPaired() {
+  const layer = document.createElement("div");
+  layer.className = "paired";
+  const arPx = BASE_FONT * zoom();
+  for (const row of S.rows) {
+    for (const u of row.units) {
+      const as = buildWordsSpan(u.ayah, u.aFrom, u.aTo);
+      const gA = Math.max(0, u.aTo - u.aFrom - 1);
+      const eA = gA ? Math.max(0, (u.w - u.natA) / gA) : 0;
+      // line-height is set to the band's own height, so the half-leading is
+      // zero and the tinted box begins exactly on the row's top edge — which is
+      // where the rules are drawn. With line-height:1 the content box (60.8px
+      // here) is taller than the line box (30px) and is centred, so the tint
+      // spills half the difference above the top rule and half below the
+      // bottom one.
+      as.style.cssText =
+        `position:absolute;top:${row.top}px;right:${u.x}px;white-space:nowrap;line-height:${S.band}px;` +
+        `font-size:${arPx}px;word-spacing:${eA.toFixed(2)}px;`;
+      layer.appendChild(as);
+
+      const words = (S.urduWords[u.ayah] || []).slice(u.uFrom, u.uTo);
+      if (!words.length) continue;
+      const us = document.createElement("span");
+      words.forEach((t, i) => {
+        if (i) us.appendChild(document.createTextNode(" "));
+        const ws = document.createElement("span");
+        // inline-block, exactly as the widths were measured. Adjacent Urdu
+        // words in one text run join and reshape, so a run measured word by
+        // word disagrees with the same run rendered as a single string.
+        ws.style.display = "inline-block";
+        ws.textContent = t;
+        us.appendChild(ws);
+      });
+      // The ayah medallion, in the Arabic face and the ornament styling, so it
+      // reads as the same marker the Arabic line closes with.
+      if (u.uMark) {
+        us.appendChild(document.createTextNode(" "));
+        const ms = document.createElement("span");
+        ms.className = "orn";
+        ms.style.display = "inline-block";
+        ms.style.fontFamily = "'IndoPak Quran', serif";
+        ms.textContent = u.uMark.text;
+        us.appendChild(ms);
+      }
+      const parts = words.length + (u.uMark ? 1 : 0);
+      const gU = Math.max(0, parts - 1);
+      const eU = gU ? Math.max(0, (u.w - u.natU) / gU) : 0;
+      us.style.cssText =
+        `position:absolute;top:${row.urduTopY}px;right:${u.x}px;white-space:nowrap;line-height:${S.urduH}px;` +
+        `color:var(--muted);font-family:'Noto Nastaliq Urdu',serif;` +
+        `font-size:${S.urduPx}px;word-spacing:${eU.toFixed(2)}px;`;
+      layer.appendChild(us);
+    }
+  }
+  $("flow").appendChild(layer);
+}
+
 /* --------------------------------------------------------------------------- */
 async function layoutFlow() {
   const flow = $("flow");
-  flow.style.fontSize = BASE_FONT * zoom() + "px";
+  S.urduPx = BASE_URDU * zoom();     // set before fontsReady, which preloads it
+  S.urduWords = S.ayahs.map((a) => urduForAyah(a).split(/\s+/).filter(Boolean));
+  const hasUrdu = S.urduWords.some((w) => w.length);
   flow.replaceChildren();
 
   await fontsReady();
 
-  // Band = the highlight height; space = half the band, carried as extra
-  // line-height. Measured from a span, so the rules land on the tint exactly.
-  fit();
-  S.band = measureBandHeight(flow);
-  S.pitch = S.band * (1 + SPACE_RATIO);
-  flow.style.lineHeight = S.pitch + "px";
+  // Both tracks are laid out together, so the translation's size no longer
+  // decides whether it fits — it only decides how much the two have to stretch
+  // to stay level. A size that needs about as much width as the Arabic gives
+  // the least stretching, so aim for that and lay out again.
+  for (let pass = 0; ; pass++) {
+    flow.style.fontSize = BASE_FONT * zoom() + "px";
+    flow.replaceChildren();
 
-  S.ayahs.forEach((ayah, i) => {
-    if (i) flow.appendChild(document.createTextNode(" "));
-    flow.appendChild(buildAyahSpan(ayah));
-  });
+    // Band = the highlight height; measured from a real span so the rules land
+    // on the tint exactly. The Urdu line and the gaps below it make the row.
+    fit();
+    S.band = measureBandHeight(flow);
+    S.urduH = S.urduPx * URDU_LINE;
+    S.urduPad = S.urduH * URDU_PAD;
+    S.rowGapH = S.band * ROW_GAP;
+    // A translation id with no segments gets no space at all, rather than
+    // reserving a block that would stay empty on every page.
+    S.urduLines = hasUrdu ? URDU_LINES : 0;
+    S.urduBlockH = S.urduLines ? S.urduPad + S.urduLines * S.urduH : 0;
+    S.rowH = S.band + S.urduBlockH + S.rowGapH;
+    S.contentEnd = S.band + S.urduBlockH;
 
-  fit();
-  const { lines } = measureLines();
-  S.lines = lines;
-  S.pages = paginate(lines);
+    fit();
+    buildPaired();
+
+    if (!hasUrdu || pass >= 2) break;
+    const sumA = S.arabicWidths.reduce((s, ws) => s + natOf(ws, 0), 0);
+    const sumU = S.urduWidths.reduce((s, ws) => s + natOf(ws, 0), 0);
+    if (!sumU || sumU <= sumA * 1.02) break;
+    S.urduPx = Math.max(8, S.urduPx * (sumA / sumU));
+  }
+
+  S.pages = paginate(S.lines);
   renderRules();
+  renderPaired();
+
+  // A "loadingdone" that fired while this pass was still running would have
+  // been ignored, so also check once the browser has settled.
+  setTimeout(refreshUrduIfStale, 400);
 }
 
 function render() {
