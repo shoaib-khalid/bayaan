@@ -85,7 +85,7 @@
   .flow .w{white-space:nowrap;border-radius:5px;padding:0 1px;}
   .flow .w.segA{background:var(--cA);}
   .flow .w.segB{background:var(--cB);}
-  .flow .orn{color:var(--gold);white-space:nowrap;}
+  .flow .orn{color:var(--gold);white-space:nowrap;display:inline-block;padding:0 3px;}
   /* Ruled lines, matching the dashed rule under the surah name. They are
      absolutely positioned so they take no part in the inline flow: the text
      wraps exactly as it would if they were not there. */
@@ -201,7 +201,7 @@ const S = {
   ayahs: [], lines: [], pages: [], cur: 0,
   zoomIdx: 3, scale: 1, busy: false,
   band: 0, urduPx: 0, urduH: 0, urduPad: 0, urduBlockH: 0, urduLines: URDU_LINES, rowGapH: 0, rowH: 0, contentEnd: 0,
-  nodeInfo: [], rows: [], urduWords: [], urduAt: [], urduRuns: [], urduSig: '',
+  nodeInfo: [], rows: [], urduWords: [], urduSeg: [], urduAt: [], urduRuns: [], urduSig: '',
 };
 const zoom = () => ZOOMS[S.zoomIdx];
 
@@ -269,6 +269,19 @@ function urduForAyah(ayah) {
   const segs = ayah.segments || [];
   if (!segs.length) return "";
   return segs.map((s) => (s.translation_text || "").trim()).filter(Boolean).join(" ");
+}
+
+/* The same translation split into words, each remembering the segment it came
+   from, so a word can carry the same segment tint its Arabic counterpart does.
+   Both lists come out of this one pass so they cannot fall out of step. */
+function urduTokens(ayah) {
+  const out = [];
+  (ayah.segments || []).forEach((seg, si) => {
+    const t = (seg.translation_text || "").trim();
+    if (!t) return;
+    t.split(/\s+/).filter(Boolean).forEach((w) => out.push({ w, si }));
+  });
+  return out;
 }
 
 /* ---------------------------------------------------------------------------
@@ -448,6 +461,8 @@ function measureUrduWidths() {
   // followed by a space.
   const spans = uniq.map((w) => {
     const s = document.createElement("span");
+    // Matches how the word renders — .w padding included.
+    s.className = "w";
     s.style.display = "inline-block";
     s.textContent = w;
     probe.appendChild(s);
@@ -463,11 +478,17 @@ function measureUrduWidths() {
   let spaceW = 0;
   const pair = S.urduWords.find((a) => a.length >= 2);
   if (pair) {
-    const s = document.createElement("span");
-    s.style.display = "inline-block";
-    s.textContent = pair[0] + " " + pair[1];
-    probe.appendChild(s);
-    spaceW = s.getBoundingClientRect().width / k - (wcache.get(pair[0]) || 0) - (wcache.get(pair[1]) || 0);
+    const row = document.createElement("span");
+    const mk = (t) => {
+      const s = document.createElement("span");
+      s.className = "w";
+      s.style.display = "inline-block";
+      s.textContent = t;
+      return s;
+    };
+    row.append(mk(pair[0]), document.createTextNode(" "), mk(pair[1]));
+    probe.appendChild(row);
+    spaceW = row.getBoundingClientRect().width / k - (wcache.get(pair[0]) || 0) - (wcache.get(pair[1]) || 0);
   }
   probe.remove();
 
@@ -641,8 +662,9 @@ function renderUrdu() {
 let urduReflows = 0;
 function refreshUrduIfStale() {
   if (!S.lines.length || !S.rows.length) return;
-  const sig = measureUrduWidths().sig;
-  if (sig === S.urduSig) return;
+  const aw = measureArabicWidths();
+  const uw = measureUrduWidths();
+  if (aw.sig === S.arabicSig && uw.sig === S.urduSig) return;
   if (urduReflows >= 3) return;              // give up rather than loop
   urduReflows++;
   layoutFlow();
@@ -696,6 +718,22 @@ function medallionText(ayah) {
   return (last.text || "").replace(/[\u0610-\u061A\u06D6-\u06ED]/g, "").trim();
 }
 
+/* The Arabic of an ayah flattened into renderable tokens. One source token can
+   hold several pieces — a word, a space and a waqf mark — and each piece has to
+   be its own element: with the whole token in one span, the row's word-spacing
+   lands on the embedded space as well, so the token draws wider than it was
+   measured and the next word lands on top of it. */
+function arabicTokens(ayah) {
+  const out = [];
+  (ayah.words || []).forEach((w) => {
+    const real = isWord(w.text);
+    String(w.text || "").trim().split(/\s+/).filter(Boolean).forEach((t) => {
+      out.push({ text: t, real, wordIndex: w.word_index });
+    });
+  });
+  return out;
+}
+
 /* Width of every Arabic word, measured in isolation. Adjacent spans of Arabic
    script join and reshape, so a row of them measures the connected forms rather
    than the words themselves — the same trap the translation fell into. */
@@ -707,9 +745,12 @@ function measureArabicWidths() {
     "font-family:'IndoPak Quran',serif;";
   probe.style.fontSize = BASE_FONT * zoom() + "px";
 
-  const uniq = [...new Set(S.ayahs.flatMap((a) => a.words.map((w) => w.text)))];
+  const uniq = [...new Set(S.ayahs.flatMap((a) => arabicTokens(a).map((t) => t.text)))];
   const spans = uniq.map((t) => {
     const s = document.createElement("span");
+    // The class the token actually renders with: .w carries padding, so a
+    // measurement taken without it is 2px per word short of what gets drawn.
+    s.className = isWord(t) ? "w" : "orn";
     s.style.display = "inline-block";
     s.textContent = t;
     probe.appendChild(s);
@@ -721,14 +762,22 @@ function measureArabicWidths() {
   uniq.forEach((t, i) => cache.set(t, spans[i].getBoundingClientRect().width / k));
 
   let spaceW = 0;
-  const pair = S.ayahs.find((a) => a.words.length > 1);
+  const pair = S.ayahs.map(arabicTokens).find((ts) => ts.length > 1);
   if (pair) {
-    const s = document.createElement("span");
-    s.style.display = "inline-block";
-    s.textContent = pair.words[0].text + " " + pair.words[1].text;
-    probe.appendChild(s);
-    spaceW = s.getBoundingClientRect().width / k -
-      (cache.get(pair.words[0].text) || 0) - (cache.get(pair.words[1].text) || 0);
+    const row = document.createElement("span");
+    const mk = (t) => {
+      const s = document.createElement("span");
+      s.className = t.real ? "w" : "orn";
+      s.style.display = "inline-block";
+      s.textContent = t.text;
+      return s;
+    };
+    // Two real tokens with a space between them, so the difference from the two
+    // token widths is exactly the space — padding on both sides included.
+    row.append(mk(pair[0]), document.createTextNode(" "), mk(pair[1]));
+    probe.appendChild(row);
+    spaceW = row.getBoundingClientRect().width / k -
+      (cache.get(pair[0].text) || 0) - (cache.get(pair[1].text) || 0);
   }
 
   // The medallions, measured with the ornament styling they render with, so the
@@ -749,7 +798,15 @@ function measureArabicWidths() {
   const markerCache = new Map();
   marks.forEach((t, i) => markerCache.set(t, mSpans[i].getBoundingClientRect().width / k));
   probe.remove();
-  return { cache, spaceW: Math.max(0, spaceW), markerCache };
+
+  // Fingerprint the widths. The Arabic face can land after the first pass just
+  // like the Urdu one, and since the paired layout places every word by these
+  // numbers, measuring them against the fallback face puts words on top of each
+  // other once the real face swaps in — a word measured inside a row rendered up
+  // to twice its measured width.
+  let sum = 0;
+  for (const v of cache.values()) sum += v;
+  return { cache, spaceW: Math.max(0, spaceW), markerCache, sig: cache.size + ':' + Math.round(sum) };
 }
 
 /* Natural width of a run of words, the spaces between them included. */
@@ -785,14 +842,19 @@ function buildWordsSpan(ayahIdx, from, to) {
       if (isWord(w.text) && w.word_index >= lo && w.word_index <= hi) color[w.word_index] = cls;
     });
   });
+  const toks = arabicTokens(ayah);
   const span = document.createElement("span");
   let first = true;
   for (let i = from; i < to; i++) {
-    const w = ayah.words[i];
-    if (!w) continue;
+    const t = toks[i];
+    if (!t) continue;
     const sp = document.createElement("span");
-    sp.className = isWord(w.text) ? "w " + (color[w.word_index] || "segA") : "orn";
-    sp.textContent = w.text;
+    sp.className = t.real ? "w " + (color[t.wordIndex] || "segA") : "orn";
+    // inline-block, the same isolation the widths were measured in: a token's
+    // rendered width then equals its measured width, which is the invariant the
+    // whole paired layout rests on.
+    sp.style.display = "inline-block";
+    sp.textContent = t.text;
     if (!first) span.appendChild(document.createTextNode(" "));
     first = false;
     span.appendChild(sp);
@@ -803,9 +865,10 @@ function buildWordsSpan(ayahIdx, from, to) {
 function buildPaired() {
   const aw = measureArabicWidths();
   const uw = measureUrduWidths();
+  S.arabicSig = aw.sig;
   S.urduSig = uw.sig;
 
-  const A = S.ayahs.map((a) => a.words.map((w) => ({ text: w.text, w: aw.cache.get(w.text) || 0 })));
+  const A = S.ayahs.map((a) => arabicTokens(a).map((t) => ({ text: t.text, w: aw.cache.get(t.text) || 0 })));
   const U = S.urduWords.map((ws) => ws.map((t) => ({ text: t, w: uw.wcache.get(t) || 0 })));
   const M = S.ayahs.map((a) => { const t = medallionText(a); return { text: t, w: aw.markerCache.get(t) || 0 }; });
   S.arabicWidths = A;
@@ -920,9 +983,14 @@ function renderPaired() {
       const words = (S.urduWords[u.ayah] || []).slice(u.uFrom, u.uTo);
       if (!words.length) continue;
       const us = document.createElement("span");
+      const segs = S.urduSeg[u.ayah] || [];
       words.forEach((t, i) => {
         if (i) us.appendChild(document.createTextNode(" "));
         const ws = document.createElement("span");
+        // The same segment tint the Arabic words carry, so a segment reads as
+        // one block across both tracks. .w is the class those words render
+        // with, and it is also how the width was measured.
+        ws.className = "w " + ((segs[u.uFrom + i] || 0) % 2 ? "segB" : "segA");
         // inline-block, exactly as the widths were measured. Adjacent Urdu
         // words in one text run join and reshape, so a run measured word by
         // word disagrees with the same run rendered as a single string.
@@ -958,7 +1026,9 @@ function renderPaired() {
 async function layoutFlow() {
   const flow = $("flow");
   S.urduPx = BASE_URDU * zoom();     // set before fontsReady, which preloads it
-  S.urduWords = S.ayahs.map((a) => urduForAyah(a).split(/\s+/).filter(Boolean));
+  const tokens = S.ayahs.map(urduTokens);
+  S.urduWords = tokens.map((ts) => ts.map((t) => t.w));
+  S.urduSeg = tokens.map((ts) => ts.map((t) => t.si));
   const hasUrdu = S.urduWords.some((w) => w.length);
   flow.replaceChildren();
 
