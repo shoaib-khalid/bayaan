@@ -927,7 +927,12 @@ function buildPaired() {
       } else {
         // Not enough room. Both tracks take a share of the line in proportion
         // to how much each still has, and continue together on the row below.
-        const share = room / (natA + natU + markW || 1);
+        // The share is of the WHOLE row, not of a row divided between them: the
+        // two tracks are stacked, one above the other, so each is entitled to
+        // the full measure. Dividing by their combined width gave each track
+        // barely a third of the line, and the rest of the line came out as slack
+        // spread between the words.
+        const share = room / Math.max(natA, natU, 1);
         const nA = fitCount(remA, share * natA, aw.spaceW);
         const nU = remU.length ? fitCount(remU, share * natU, uw.spaceW) : 0;
         const uMark = mark && nU >= remU.length ? mark : null;
@@ -960,6 +965,28 @@ function buildPaired() {
   });
 }
 
+/* Justify a whole unit.
+
+   When the unit closes with the ayah's medallion, all of the slack goes into the
+   single gap in front of it. That is the one place a gap means something: the
+   ayah runs to its medallion and the medallion is pushed out to the margin, while
+   the words keep the spacing the script wants.
+
+   A unit that does NOT close an ayah is the ayah running on to the next row. Its
+   slack has to go somewhere, and lumping it at the line's end reads as the line
+   having broken early, so it is spread as word spacing instead. */
+function justifyUnit(el, extra) {
+  if (!(extra > 0.5)) return;
+  const kids = [...el.children].filter((c) => c.nodeType === 1);
+  const last = kids[kids.length - 1];
+  if (last && last.classList.contains("orn")) {
+    last.style.marginRight = extra.toFixed(2) + "px";
+  } else {
+    const gaps = Math.max(1, kids.length - 1);
+    el.style.wordSpacing = (extra / gaps).toFixed(2) + "px";
+  }
+}
+
 function renderPaired() {
   const layer = document.createElement("div");
   layer.className = "paired";
@@ -967,17 +994,10 @@ function renderPaired() {
   for (const row of S.rows) {
     for (const u of row.units) {
       const as = buildWordsSpan(u.ayah, u.aFrom, u.aTo);
-      const gA = Math.max(0, u.aTo - u.aFrom - 1);
-      const eA = gA ? Math.max(0, (u.w - u.natA) / gA) : 0;
-      // line-height is set to the band's own height, so the half-leading is
-      // zero and the tinted box begins exactly on the row's top edge — which is
-      // where the rules are drawn. With line-height:1 the content box (60.8px
-      // here) is taller than the line box (30px) and is centred, so the tint
-      // spills half the difference above the top rule and half below the
-      // bottom one.
       as.style.cssText =
         `position:absolute;top:${row.top}px;right:${u.x}px;white-space:nowrap;line-height:${S.band}px;` +
-        `font-size:${arPx}px;word-spacing:${eA.toFixed(2)}px;`;
+        `font-size:${arPx}px;`;
+      justifyUnit(as, u.w - u.natA);
       layer.appendChild(as);
 
       const words = (S.urduWords[u.ayah] || []).slice(u.uFrom, u.uTo);
@@ -1009,13 +1029,11 @@ function renderPaired() {
         ms.textContent = u.uMark.text;
         us.appendChild(ms);
       }
-      const parts = words.length + (u.uMark ? 1 : 0);
-      const gU = Math.max(0, parts - 1);
-      const eU = gU ? Math.max(0, (u.w - u.natU) / gU) : 0;
       us.style.cssText =
         `position:absolute;top:${row.urduTopY}px;right:${u.x}px;white-space:nowrap;line-height:${S.urduH}px;` +
         `color:var(--muted);font-family:'Noto Nastaliq Urdu',serif;` +
-        `font-size:${S.urduPx}px;word-spacing:${eU.toFixed(2)}px;`;
+        `font-size:${S.urduPx}px;`;
+      justifyUnit(us, u.w - u.natU);
       layer.appendChild(us);
     }
   }
