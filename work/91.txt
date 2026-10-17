@@ -1,0 +1,62 @@
+# surah 91 translation 2 ayahs 1-15
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالشَّمْسِ | 2.وَضُحٰىهَا
+orig : سورج کی قسم اور اسکی دھوپ کی۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَالْقَمَرِ | 2.اِذَا | 3.تَلٰىهَا
+orig : اور چاند کی جب وہ اسکے پیچھے چلے۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَالنَّهَارِ | 2.اِذَا | 3.جَلّٰىهَا
+orig : اور دن کی جب وہ اسے روشن کر دے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَالَّیْلِ | 2.اِذَا | 3.یَغْشٰىهَا
+orig : اور رات کی جب وہ اسے چھپا لے۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.وَالسَّمَآءِ | 2.وَمَا | 3.بَنٰىهَا
+orig : اور آسمان کی اور اس ذات کی جس نے اسے بنایا۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.وَالْاَرْضِ | 2.وَمَا | 3.طَحٰىهَا
+orig : اور زمین کی اور اس ذات کی جس نے اسے پھیلایا۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.وَنَفْسٍ | 2.وَّمَا | 3.سَوّٰىهَا
+orig : اور نفس انسانی کی اور اسکی جس نے اسے درست کر کے بنایا۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.فَاَلْهَمَهَا | 2.فُجُوْرَهَا | 3.وَتَقْوٰىهَا
+orig : پھر اسکو بدکاری سے بچنے اور پرہیزگار بننے کی سمجھ دی۔
+
+ayah 9  real_words=4  # whole (unsegmented)
+words: 1.قَدْ | 2.اَفْلَحَ | 3.مَنْ | 4.زَكّٰىهَا
+orig : کہ جس نے اپنے نفس کو پاک رکھا وہ مراد کو پہنچا۔
+
+ayah 10  real_words=4  # whole (unsegmented)
+words: 1.وَقَدْ | 2.خَابَ | 3.مَنْ | 4.دَسّٰىهَا
+orig : اور جس نے اسے خاک میں ملایا وہ نامراد رہا۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.كَذَّبَتْ | 2.ثَمُوْدُ | 3.بِطَغْوٰىهَاۤ
+orig : قوم ثمود نے اپنی سرکشی کے سبب پیغمبر کو جھٹلایا۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.اِذِ | 2.انْۢبَعَثَ | 3.اَشْقٰىهَا
+orig : جب ان میں سے ایک نہایت بدبخت اٹھا۔
+
+ayah 13  real_words=7  # whole (unsegmented)
+words: 1.فَقَالَ | 2.لَهُمْ | 3.رَسُوْلُ | 4.اللّٰهِ | 5.نَاقَةَ | 6.اللّٰهِ | 7.وَسُقْیٰهَا
+orig : تو اللہ کے پیغمبر صالح نے ان سے کہا کہ اللہ کی اونٹنی اور اسکے پانی پینے کی باری سے خبردار رہو۔
+
+ayah 14  real_words=7  # whole (unsegmented)
+words: 1.فَكَذَّبُوْهُ | 2.فَعَقَرُوْهَا | 3.فَدَمْدَمَ | 4.عَلَیْهِمْ | 5.رَبُّهُمْ | 6.بِذَنْۢبِهِمْ | 7.فَسَوّٰىهَا
+orig : مگر انہوں نے پیغمبر کو جھٹلایا پھر اونٹنی کو مار ڈالا۔ تو انکے رب نے انکے گناہ کے سبب انکو نیست و نابود کر دیا پھر سب کو برابر کر دیا۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.وَلَا | 2.یَخَافُ | 3.عُقْبٰهَا
+orig : اور اللہ کو انکے بدلہ لینے کا کچھ بھی ڈر نہیں۔
