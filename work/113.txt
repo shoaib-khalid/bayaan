@@ -1,0 +1,22 @@
+# surah 113 translation 2 ayahs 1-5
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.قُلْ | 2.اَعُوْذُ | 3.بِرَبِّ | 4.الْفَلَقِ
+orig : کہو کہ میں صبح کے مالک کی پناہ مانگتا ہوں۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.مِنْ | 2.شَرِّ | 3.مَا | 4.خَلَقَ
+orig : ہر چیز کی برائی سے جو اس نے پیدا کی۔
+
+ayah 3  real_words=5  # whole (unsegmented)
+words: 1.وَمِنْ | 2.شَرِّ | 3.غَاسِقٍ | 4.اِذَا | 5.وَقَبَ
+orig : اور اندھیری رات کی برائی سے جب اس کا اندھیرا چھا جائے۔
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.وَمِنْ | 2.شَرِّ | 3.النَّفّٰثٰتِ | 4.فِی | 5.الْعُقَدِ
+orig : اور گنڈوں پر پڑھ پڑھ کر پھونکنے والیوں کی برائی سے۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.وَمِنْ | 2.شَرِّ | 3.حَاسِدٍ | 4.اِذَا | 5.حَسَدَ
+orig : اور حسد کرنے والے کی برائی سے جب وہ حسد کرنے لگے۔
