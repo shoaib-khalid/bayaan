@@ -1,0 +1,18 @@
+# surah 106 translation 2 ayahs 1-4
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.لِاِیْلٰفِ | 2.قُرَیْشٍ
+orig : قریش کے مانوس کرنے کی بنا پر۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.اٖلٰفِهِمْ | 2.رِحْلَةَ | 3.الشِّتَآءِ | 4.وَالصَّیْفِ
+orig : یعنی انکو جاڑے اور گرمی کے سفر سے مانوس کرنے کی بنا پر۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.فَلْیَعْبُدُوْا | 2.رَبَّ | 3.هٰذَا | 4.الْبَیْتِ
+orig : انہیں چاہیے کہ اس نعمت کے شکر میں اس گھر کے مالک کی عبادت کریں۔
+
+ayah 4  real_words=7  # whole (unsegmented)
+words: 1.الَّذِیْۤ | 2.اَطْعَمَهُمْ | 3.مِّنْ | 4.جُوْعٍ ۙ۬ | 5.وَّاٰمَنَهُمْ | 6.مِّنْ | 7.خَوْفٍ
+orig : جس نے انکو بھوک میں کھانا کھلایا۔ اور خوف سے امن بخشا۔
