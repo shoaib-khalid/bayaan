@@ -153,7 +153,8 @@
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
-const AR = /[\u0621-\u064a\u0671-\u06d3]/;
+// U+F658 (18:19) and U+F666 (73:20) are complete Arabic word ligatures.
+const AR = /[\u0621-\u064a\u0671-\u06d3\uf658\uf666]/;
 const isWord = (t) => AR.test(t || "");
 const toUrdu = (n) => String(n).replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[+d]);
 

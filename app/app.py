@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 import mysql.connector
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 
-# A token is a real Arabic *word* only if it contains an Arabic letter.
+# Real Arabic words contain letters or a known complete-word font ligature.
 # The end-of-ayah ornament tokens (e.g. "۟ۙ\uf500") carry NO Arabic letter —
 # they are Private-Use glyphs the Quran Foundation IndoPak font turns into the
 # numbered ayah-end ornament. Treating them as ornaments (not words) lets a
@@ -156,8 +156,8 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 def _is_word(text: str) -> bool:
-    """True when a token contains an Arabic letter (i.e. it is a real word,
-    not an end-of-ayah ornament / pause-mark token)."""
+    """Recognize Arabic letters and complete-word font ligatures, excluding
+    end-of-ayah ornaments and pause-mark tokens."""
     # The IndoPak font encodes these complete Quran words as ligatures:
     # U+F658 = wa-l-yatalattaf (18:19), U+F666 = thuluthayi (73:20).
     # Other private-use glyphs include verse ornaments and remain excluded.

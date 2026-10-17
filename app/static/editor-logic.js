@@ -23,7 +23,8 @@
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
-  const AR_LETTER = /[\u0621-\u064a\u0671-\u06d3]/;
+  // U+F658 (18:19) and U+F666 (73:20) are complete Arabic word ligatures.
+  const AR_LETTER = /[\u0621-\u064a\u0671-\u06d3\uf658\uf666]/;
   const isWord = (t) => AR_LETTER.test(t || "");
   const isOrn = (t) => !isWord(t);
 
