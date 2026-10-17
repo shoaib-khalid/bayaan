@@ -1,0 +1,30 @@
+# surah 107 translation 2 ayahs 1-7
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.اَرَءَیْتَ | 2.الَّذِیْ | 3.یُكَذِّبُ | 4.بِالدِّیْنِ
+orig : کیا تم نے اس شخص کو دیکھا جو روز جزا کو جھٹلاتا ہے۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.فَذٰلِكَ | 2.الَّذِیْ | 3.یَدُعُّ | 4.الْیَتِیْمَ
+orig : یہ وہی بدبخت ہے جو یتیم کو دھکے دیتا ہے۔
+
+ayah 3  real_words=5  # whole (unsegmented)
+words: 1.وَلَا | 2.یَحُضُّ | 3.عَلٰی | 4.طَعَامِ | 5.الْمِسْكِیْنِ
+orig : اور نادار کو کھانا کھلانے کے لئے لوگوں کو ترغیب نہیں دیتا۔
+
+ayah 4  real_words=2  # whole (unsegmented)
+words: 1.فَوَیْلٌ | 2.لِّلْمُصَلِّیْنَ
+orig : تو ایسے نمازیوں کی خرابی ہے۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.الَّذِیْنَ | 2.هُمْ | 3.عَنْ | 4.صَلَاتِهِمْ | 5.سَاهُوْنَ
+orig : جو اپنی نماز کی طرف سے غافل رہتے ہیں۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.الَّذِیْنَ | 2.هُمْ | 3.یُرَآءُوْنَ
+orig : جو ریاکاری کرتے ہیں۔
+
+ayah 7  real_words=2  # whole (unsegmented)
+words: 1.وَیَمْنَعُوْنَ | 2.الْمَاعُوْنَ
+orig : اور جو برتنے کی چیزیں مانگنے پر نہیں دیتے۔
