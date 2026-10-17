@@ -1,0 +1,34 @@
+# surah 99 translation 2 ayahs 1-8
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.اِذَا | 2.زُلْزِلَتِ | 3.الْاَرْضُ | 4.زِلْزَالَهَا
+orig : جب زمین بھونچال سے ہلا دی جائے گی۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَاَخْرَجَتِ | 2.الْاَرْضُ | 3.اَثْقَالَهَا
+orig : اور زمین اپنے اندر کے بوجھ نکال پھینکے گی۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.وَقَالَ | 2.الْاِنْسَانُ | 3.مَا | 4.لَهَا
+orig : اور انسان کہے گا کہ اس کو کیا ہوا ہے؟
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.یَوْمَىِٕذٍ | 2.تُحَدِّثُ | 3.اَخْبَارَهَا
+orig : اس روز وہ اپنے حالات بیان کر دے گی۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.بِاَنَّ | 2.رَبَّكَ | 3.اَوْحٰی | 4.لَهَا
+orig : کیونکہ تمہارے پروردگار نے اسکو حکم بھیجا ہوگا۔
+
+ayah 6  real_words=6  # whole (unsegmented)
+words: 1.یَوْمَىِٕذٍ | 2.یَّصْدُرُ | 3.النَّاسُ | 4.اَشْتَاتًا ۙ۬ | 5.لِّیُرَوْا | 6.اَعْمَالَهُمْ
+orig : اس دن لوگ طرح طرح کے ہو کر آئیں گے۔ تاکہ انکو ان کے اعمال دکھا دیئے جائیں۔
+
+ayah 7  real_words=6  # whole (unsegmented)
+words: 1.فَمَنْ | 2.یَّعْمَلْ | 3.مِثْقَالَ | 4.ذَرَّةٍ | 5.خَیْرًا | 6.یَّرَهٗ
+orig : تو جس نے ذرہ بھر نیکی کی ہو گی وہ اسکو دیکھ لے گا۔
+
+ayah 8  real_words=6  # whole (unsegmented)
+words: 1.وَمَنْ | 2.یَّعْمَلْ | 3.مِثْقَالَ | 4.ذَرَّةٍ | 5.شَرًّا | 6.یَّرَهٗ
+orig : اور جس نے ذرہ بھر برائی کی ہو گی وہ اسے دیکھ لے گا۔
