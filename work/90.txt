@@ -1,0 +1,82 @@
+# surah 90 translation 2 ayahs 1-20
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.لَاۤ | 2.اُقْسِمُ | 3.بِهٰذَا | 4.الْبَلَدِ
+orig : میں اس شہر یعنی مکے کی قسم کھاتا ہوں۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.وَاَنْتَ | 2.حِلٌّۢ | 3.بِهٰذَا | 4.الْبَلَدِ
+orig : اور تم اے نبی ﷺ اسی شہر میں تو رہتے ہو۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَوَالِدٍ | 2.وَّمَا | 3.وَلَدَ
+orig : اور سب کے باپ یعنی آدم اور اسکی اولاد کی قسم۔
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.لَقَدْ | 2.خَلَقْنَا | 3.الْاِنْسَانَ | 4.فِیْ | 5.كَبَدٍ
+orig : کہ ہم نے انسان کو محنت و مشقت میں رہنے والا بنایا ہے۔
+
+ayah 5  real_words=6  # whole (unsegmented)
+words: 1.اَیَحْسَبُ | 2.اَنْ | 3.لَّنْ | 4.یَّقْدِرَ | 5.عَلَیْهِ | 6.اَحَدٌ
+orig : کیا یہ خیال کرتا ہے کہ اس پر کوئی قابو نہ پائے گا۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.یَقُوْلُ | 2.اَهْلَكْتُ | 3.مَالًا | 4.لُّبَدًا
+orig : کہتا ہے کہ میں نے بہت سا مال برباد کر دیا۔
+
+ayah 7  real_words=5  # whole (unsegmented)
+words: 1.اَیَحْسَبُ | 2.اَنْ | 3.لَّمْ | 4.یَرَهٗۤ | 5.اَحَدٌ
+orig : کیا اسے یہ گمان ہے کہ اسکو کسی نے دیکھا نہیں۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.اَلَمْ | 2.نَجْعَلْ | 3.لَّهٗ | 4.عَیْنَیْنِ
+orig : بھلا ہم نے اسکو دو آنکھیں نہیں دیں؟
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.وَلِسَانًا | 2.وَّشَفَتَیْنِ
+orig : اور زبان اور دو ہونٹ نہیں دیئے۔
+
+ayah 10  real_words=2  # whole (unsegmented)
+words: 1.وَهَدَیْنٰهُ | 2.النَّجْدَیْنِ
+orig : یہ چیزیں بھی دیں اور اسکو خیر و شر کے دونوں رستے بھی دکھا دیئے۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.فَلَا | 2.اقْتَحَمَ | 3.الْعَقَبَةَ
+orig : مگر یہ گھاٹی پر سے ہو کر نہ گذرا۔
+
+ayah 12  real_words=4  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.الْعَقَبَةُ
+orig : اور تم کیا سمجھے کہ گھاٹی کیا؟
+
+ayah 13  real_words=2  # whole (unsegmented)
+words: 1.فَكُّ | 2.رَقَبَةٍ
+orig : کسی کی گردن کا چھڑانا۔
+
+ayah 14  real_words=6  # whole (unsegmented)
+words: 1.اَوْ | 2.اِطْعٰمٌ | 3.فِیْ | 4.یَوْمٍ | 5.ذِیْ | 6.مَسْغَبَةٍ
+orig : یا بھوک کے دن میں کھانا کھلانا۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.یَّتِیْمًا | 2.ذَا | 3.مَقْرَبَةٍ
+orig : کسی رشتہ دار یتیم کو۔
+
+ayah 16  real_words=4  # whole (unsegmented)
+words: 1.اَوْ | 2.مِسْكِیْنًا | 3.ذَا | 4.مَتْرَبَةٍ
+orig : یا مٹی میں پڑے کسی نادار کو۔
+
+ayah 17  real_words=9  # whole (unsegmented)
+words: 1.ثُمَّ | 2.كَانَ | 3.مِنَ | 4.الَّذِیْنَ | 5.اٰمَنُوْا | 6.وَتَوَاصَوْا | 7.بِالصَّبْرِ | 8.وَتَوَاصَوْا | 9.بِالْمَرْحَمَةِ
+orig : پھر ان لوگوں میں بھی شامل ہوا جو ایمان لائے اور جو صبر کی نصیحت کی اور ایکدوسرے کو مہربانی کی تلقین کرتے رہے۔
+
+ayah 18  real_words=3  # whole (unsegmented)
+words: 1.اُولٰٓىِٕكَ | 2.اَصْحٰبُ | 3.الْمَیْمَنَةِ
+orig : یہی لوگ اچھے نصیب والے ہیں۔
+
+ayah 19  real_words=6  # whole (unsegmented)
+words: 1.وَالَّذِیْنَ | 2.كَفَرُوْا | 3.بِاٰیٰتِنَا | 4.هُمْ | 5.اَصْحٰبُ | 6.الْمَشْـَٔمَةِ
+orig : اور جنہوں نے ہماری آیتوں کو نہ مانا وہی برے نصیب والے ہیں۔
+
+ayah 20  real_words=3  # whole (unsegmented)
+words: 1.عَلَیْهِمْ | 2.نَارٌ | 3.مُّؤْصَدَةٌ
+orig : یہ لوگ آگ میں بند کر دیئے جائیں گے۔
