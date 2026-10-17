@@ -158,7 +158,13 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 def _is_word(text: str) -> bool:
     """True when a token contains an Arabic letter (i.e. it is a real word,
     not an end-of-ayah ornament / pause-mark token)."""
-    return bool(_ARABIC_LETTER.search(text or ""))
+    # The IndoPak font encodes these complete Quran words as ligatures:
+    # U+F658 = wa-l-yatalattaf (18:19), U+F666 = thuluthayi (73:20).
+    # Other private-use glyphs include verse ornaments and remain excluded.
+    value = text or ""
+    return bool(_ARABIC_LETTER.search(value)) or any(
+        glyph in value for glyph in ("\uf658", "\uf666")
+    )
 
 
 @app.get(
