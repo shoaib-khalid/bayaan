@@ -1,0 +1,118 @@
+# surah 81 translation 2 ayahs 1-29
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=3  # whole (unsegmented)
+words: 1.اِذَا | 2.الشَّمْسُ | 3.كُوِّرَتْ
+orig : جب سورج لپیٹ لیا جائے گا۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.النُّجُوْمُ | 3.انْكَدَرَتْ
+orig : اور جب تارے بے نور ہو جائیں گے۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْجِبَالُ | 3.سُیِّرَتْ
+orig : اور جب پہاڑ چلائے جائیں گے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْعِشَارُ | 3.عُطِّلَتْ
+orig : اور جب بیانے والی اونٹنیاں یونہی چھوڑ دی جائیں گی۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْوُحُوْشُ | 3.حُشِرَتْ
+orig : اور جب وحشی جانور جمع کئے جائیں گے۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْبِحَارُ | 3.سُجِّرَتْ
+orig : اور جب سمندر آگ ہو جائیں گے۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.النُّفُوْسُ | 3.زُوِّجَتْ
+orig : اور جب روحیں جسموں سے ملا دی جائیں گی۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْمَوْءٗدَةُ | 3.سُىِٕلَتْ
+orig : اور جب اس بچی سے جو زندہ دفنا دی گئ ہو پوچھا جائے گا۔
+
+ayah 9  real_words=3  # whole (unsegmented)
+words: 1.بِاَیِّ | 2.ذَنْۢبٍ | 3.قُتِلَتْ
+orig : کہ وہ کس گناہ کے سبب قتل کر دی گئ۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الصُّحُفُ | 3.نُشِرَتْ
+orig : اور جب اعمال کے دفتر کھولے جائیں گے۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.السَّمَآءُ | 3.كُشِطَتْ
+orig : اور جب آسمان کی کھال کھینچ لی جائے گی۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْجَحِیْمُ | 3.سُعِّرَتْ
+orig : اور جب دوزخ کی آگ بھڑکائی جائے گی۔
+
+ayah 13  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْجَنَّةُ | 3.اُزْلِفَتْ
+orig : اور جب بہشت قریب لائی جائے گی۔
+
+ayah 14  real_words=4  # whole (unsegmented)
+words: 1.عَلِمَتْ | 2.نَفْسٌ | 3.مَّاۤ | 4.اَحْضَرَتْ
+orig : تب ہر شخص معلوم کر لے گا کہ وہ کیا لے کر آیا ہے۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.فَلَاۤ | 2.اُقْسِمُ | 3.بِالْخُنَّسِ
+orig : پس میں ان ستاروں کی قسم کھاتا ہوں جو پیچھے ہٹ جاتے ہیں۔
+
+ayah 16  real_words=2  # whole (unsegmented)
+words: 1.الْجَوَارِ | 2.الْكُنَّسِ
+orig : اور جو سیر کرتے اور غائب ہو جاتے ہیں۔
+
+ayah 17  real_words=3  # whole (unsegmented)
+words: 1.وَالَّیْلِ | 2.اِذَا | 3.عَسْعَسَ
+orig : اور رات کی قسم جب وہ پھیلنے لگتی ہے۔
+
+ayah 18  real_words=3  # whole (unsegmented)
+words: 1.وَالصُّبْحِ | 2.اِذَا | 3.تَنَفَّسَ
+orig : اور صبح کی قسم جب وہ نمودار ہوتی ہے۔
+
+ayah 19  real_words=4  # whole (unsegmented)
+words: 1.اِنَّهٗ | 2.لَقَوْلُ | 3.رَسُوْلٍ | 4.كَرِیْمٍ
+orig : کہ بیشک یہ قرآن اس فرشتہ عالی مقام کا سنایا ہوا پیغام ہے۔
+
+ayah 20  real_words=6  # whole (unsegmented)
+words: 1.ذِیْ | 2.قُوَّةٍ | 3.عِنْدَ | 4.ذِی | 5.الْعَرْشِ | 6.مَكِیْنٍ
+orig : جو صاحب قوت ہے مالک عرش کے ہاں اونچے درجے والا ہے۔
+
+ayah 21  real_words=3  # whole (unsegmented)
+words: 1.مُّطَاعٍ | 2.ثَمَّ | 3.اَمِیْنٍ
+orig : سردار ہے ساتھ ہی امانتدار ہے۔
+
+ayah 22  real_words=3  # whole (unsegmented)
+words: 1.وَمَا | 2.صَاحِبُكُمْ | 3.بِمَجْنُوْنٍ
+orig : اور مکے والو تمہارے رفیق یعنی ہمارے پیغمبر ﷺ دیوانے نہیں ہیں۔
+
+ayah 23  real_words=4  # whole (unsegmented)
+words: 1.وَلَقَدْ | 2.رَاٰهُ | 3.بِالْاُفُقِ | 4.الْمُبِیْنِ
+orig : اور بیشک انہوں نے اس فرشتے کو آسمان کے کھلے کنارے پر دیکھا ہے۔
+
+ayah 24  real_words=5  # whole (unsegmented)
+words: 1.وَمَا | 2.هُوَ | 3.عَلَی | 4.الْغَیْبِ | 5.بِضَنِیْنٍ
+orig : اور وہ غیب کی باتوں کے ظاہر کرنے میں بخیل نہیں۔
+
+ayah 25  real_words=5  # whole (unsegmented)
+words: 1.وَمَا | 2.هُوَ | 3.بِقَوْلِ | 4.شَیْطٰنٍ | 5.رَّجِیْمٍ
+orig : اور یہ کسی شیطان مردود کا کلام نہیں ہے۔
+
+ayah 26  real_words=2  # whole (unsegmented)
+words: 1.فَاَیْنَ | 2.تَذْهَبُوْنَ
+orig : پھر تم لوگ کدھر جا رہے ہو؟
+
+ayah 27  real_words=5  # whole (unsegmented)
+words: 1.اِنْ | 2.هُوَ | 3.اِلَّا | 4.ذِكْرٌ | 5.لِّلْعٰلَمِیْنَ
+orig : یہ قرآن تو تمام جہان کے لئے نصیحت ہے۔
+
+ayah 28  real_words=5  # whole (unsegmented)
+words: 1.لِمَنْ | 2.شَآءَ | 3.مِنْكُمْ | 4.اَنْ | 5.یَّسْتَقِیْمَ
+orig : یعنی اس کے لئے جو تم میں سے سیدھی راہ چلنا چاہے۔
+
+ayah 29  real_words=8  # whole (unsegmented)
+words: 1.وَمَا | 2.تَشَآءُوْنَ | 3.اِلَّاۤ | 4.اَنْ | 5.یَّشَآءَ | 6.اللّٰهُ | 7.رَبُّ | 8.الْعٰلَمِیْنَ
+orig : اور تم لوگ کچھ بھی نہیں چاہ سکتے مگر وہی جو اللہ رب العالمین چاہے۔
