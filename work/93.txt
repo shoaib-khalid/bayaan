@@ -1,0 +1,46 @@
+# surah 93 translation 2 ayahs 1-11
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=1  # whole (unsegmented)
+words: 1.وَالضُّحٰی
+orig : آفتاب کی روشنی کی قسم۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَالَّیْلِ | 2.اِذَا | 3.سَجٰی
+orig : اور رات کی تاریکی کی قسم جب وہ چھا جائے۔
+
+ayah 3  real_words=5  # whole (unsegmented)
+words: 1.مَا | 2.وَدَّعَكَ | 3.رَبُّكَ | 4.وَمَا | 5.قَلٰی
+orig : اے نبی ﷺ تمہارے پروردگار نے نہ تو تمکو چھوڑ دیا اور نہ تم سے ناراض ہی ہوا۔
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.وَلَلْاٰخِرَةُ | 2.خَیْرٌ | 3.لَّكَ | 4.مِنَ | 5.الْاُوْلٰی
+orig : اور آخرت تمہارے لئے دنیا سے کہیں بہتر ہے۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.وَلَسَوْفَ | 2.یُعْطِیْكَ | 3.رَبُّكَ | 4.فَتَرْضٰی
+orig : اور تمہارا پروردگار عنقریب تمہیں اتنا کچھ عطا فرمائے گا کہ تم خوش ہو جاؤ گے۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.اَلَمْ | 2.یَجِدْكَ | 3.یَتِیْمًا | 4.فَاٰوٰی
+orig : بھلا اس نے تمہیں یتیم پا کر جگہ نہیں دی بیشک دی۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.وَوَجَدَكَ | 2.ضَآلًّا | 3.فَهَدٰی
+orig : اور تمہیں رستے سے ناواقف دیکھا تو سیدھا رستہ دکھایا۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.وَوَجَدَكَ | 2.عَآىِٕلًا | 3.فَاَغْنٰی
+orig : اور اس نے تمہیں تنگ دست پایا تو غنی کر دیا۔
+
+ayah 9  real_words=4  # whole (unsegmented)
+words: 1.فَاَمَّا | 2.الْیَتِیْمَ | 3.فَلَا | 4.تَقْهَرْ
+orig : تو تم بھی یتیم پر ستم نہ کرنا۔
+
+ayah 10  real_words=4  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.السَّآىِٕلَ | 3.فَلَا | 4.تَنْهَرْ
+orig : اور مانگنے والے کو جھڑکی نہ دینا۔
+
+ayah 11  real_words=4  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.بِنِعْمَةِ | 3.رَبِّكَ | 4.فَحَدِّثْ
+orig : اور اپنے پروردگار کی نعمت یعنی وحی کا بیان کرتے رہنا۔
