@@ -1,0 +1,186 @@
+# surah 79 translation 2 ayahs 1-46
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالنّٰزِعٰتِ | 2.غَرْقًا
+orig : ان فرشتوں کی قسم جو ڈوب کر کافروں کی جان کھینچ لیتے ہیں۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.وَّالنّٰشِطٰتِ | 2.نَشْطًا
+orig : اور ان کی جو مومنوں کی جان آسانی سے نکالتے ہیں۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.وَّالسّٰبِحٰتِ | 2.سَبْحًا
+orig : اور انکی جو تیرتے ہوئے جاتے ہیں۔
+
+ayah 4  real_words=2  # whole (unsegmented)
+words: 1.فَالسّٰبِقٰتِ | 2.سَبْقًا
+orig : پھر لپک کر آگے بڑھتے ہیں۔
+
+ayah 5  real_words=2  # whole (unsegmented)
+words: 1.فَالْمُدَبِّرٰتِ | 2.اَمْرًا
+orig : پھر دنیا کے کاموں کا انتظام کر تے ہیں۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.یَوْمَ | 2.تَرْجُفُ | 3.الرَّاجِفَةُ
+orig : کہ وہ دن آ کر رہے گا جس دن وہ زلزلہ آئے گا۔
+
+ayah 7  real_words=2  # whole (unsegmented)
+words: 1.تَتْبَعُهَا | 2.الرَّادِفَةُ
+orig : پھر اس کے پیچھے اور زلزلہ آئے گا۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.قُلُوْبٌ | 2.یَّوْمَىِٕذٍ | 3.وَّاجِفَةٌ
+orig : اس دن لوگوں کے دل خوفزدہ ہوں گے۔
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.اَبْصَارُهَا | 2.خَاشِعَةٌ
+orig : اور آنکھیں جھکی ہوئی۔
+
+ayah 10  real_words=5  # whole (unsegmented)
+words: 1.یَقُوْلُوْنَ | 2.ءَاِنَّا | 3.لَمَرْدُوْدُوْنَ | 4.فِی | 5.الْحَافِرَةِ
+orig : کافر کہتے ہیں کیا ہم الٹے پاؤں پھر لوٹیں گے؟
+
+ayah 11  real_words=4  # whole (unsegmented)
+words: 1.ءَاِذَا | 2.كُنَّا | 3.عِظَامًا | 4.نَّخِرَةً
+orig : بھلا جب ہم کھوکھلی ہڈیاں ہو جائیں گے تو پھر زندہ کئے جائیں گے۔
+
+ayah 12  real_words=5  # whole (unsegmented)
+words: 1.قَالُوْا | 2.تِلْكَ | 3.اِذًا | 4.كَرَّةٌ | 5.خَاسِرَةٌ
+orig : کہتے ہیں کہ یہ لوٹنا تو سراسر نقصان کا لوٹنا ہو گا۔
+
+ayah 13  real_words=4  # whole (unsegmented)
+words: 1.فَاِنَّمَا | 2.هِیَ | 3.زَجْرَةٌ | 4.وَّاحِدَةٌ
+orig : تو بس وہ ایک ڈانٹ ہو گی۔
+
+ayah 14  real_words=3  # whole (unsegmented)
+words: 1.فَاِذَا | 2.هُمْ | 3.بِالسَّاهِرَةِ
+orig : اس وقت وہ سب میدان حشر میں آ جمع ہوں گے۔
+
+ayah 15  real_words=4  # whole (unsegmented)
+words: 1.هَلْ | 2.اَتٰىكَ | 3.حَدِیْثُ | 4.مُوْسٰی
+orig : بھلا تم کو موسٰی کی حکایت پہنچی ہے۔
+
+ayah 16  real_words=6  # whole (unsegmented)
+words: 1.اِذْ | 2.نَادٰىهُ | 3.رَبُّهٗ | 4.بِالْوَادِ | 5.الْمُقَدَّسِ | 6.طُوًی
+orig : جب ان کے پروردگار نے انکو پاک میدان یعنی طوٰی میں پکارا۔
+
+ayah 17  real_words=5  # whole (unsegmented)
+words: 1.اِذْهَبْ | 2.اِلٰی | 3.فِرْعَوْنَ | 4.اِنَّهٗ | 5.طَغٰی
+orig : اور حکم دیا کہ فرعون کے پاس جاؤ کہ وہ سرکش ہو رہا ہے۔
+
+ayah 18  real_words=6  # whole (unsegmented)
+words: 1.فَقُلْ | 2.هَلْ | 3.لَّكَ | 4.اِلٰۤی | 5.اَنْ | 6.تَزَكّٰی
+orig : پھر اس سے کہو کہ کیا تو چاہتا ہے کہ پاک ہو جائے۔
+
+ayah 19  real_words=4  # whole (unsegmented)
+words: 1.وَاَهْدِیَكَ | 2.اِلٰی | 3.رَبِّكَ | 4.فَتَخْشٰی
+orig : اور میں تجھے تیرے پروردگار کا رستہ بتاؤں تاکہ تجھ کو خوف پیدا ہو۔
+
+ayah 20  real_words=3  # whole (unsegmented)
+words: 1.فَاَرٰىهُ | 2.الْاٰیَةَ | 3.الْكُبْرٰی
+orig : غرض انہوں نے اسکو بہت بڑی نشانی دکھائی۔
+
+ayah 21  real_words=2  # whole (unsegmented)
+words: 1.فَكَذَّبَ | 2.وَعَصٰی
+orig : مگر اس نے جھٹلایا اور نہ مانا۔
+
+ayah 22  real_words=3  # whole (unsegmented)
+words: 1.ثُمَّ | 2.اَدْبَرَ | 3.یَسْعٰی
+orig : پھر لوٹ گیا اور تدبیریں کرنے لگا۔
+
+ayah 23  real_words=2  # whole (unsegmented)
+words: 1.فَحَشَرَ | 2.فَنَادٰی
+orig : سو اس نے لوگوں کو اکٹھا کیا پھر بلند آواز سے بولا۔
+
+ayah 24  real_words=4  # whole (unsegmented)
+words: 1.فَقَالَ | 2.اَنَا | 3.رَبُّكُمُ | 4.الْاَعْلٰی
+orig : سو کہنے لگا کہ تمہارا سب سے بڑا مالک میں ہوں۔
+
+ayah 25  real_words=5  # whole (unsegmented)
+words: 1.فَاَخَذَهُ | 2.اللّٰهُ | 3.نَكَالَ | 4.الْاٰخِرَةِ | 5.وَالْاُوْلٰی
+orig : تو اللہ نے اسکو دنیا اور آخرت دونوں کے عذاب میں پکڑ لیا۔
+
+ayah 26  real_words=6  # whole (unsegmented)
+words: 1.اِنَّ | 2.فِیْ | 3.ذٰلِكَ | 4.لَعِبْرَةً | 5.لِّمَنْ | 6.یَّخْشٰی
+orig : جو شخص اللہ سے ڈر رکھتا ہے اس کے لئے اس قصے میں عبرت ہے۔
+
+ayah 27  real_words=6  # whole (unsegmented)
+words: 1.ءَاَنْتُمْ | 2.اَشَدُّ | 3.خَلْقًا | 4.اَمِ | 5.السَّمَآءُ ؕ | 6.بَنٰىهَا
+orig : بھلا تمہارا بنانا مشکل ہے یا آسمان کا؟ اللہ نے اسکو بنایا۔
+
+ayah 28  real_words=3  # whole (unsegmented)
+words: 1.رَفَعَ | 2.سَمْكَهَا | 3.فَسَوّٰىهَا
+orig : اس کی چھت کو اونچا کیا پھر اسے برابر کر دیا۔
+
+ayah 29  real_words=4  # whole (unsegmented)
+words: 1.وَاَغْطَشَ | 2.لَیْلَهَا | 3.وَاَخْرَجَ | 4.ضُحٰىهَا
+orig : اور اسی نے رات تاریک بنائی اور دن کو دھوپ نکالی۔
+
+ayah 30  real_words=4  # whole (unsegmented)
+words: 1.وَالْاَرْضَ | 2.بَعْدَ | 3.ذٰلِكَ | 4.دَحٰىهَا
+orig : اور اسکے بعد زمین کو پھیلا دیا۔
+
+ayah 31  real_words=4  # whole (unsegmented)
+words: 1.اَخْرَجَ | 2.مِنْهَا | 3.مَآءَهَا | 4.وَمَرْعٰىهَا
+orig : اسی نے زمین میں سے اسکا پانی نکالا اور چارہ اگایا۔
+
+ayah 32  real_words=2  # whole (unsegmented)
+words: 1.وَالْجِبَالَ | 2.اَرْسٰىهَا
+orig : اور اس پر پہاڑوں کا بوجھ رکھ دیا۔
+
+ayah 33  real_words=3  # whole (unsegmented)
+words: 1.مَتَاعًا | 2.لَّكُمْ | 3.وَلِاَنْعَامِكُمْ
+orig : یہ سب کچھ تمہارے اور تمہارے مویشیوں کے فائدے کے لئے کیا۔
+
+ayah 34  real_words=4  # whole (unsegmented)
+words: 1.فَاِذَا | 2.جَآءَتِ | 3.الطَّآمَّةُ | 4.الْكُبْرٰی
+orig : پھر جب وہ بہت بڑی آفت آئے گی۔
+
+ayah 35  real_words=5  # whole (unsegmented)
+words: 1.یَوْمَ | 2.یَتَذَكَّرُ | 3.الْاِنْسَانُ | 4.مَا | 5.سَعٰی
+orig : اس دن انسان جو محنت وہ کرتا رہا یاد کرے گا۔
+
+ayah 36  real_words=4  # whole (unsegmented)
+words: 1.وَبُرِّزَتِ | 2.الْجَحِیْمُ | 3.لِمَنْ | 4.یَّرٰی
+orig : اور دوزخ دیکھنے والے کے سامنے لا کر رکھ دی جائے گی۔
+
+ayah 37  real_words=3  # whole (unsegmented)
+words: 1.فَاَمَّا | 2.مَنْ | 3.طَغٰی
+orig : اب جس نے سرکشی کی۔
+
+ayah 38  real_words=3  # whole (unsegmented)
+words: 1.وَاٰثَرَ | 2.الْحَیٰوةَ | 3.الدُّنْیَا
+orig : اور دنیا کی زندگی کو مقدم رکھا۔
+
+ayah 39  real_words=4  # whole (unsegmented)
+words: 1.فَاِنَّ | 2.الْجَحِیْمَ | 3.هِیَ | 4.الْمَاْوٰی
+orig : تو اس کا ٹھکانہ دوزخ ہی ہے۔
+
+ayah 40  real_words=9  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.مَنْ | 3.خَافَ | 4.مَقَامَ | 5.رَبِّهٖ | 6.وَنَهَی | 7.النَّفْسَ | 8.عَنِ | 9.الْهَوٰی
+orig : اور جو اپنے پروردگار کے سامنے کھڑے ہونے سے ڈرتا اور نفس کو بیجا خواہشوں سے روکتا رہا۔
+
+ayah 41  real_words=4  # whole (unsegmented)
+words: 1.فَاِنَّ | 2.الْجَنَّةَ | 3.هِیَ | 4.الْمَاْوٰی
+orig : تو اس کا ٹھکانہ بہشت ہی ہے۔
+
+ayah 42  real_words=5  # whole (unsegmented)
+words: 1.یَسْـَٔلُوْنَكَ | 2.عَنِ | 3.السَّاعَةِ | 4.اَیَّانَ | 5.مُرْسٰىهَا
+orig : اے پیغمبر ﷺ لوگ تم سے قیامت کے بارے میں پوچھتے ہیں کہ اس کی آمد کب ہے۔
+
+ayah 43  real_words=4  # whole (unsegmented)
+words: 1.فِیْمَ | 2.اَنْتَ | 3.مِنْ | 4.ذِكْرٰىهَا
+orig : سو تم اس کے ذکر کی طرف سے کس فکر میں ہو؟
+
+ayah 44  real_words=3  # whole (unsegmented)
+words: 1.اِلٰی | 2.رَبِّكَ | 3.مُنْتَهٰىهَا
+orig : اس کا منتہا یعنی واقع ہونے کا وقت تمہارے پروردگار ہی کو معلوم ہے۔
+
+ayah 45  real_words=5  # whole (unsegmented)
+words: 1.اِنَّمَاۤ | 2.اَنْتَ | 3.مُنْذِرُ | 4.مَنْ | 5.یَّخْشٰىهَا
+orig : جو شخص اس سے ڈر رکھتا ہے تم تو اسی کو ڈر سنانے والے ہو۔
+
+ayah 46  real_words=9  # whole (unsegmented)
+words: 1.كَاَنَّهُمْ | 2.یَوْمَ | 3.یَرَوْنَهَا | 4.لَمْ | 5.یَلْبَثُوْۤا | 6.اِلَّا | 7.عَشِیَّةً | 8.اَوْ | 9.ضُحٰىهَا
+orig : جب وہ اسکو دیکھیں گے تو ایسا خیال کریں گے کہ گویا دنیا میں صرف ایک شام یا ایک صبح رہے تھے۔
