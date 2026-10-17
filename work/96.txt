@@ -1,0 +1,78 @@
+# surah 96 translation 2 ayahs 1-19
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=5  # whole (unsegmented)
+words: 1.اِقْرَاْ | 2.بِاسْمِ | 3.رَبِّكَ | 4.الَّذِیْ | 5.خَلَقَ
+orig : اے نبی ﷺ اپنے پروردگار کا نام لے کر پڑھو جس نے تمام کائنات کو پیدا کیا۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.خَلَقَ | 2.الْاِنْسَانَ | 3.مِنْ | 4.عَلَقٍ
+orig : جس نے انسان کو خون کی پھٹکی سے بنایا۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.اِقْرَاْ | 2.وَرَبُّكَ | 3.الْاَكْرَمُ
+orig : پڑھو اور تمہارا پروردگار بڑا کریم ہے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.عَلَّمَ | 3.بِالْقَلَمِ
+orig : جس نے قلم کے ذریعے سے علم سکھایا۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.عَلَّمَ | 2.الْاِنْسَانَ | 3.مَا | 4.لَمْ | 5.یَعْلَمْ
+orig : اور انسان کو وہ باتیں سکھائیں جن کا اسکو علم نہ تھا۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.كَلَّاۤ | 2.اِنَّ | 3.الْاِنْسَانَ | 4.لَیَطْغٰۤی
+orig : مگر انسان سرکش ہو جاتا ہے۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.اَنْ | 2.رَّاٰهُ | 3.اسْتَغْنٰی
+orig : اس بناء پر کہ وہ اپنے آپکو بے نیاز سمجھتا ہے۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.اِنَّ | 2.اِلٰی | 3.رَبِّكَ | 4.الرُّجْعٰی
+orig : کچھ شک نہیں کہ سب کو تمہارے پروردگار ہی کی طرف لوٹ کر جانا ہے۔
+
+ayah 9  real_words=3  # whole (unsegmented)
+words: 1.اَرَءَیْتَ | 2.الَّذِیْ | 3.یَنْهٰی
+orig : کیا تم نے اس شخص کو دیکھا جو منع کرتا ہے۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.عَبْدًا | 2.اِذَا | 3.صَلّٰی
+orig : یعنی ایک بندے کو جب وہ نماز پڑھنے لگتا ہے۔
+
+ayah 11  real_words=5  # whole (unsegmented)
+words: 1.اَرَءَیْتَ | 2.اِنْ | 3.كَانَ | 4.عَلَی | 5.الْهُدٰۤی
+orig : بھلا دیکھو تو اگر یہ راہ راست پر ہو۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.اَوْ | 2.اَمَرَ | 3.بِالتَّقْوٰی
+orig : یا پرہیزگاری کا حکم کرے تو منع کرنا کیسا۔
+
+ayah 13  real_words=4  # whole (unsegmented)
+words: 1.اَرَءَیْتَ | 2.اِنْ | 3.كَذَّبَ | 4.وَتَوَلّٰی
+orig : تو اس کا انجام کیا ہو گا ذرا دیکھو تو اگر اس نے دین حق کو جھٹلایا اور اس سے منہ موڑا۔
+
+ayah 14  real_words=5  # whole (unsegmented)
+words: 1.اَلَمْ | 2.یَعْلَمْ | 3.بِاَنَّ | 4.اللّٰهَ | 5.یَرٰی
+orig : کیا اسکو معلوم نہیں کہ اللہ دیکھ رہا ہے۔
+
+ayah 15  real_words=6  # whole (unsegmented)
+words: 1.كَلَّا | 2.لَىِٕنْ | 3.لَّمْ | 4.یَنْتَهِ ۙ۬ | 5.لَنَسْفَعًا | 6.بِالنَّاصِیَةِ
+orig : دیکھو اگر وہ باز نہ آئے گا تو ہم اسکی پیشانی کے بال پکڑ کر گھسیٹیں گے۔
+
+ayah 16  real_words=3  # whole (unsegmented)
+words: 1.نَاصِیَةٍ | 2.كَاذِبَةٍ | 3.خَاطِئَةٍ
+orig : یعنی اس جھوٹے خطارکار کی پیشانی کے بال۔
+
+ayah 17  real_words=2  # whole (unsegmented)
+words: 1.فَلْیَدْعُ | 2.نَادِیَهٗ
+orig : تو وہ اپنے یاران مجلس کو بلا لے۔
+
+ayah 18  real_words=2  # whole (unsegmented)
+words: 1.سَنَدْعُ | 2.الزَّبَانِیَةَ
+orig : ہم بھی دوزخ کے فرشتوں کو بلائیں گے۔
+
+ayah 19  real_words=5  # whole (unsegmented)
+words: 1.كَلَّا ؕ | 2.لَا | 3.تُطِعْهُ | 4.وَاسْجُدْ | 5.وَاقْتَرِبْ
+orig : دیکھو اس کا کہا نہ ماننا اور سجدہ کرنا اور اللہ کا قرب حاصل کرتے رہنا۔
