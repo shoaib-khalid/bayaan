@@ -1,0 +1,202 @@
+# surah 77 translation 2 ayahs 1-50
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالْمُرْسَلٰتِ | 2.عُرْفًا
+orig : ہواؤں کی قسم جو نرم نرم چلتی ہیں۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.فَالْعٰصِفٰتِ | 2.عَصْفًا
+orig : پھر زور پکڑ کر جھکڑ ہو جاتی ہیں۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.وَّالنّٰشِرٰتِ | 2.نَشْرًا
+orig : اور بادلوں کو ابھار کر اٹھا لاتی ہیں۔
+
+ayah 4  real_words=2  # whole (unsegmented)
+words: 1.فَالْفٰرِقٰتِ | 2.فَرْقًا
+orig : پھر انکو پھاڑ کر جدا جدا کر دیتی ہیں۔
+
+ayah 5  real_words=2  # whole (unsegmented)
+words: 1.فَالْمُلْقِیٰتِ | 2.ذِكْرًا
+orig : پھر فرشتوں کی قسم جو وحی لاتے ہیں۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.عُذْرًا | 2.اَوْ | 3.نُذْرًا
+orig : تاکہ عذر دور کر دیا جائے یا ڈر سنا دیا جائے۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.اِنَّمَا | 2.تُوْعَدُوْنَ | 3.لَوَاقِعٌ
+orig : کہ جس فیصلے کا تم سے وعدہ کیا جاتا ہے وہ ہو کر رہے گا۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.فَاِذَا | 2.النُّجُوْمُ | 3.طُمِسَتْ
+orig : جب تاروں کی چمک جاتی رہے۔
+
+ayah 9  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.السَّمَآءُ | 3.فُرِجَتْ
+orig : اور جب آسمان میں شگاف پڑ جائیں۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْجِبَالُ | 3.نُسِفَتْ
+orig : اور جب پہاڑ ریزہ ریزہ کر کے اڑا دئیے جائیں۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الرُّسُلُ | 3.اُقِّتَتْ
+orig : اور جب پیغمبروں کیلئے وقت مقرر کر دیا جائے۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.لِاَیِّ | 2.یَوْمٍ | 3.اُجِّلَتْ
+orig : بھلا ان کاموں میں تاخیر کس لئے کی گئ؟
+
+ayah 13  real_words=2  # whole (unsegmented)
+words: 1.لِیَوْمِ | 2.الْفَصْلِ
+orig : فیصلے کے دن کے لئے۔
+
+ayah 14  real_words=5  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.یَوْمُ | 5.الْفَصْلِ
+orig : اور تمہیں کیا خبر کہ فیصلے کا دن کیا ہے۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کے لئے خرابی ہو گی۔
+
+ayah 16  real_words=3  # whole (unsegmented)
+words: 1.اَلَمْ | 2.نُهْلِكِ | 3.الْاَوَّلِیْنَ
+orig : کیا ہم نے پہلے لوگوں کو ہلاک نہیں کر ڈالا تھا۔
+
+ayah 17  real_words=3  # whole (unsegmented)
+words: 1.ثُمَّ | 2.نُتْبِعُهُمُ | 3.الْاٰخِرِیْنَ
+orig : پھر ان پچھلوں کو بھی انکے پیچھے بھیج دیتے ہیں۔
+
+ayah 18  real_words=3  # whole (unsegmented)
+words: 1.كَذٰلِكَ | 2.نَفْعَلُ | 3.بِالْمُجْرِمِیْنَ
+orig : ہم گنہگاروں کے ساتھ ایسا ہی کیا کرتے ہیں۔
+
+ayah 19  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 20  real_words=5  # whole (unsegmented)
+words: 1.اَلَمْ | 2.نَخْلُقْكُّمْ | 3.مِّنْ | 4.مَّآءٍ | 5.مَّهِیْنٍ
+orig : کیا ہم نے تمکو حقیر پانی سے نہیں پیدا کیا۔
+
+ayah 21  real_words=4  # whole (unsegmented)
+words: 1.فَجَعَلْنٰهُ | 2.فِیْ | 3.قَرَارٍ | 4.مَّكِیْنٍ
+orig : پھر اس کو ایک محفوظ جگہ میں رکھا۔
+
+ayah 22  real_words=3  # whole (unsegmented)
+words: 1.اِلٰی | 2.قَدَرٍ | 3.مَّعْلُوْمٍ
+orig : ایک وقت معین تک۔
+
+ayah 23  real_words=3  # whole (unsegmented)
+words: 1.فَقَدَرْنَا ۖۗ | 2.فَنِعْمَ | 3.الْقٰدِرُوْنَ
+orig : پھر ہم نے اندازہ مقرر کیا سو ہم کیا ہی خوب اندازہ مقرر کرنے والے ہیں۔
+
+ayah 24  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 25  real_words=4  # whole (unsegmented)
+words: 1.اَلَمْ | 2.نَجْعَلِ | 3.الْاَرْضَ | 4.كِفَاتًا
+orig : کیا ہم نے زمین کو سمیٹنے والی نہیں بنایا۔
+
+ayah 26  real_words=2  # whole (unsegmented)
+words: 1.اَحْیَآءً | 2.وَّاَمْوَاتًا
+orig : یعنی زندوں اور مردوں کو۔
+
+ayah 27  real_words=7  # whole (unsegmented)
+words: 1.وَّجَعَلْنَا | 2.فِیْهَا | 3.رَوَاسِیَ | 4.شٰمِخٰتٍ | 5.وَّاَسْقَیْنٰكُمْ | 6.مَّآءً | 7.فُرَاتًا
+orig : اور ہم نے اس پر اونچے اونچے پہاڑ رکھ دیئے اور تم لوگوں کو میٹھا پانی پلایا۔
+
+ayah 28  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 29  real_words=6  # whole (unsegmented)
+words: 1.اِنْطَلِقُوْۤا | 2.اِلٰی | 3.مَا | 4.كُنْتُمْ | 5.بِهٖ | 6.تُكَذِّبُوْنَ
+orig : جس چیز کو تم جھٹلایا کرتے تھے اب اس کی طرف چلو۔
+
+ayah 30  real_words=6  # whole (unsegmented)
+words: 1.اِنْطَلِقُوْۤا | 2.اِلٰی | 3.ظِلٍّ | 4.ذِیْ | 5.ثَلٰثِ | 6.شُعَبٍ
+orig : یعنی اس سائے کی طرف چلو جسکی تین شاخیں ہیں۔
+
+ayah 31  real_words=6  # whole (unsegmented)
+words: 1.لَّا | 2.ظَلِیْلٍ | 3.وَّلَا | 4.یُغْنِیْ | 5.مِنَ | 6.اللَّهَبِ
+orig : نہ ٹھنڈی چھاؤں اور نہ شعلوں سے بچاؤ۔
+
+ayah 32  real_words=4  # whole (unsegmented)
+words: 1.اِنَّهَا | 2.تَرْمِیْ | 3.بِشَرَرٍ | 4.كَالْقَصْرِ
+orig : اس سے آگ کی اتنی اتنی بڑی چنگاریاں اڑتی ہیں جیسے محل۔
+
+ayah 33  real_words=3  # whole (unsegmented)
+words: 1.كَاَنَّهٗ | 2.جِمٰلَتٌ | 3.صُفْرٌ
+orig : گویا زرد رنگ کے اونٹ ہیں۔
+
+ayah 34  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 35  real_words=4  # whole (unsegmented)
+words: 1.هٰذَا | 2.یَوْمُ | 3.لَا | 4.یَنْطِقُوْنَ
+orig : یہ وہ دن ہے کہ لوگ لب تک نہ ہلا سکیں گے۔
+
+ayah 36  real_words=4  # whole (unsegmented)
+words: 1.وَلَا | 2.یُؤْذَنُ | 3.لَهُمْ | 4.فَیَعْتَذِرُوْنَ
+orig : اور نہ انکو اجازت دی جائے گی کہ عذر کر سکیں۔
+
+ayah 37  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 38  real_words=5  # whole (unsegmented)
+words: 1.هٰذَا | 2.یَوْمُ | 3.الْفَصْلِ ۚ | 4.جَمَعْنٰكُمْ | 5.وَالْاَوَّلِیْنَ
+orig : یہی فیصلے کا دن ہے جس میں ہم نے تمکو اور پہلے لوگوں کو جمع کیا ہے۔
+
+ayah 39  real_words=5  # whole (unsegmented)
+words: 1.فَاِنْ | 2.كَانَ | 3.لَكُمْ | 4.كَیْدٌ | 5.فَكِیْدُوْنِ
+orig : اگر تمکو کوئی داؤں آتا ہو تو مجھ سے کر چلو۔
+
+ayah 40  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 41  real_words=5  # whole (unsegmented)
+words: 1.اِنَّ | 2.الْمُتَّقِیْنَ | 3.فِیْ | 4.ظِلٰلٍ | 5.وَّعُیُوْنٍ
+orig : بیشک پرہیزگار سایوں اور چشموں میں ہوں گے۔
+
+ayah 42  real_words=3  # whole (unsegmented)
+words: 1.وَّفَوَاكِهَ | 2.مِمَّا | 3.یَشْتَهُوْنَ
+orig : اور میووں میں جو انکو مرغوب ہوں۔
+
+ayah 43  real_words=6  # whole (unsegmented)
+words: 1.كُلُوْا | 2.وَاشْرَبُوْا | 3.هَنِیْٓـًٔا | 4.بِمَا | 5.كُنْتُمْ | 6.تَعْمَلُوْنَ
+orig : جو عمل تم کرتے رہے تھے انکے بدلے میں مزے سے کھاؤ اور پیو۔
+
+ayah 44  real_words=4  # whole (unsegmented)
+words: 1.اِنَّا | 2.كَذٰلِكَ | 3.نَجْزِی | 4.الْمُحْسِنِیْنَ
+orig : ہم نیکوکاروں کو ایسا ہی بدلہ دیا کرتے ہیں۔
+
+ayah 45  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 46  real_words=5  # whole (unsegmented)
+words: 1.كُلُوْا | 2.وَتَمَتَّعُوْا | 3.قَلِیْلًا | 4.اِنَّكُمْ | 5.مُّجْرِمُوْنَ
+orig : اے جھٹلانے والو دنیا میں تم کسی قدر کھا لو اور فائدے اٹھا لو تم بیشک گنہگار ہو۔
+
+ayah 47  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 48  real_words=6  # whole (unsegmented)
+words: 1.وَاِذَا | 2.قِیْلَ | 3.لَهُمُ | 4.ارْكَعُوْا | 5.لَا | 6.یَرْكَعُوْنَ
+orig : اور جب ان سے کہا جاتا ہے کہ اللہ کے آگے جھکو تو جھکتے نہیں۔
+
+ayah 49  real_words=3  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.یَّوْمَىِٕذٍ | 3.لِّلْمُكَذِّبِیْنَ
+orig : اس دن جھٹلانے والوں کی خرابی ہو گی۔
+
+ayah 50  real_words=4  # whole (unsegmented)
+words: 1.فَبِاَیِّ | 2.حَدِیْثٍ | 3.بَعْدَهٗ | 4.یُؤْمِنُوْنَ
+orig : اب اس کے بعد یہ کون سی بات پر ایمان لائیں گے؟
