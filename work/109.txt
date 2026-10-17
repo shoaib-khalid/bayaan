@@ -1,0 +1,26 @@
+# surah 109 translation 2 ayahs 1-6
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=3  # whole (unsegmented)
+words: 1.قُلْ | 2.یٰۤاَیُّهَا | 3.الْكٰفِرُوْنَ
+orig : اے پیغمبر ﷺ کہدو کہ اے کافرو!
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.لَاۤ | 2.اَعْبُدُ | 3.مَا | 4.تَعْبُدُوْنَ
+orig : جن بتوں کو تم پوجتے ہو انکو میں نہیں پوجتا۔
+
+ayah 3  real_words=5  # whole (unsegmented)
+words: 1.وَلَاۤ | 2.اَنْتُمْ | 3.عٰبِدُوْنَ | 4.مَاۤ | 5.اَعْبُدُ
+orig : اور جس معبود کی میں عبادت کرتا ہوں اسکی تم عبادت نہیں کرتے۔
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.وَلَاۤ | 2.اَنَا | 3.عَابِدٌ | 4.مَّا | 5.عَبَدْتُّمْ
+orig : اور میں پھر کہتا ہوں کہ جنکی تم پرستش کرتے ہو انکی میں پرستش کرنے والا نہیں ہوں۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.وَلَاۤ | 2.اَنْتُمْ | 3.عٰبِدُوْنَ | 4.مَاۤ | 5.اَعْبُدُ
+orig : اور نہ تم اسکی بندگی کرنے والے معلوم ہوتے ہو جسکی میں بندگی کرتا ہوں۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.لَكُمْ | 2.دِیْنُكُمْ | 3.وَلِیَ | 4.دِیْنِ
+orig : تمہارے لئے تمہارا رستہ میرے لئے میرا رستہ۔
