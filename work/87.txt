@@ -1,0 +1,78 @@
+# surah 87 translation 2 ayahs 1-19
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.سَبِّحِ | 2.اسْمَ | 3.رَبِّكَ | 4.الْاَعْلَی
+orig : اے پیغمبر ﷺ اپنے پروردگار عالی شان کے نام کی تسبیح کرو۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.خَلَقَ | 3.فَسَوّٰی
+orig : جس نے انسان کو بنایا پھر اسکے اعضاء کو درست کیا۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَالَّذِیْ | 2.قَدَّرَ | 3.فَهَدٰی
+orig : اور جس نے اس کا اندازہ ٹھہرایا پھر اسکو رستہ بتایا۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَالَّذِیْۤ | 2.اَخْرَجَ | 3.الْمَرْعٰی
+orig : اور جس نے چارہ اگایا۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.فَجَعَلَهٗ | 2.غُثَآءً | 3.اَحْوٰی
+orig : پھر اسکو سیاہ رنگ کا کوڑا کر دیا۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.سَنُقْرِئُكَ | 2.فَلَا | 3.تَنْسٰۤی
+orig : اے نبی ﷺ ہم تمہیں پڑھا دیں گے پھر تم فراموش نہ کرو گے۔
+
+ayah 7  real_words=9  # whole (unsegmented)
+words: 1.اِلَّا | 2.مَا | 3.شَآءَ | 4.اللّٰهُ ؕ | 5.اِنَّهٗ | 6.یَعْلَمُ | 7.الْجَهْرَ | 8.وَمَا | 9.یَخْفٰی
+orig : مگر جو اللہ چاہے۔ وہ کھلی بات کو بھی جانتا ہے اور چھپی کو بھی۔
+
+ayah 8  real_words=2  # whole (unsegmented)
+words: 1.وَنُیَسِّرُكَ | 2.لِلْیُسْرٰی
+orig : اور ہم تمکو آسان طریقے کی توفیق دیں گے۔
+
+ayah 9  real_words=4  # whole (unsegmented)
+words: 1.فَذَكِّرْ | 2.اِنْ | 3.نَّفَعَتِ | 4.الذِّكْرٰی
+orig : سو جہاں تک نصیحت کے نافع ہونے کی امید ہو نصیحت کرتے رہو۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.سَیَذَّكَّرُ | 2.مَنْ | 3.یَّخْشٰی
+orig : جو خوف رکھتا ہے وہ تو نصیحت حاصل کرے گا۔
+
+ayah 11  real_words=2  # whole (unsegmented)
+words: 1.وَیَتَجَنَّبُهَا | 2.الْاَشْقَی
+orig : اور بے خوف بدبخت اس سے کترائے گا۔
+
+ayah 12  real_words=4  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.یَصْلَی | 3.النَّارَ | 4.الْكُبْرٰی
+orig : جو بڑی تیز آگ میں داخل ہو گا۔
+
+ayah 13  real_words=6  # whole (unsegmented)
+words: 1.ثُمَّ | 2.لَا | 3.یَمُوْتُ | 4.فِیْهَا | 5.وَلَا | 6.یَحْیٰی
+orig : پھر وہاں نہ مرے گا اور نہ جئے گا۔
+
+ayah 14  real_words=4  # whole (unsegmented)
+words: 1.قَدْ | 2.اَفْلَحَ | 3.مَنْ | 4.تَزَكّٰی
+orig : بیشک وہ مراد کو پہنچ گیا جو پاک ہوا۔
+
+ayah 15  real_words=4  # whole (unsegmented)
+words: 1.وَذَكَرَ | 2.اسْمَ | 3.رَبِّهٖ | 4.فَصَلّٰی
+orig : اور اپنے پروردگار کا نام لیتا رہا اور نماز پڑھتا رہا۔
+
+ayah 16  real_words=4  # whole (unsegmented)
+words: 1.بَلْ | 2.تُؤْثِرُوْنَ | 3.الْحَیٰوةَ | 4.الدُّنْیَا
+orig : بات یہ ہے کہ تم لوگ تو دنیا کی زندگی کو ترجیح دیتے ہو۔
+
+ayah 17  real_words=3  # whole (unsegmented)
+words: 1.وَالْاٰخِرَةُ | 2.خَیْرٌ | 3.وَّاَبْقٰی
+orig : حالانکہ آخرت بہت بہتر اور ہمیشہ باقی رہنے والی ہے۔
+
+ayah 18  real_words=5  # whole (unsegmented)
+words: 1.اِنَّ | 2.هٰذَا | 3.لَفِی | 4.الصُّحُفِ | 5.الْاُوْلٰی
+orig : یہی بات پہلے صحیفوں میں بھی درج ہے۔
+
+ayah 19  real_words=3  # whole (unsegmented)
+words: 1.صُحُفِ | 2.اِبْرٰهِیْمَ | 3.وَمُوْسٰی
+orig : یعنی ابراہیم اور موسٰی کے صحیفوں میں۔
