@@ -1,0 +1,106 @@
+# surah 88 translation 2 ayahs 1-26
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.هَلْ | 2.اَتٰىكَ | 3.حَدِیْثُ | 4.الْغَاشِیَةِ
+orig : بھلا تمکو ڈھانپ لینے والی یعنی قیامت کا حال معلوم ہوا ہے؟
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وُجُوْهٌ | 2.یَّوْمَىِٕذٍ | 3.خَاشِعَةٌ
+orig : اس روز بہت سے چہرے یعنی لوگ ذلیل ہوں گے۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.عَامِلَةٌ | 2.نَّاصِبَةٌ
+orig : سخت محنت کرنے والے تھکے ماندے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.تَصْلٰی | 2.نَارًا | 3.حَامِیَةً
+orig : دہکتی آگ میں داخل ہوں گے۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.تُسْقٰی | 2.مِنْ | 3.عَیْنٍ | 4.اٰنِیَةٍ
+orig : انکو ایک کھولتے ہوئے چشمے کا پانی پلایا جائے گا۔
+
+ayah 6  real_words=6  # whole (unsegmented)
+words: 1.لَیْسَ | 2.لَهُمْ | 3.طَعَامٌ | 4.اِلَّا | 5.مِنْ | 6.ضَرِیْعٍ
+orig : ایک سخت خاردار جھاڑی کے سوا انکے لئے کوئی کھانا نہیں ہو گا۔
+
+ayah 7  real_words=6  # whole (unsegmented)
+words: 1.لَّا | 2.یُسْمِنُ | 3.وَلَا | 4.یُغْنِیْ | 5.مِنْ | 6.جُوْعٍ
+orig : جو نہ مفید غذا بنے اور نہ بھوک میں کچھ کام آئے۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.وُجُوْهٌ | 2.یَّوْمَىِٕذٍ | 3.نَّاعِمَةٌ
+orig : بہت سے چہرے یعنی لوگ اس روز شادمان بھی ہوں گے۔
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.لِّسَعْیِهَا | 2.رَاضِیَةٌ
+orig : اپنی محنت کے بدلے پر خوش۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.فِیْ | 2.جَنَّةٍ | 3.عَالِیَةٍ
+orig : بہشت بریں میں۔
+
+ayah 11  real_words=4  # whole (unsegmented)
+words: 1.لَّا | 2.تَسْمَعُ | 3.فِیْهَا | 4.لَاغِیَةً
+orig : وہاں کسی طرح کی لغو بات نہیں سنیں گے۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.فِیْهَا | 2.عَیْنٌ | 3.جَارِیَةٌ
+orig : اس میں چشمے بہ رہے ہوں گے۔
+
+ayah 13  real_words=3  # whole (unsegmented)
+words: 1.فِیْهَا | 2.سُرُرٌ | 3.مَّرْفُوْعَةٌ
+orig : وہاں تخت ہوں گے اونچے اونچے۔
+
+ayah 14  real_words=2  # whole (unsegmented)
+words: 1.وَّاَكْوَابٌ | 2.مَّوْضُوْعَةٌ
+orig : اور کٹورے قرینے سے رکھے ہوئے۔
+
+ayah 15  real_words=2  # whole (unsegmented)
+words: 1.وَّنَمَارِقُ | 2.مَصْفُوْفَةٌ
+orig : اور گاؤ تکیے قطار کی قطار لگے ہوئے۔
+
+ayah 16  real_words=2  # whole (unsegmented)
+words: 1.وَّزَرَابِیُّ | 2.مَبْثُوْثَةٌ
+orig : اور نفیس مسندیں جگہ جگہ بچھی ہوئی۔
+
+ayah 17  real_words=6  # whole (unsegmented)
+words: 1.اَفَلَا | 2.یَنْظُرُوْنَ | 3.اِلَی | 4.الْاِبِلِ | 5.كَیْفَ | 6.خُلِقَتْ
+orig : تو کیا یہ لوگ اونٹوں کی طرف نہیں دیکھتے کہ کیسے عجیب پیدا کئے گئے ہیں۔
+
+ayah 18  real_words=4  # whole (unsegmented)
+words: 1.وَاِلَی | 2.السَّمَآءِ | 3.كَیْفَ | 4.رُفِعَتْ
+orig : اور آسمان کی طرف کہ کیسا بلند کیا گیا ہے۔
+
+ayah 19  real_words=4  # whole (unsegmented)
+words: 1.وَاِلَی | 2.الْجِبَالِ | 3.كَیْفَ | 4.نُصِبَتْ
+orig : اور پہاڑوں کی طرف کہ کس طرح کھڑے کئے گئے ہیں۔
+
+ayah 20  real_words=4  # whole (unsegmented)
+words: 1.وَاِلَی | 2.الْاَرْضِ | 3.كَیْفَ | 4.سُطِحَتْ
+orig : اور زمین کی طرف کہ کس طرح بچھائی گئ۔
+
+ayah 21  real_words=4  # whole (unsegmented)
+words: 1.فَذَكِّرْ ؕ۫ | 2.اِنَّمَاۤ | 3.اَنْتَ | 4.مُذَكِّرٌ
+orig : پس اے نبی ﷺ تم تو نصیحت کرتے رہو کہ تم نصیحت کرنے والے ہی ہو۔
+
+ayah 22  real_words=3  # whole (unsegmented)
+words: 1.لَسْتَ | 2.عَلَیْهِمْ | 3.بِمُصَۜیْطِرٍ
+orig : تم ان پر داروغہ نہیں ہو۔
+
+ayah 23  real_words=4  # whole (unsegmented)
+words: 1.اِلَّا | 2.مَنْ | 3.تَوَلّٰی | 4.وَكَفَرَ
+orig : ہاں جس نے منہ پھیرا اور نہ مانا۔
+
+ayah 24  real_words=4  # whole (unsegmented)
+words: 1.فَیُعَذِّبُهُ | 2.اللّٰهُ | 3.الْعَذَابَ | 4.الْاَكْبَرَ
+orig : تو اللہ اسکو بہت بڑا عذاب دے گا۔
+
+ayah 25  real_words=3  # whole (unsegmented)
+words: 1.اِنَّ | 2.اِلَیْنَاۤ | 3.اِیَابَهُمْ
+orig : بیشک انکو ہمارے ہی پاس لوٹ کر آنا ہے۔
+
+ayah 26  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.اِنَّ | 3.عَلَیْنَا | 4.حِسَابَهُمْ
+orig : پھر ہمارے ہی ذمے ان سے حساب لینا ہے۔
