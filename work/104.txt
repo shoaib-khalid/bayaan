@@ -1,0 +1,38 @@
+# surah 104 translation 2 ayahs 1-9
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.وَیْلٌ | 2.لِّكُلِّ | 3.هُمَزَةٍ | 4.لُّمَزَةِ
+orig : ہر غیبت کرنے والے طعنے دینے والے کی خرابی ہے۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.لَّذِیْ | 2.جَمَعَ | 3.مَالًا | 4.وَّعَدَّدَهٗ
+orig : جو مال جمع کرتا ہے اور اسکو گن گن کر رکھتا ہے۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.یَحْسَبُ | 2.اَنَّ | 3.مَالَهٗۤ | 4.اَخْلَدَهٗ
+orig : شاید وہ خیال کرتا ہے کہ اس کا مال اسکی ہمیشہ کی زندگی کا موجب ہو گا۔
+
+ayah 4  real_words=4  # whole (unsegmented)
+words: 1.كَلَّا | 2.لَیُنْۢبَذَنَّ | 3.فِی | 4.الْحُطَمَةِ
+orig : ہرگز نہیں وہ ضرور حطمہ میں جھونک دیا جائے گا۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.الْحُطَمَةُ
+orig : اور تم کیا سمجھے کہ حطمہ کیا ہے۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.نَارُ | 2.اللّٰهِ | 3.الْمُوْقَدَةُ
+orig : وہ اللہ کی بھڑکائی ہوئی آگ ہے۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.الَّتِیْ | 2.تَطَّلِعُ | 3.عَلَی | 4.الْاَفْـِٕدَةِ
+orig : جو دلوں تک جا پہنچے گی۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.اِنَّهَا | 2.عَلَیْهِمْ | 3.مُّؤْصَدَةٌ
+orig : بیشک وہ اس میں بند کر دیئے جائیں گے۔
+
+ayah 9  real_words=3  # whole (unsegmented)
+words: 1.فِیْ | 2.عَمَدٍ | 3.مُّمَدَّدَةٍ
+orig : یعنی آگ کے لمبے لمبے ستونوں میں۔
