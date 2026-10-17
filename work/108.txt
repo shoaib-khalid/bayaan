@@ -1,0 +1,14 @@
+# surah 108 translation 2 ayahs 1-3
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=3  # whole (unsegmented)
+words: 1.اِنَّاۤ | 2.اَعْطَیْنٰكَ | 3.الْكَوْثَرَ
+orig : اے نبی ﷺ ہم نے تمکو کوثر یعنی بہت زیادہ بھلائی عطا فرمائی ہے۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.فَصَلِّ | 2.لِرَبِّكَ | 3.وَانْحَرْ
+orig : تو اپنے پروردگار کے لئے نماز پڑھا کرو اور قربانی کیا کرو۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.اِنَّ | 2.شَانِئَكَ | 3.هُوَ | 4.الْاَبْتَرُ
+orig : کچھ شک نہیں کہ تمہارا دشمن ہی بے نام رہے گا۔
