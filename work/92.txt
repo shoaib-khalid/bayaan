@@ -1,0 +1,86 @@
+# surah 92 translation 2 ayahs 1-21
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=3  # whole (unsegmented)
+words: 1.وَالَّیْلِ | 2.اِذَا | 3.یَغْشٰی
+orig : رات کی قسم جب وہ چھا جائے۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَالنَّهَارِ | 2.اِذَا | 3.تَجَلّٰی
+orig : اور دن کی قسم جب وہ روشن ہو جائے۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.وَمَا | 2.خَلَقَ | 3.الذَّكَرَ | 4.وَالْاُ
+orig : اور اس ذات کی قسم جس نے نر اور مادہ پیدا کئے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.اِنَّ | 2.سَعْیَكُمْ | 3.لَشَتّٰی
+orig : کہ تم لوگوں کی کوشش طرح طرح کی ہے۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.فَاَمَّا | 2.مَنْ | 3.اَعْطٰی | 4.وَاتَّقٰی
+orig : سو جس نے اللہ کے رستے میں مال دیا اور پرہیزگاری کی۔
+
+ayah 6  real_words=2  # whole (unsegmented)
+words: 1.وَصَدَّقَ | 2.بِالْحُسْنٰی
+orig : اور بہترین بات یعنی کلمہ توحید کو سچ جانا۔
+
+ayah 7  real_words=2  # whole (unsegmented)
+words: 1.فَسَنُیَسِّرُهٗ | 2.لِلْیُسْرٰی
+orig : تو اسکو ہم آسان طریقے کی توفیق دیں گے۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.مَنْ | 3.بَخِلَ | 4.وَاسْتَغْنٰی
+orig : اور جس نے بخل کیا اور بے پروا بنا رہا۔
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.وَكَذَّبَ | 2.بِالْحُسْنٰی
+orig : اور بہترین بات کو جھوٹ سمجھا۔
+
+ayah 10  real_words=2  # whole (unsegmented)
+words: 1.فَسَنُیَسِّرُهٗ | 2.لِلْعُسْرٰی
+orig : تو ہم اسے رفتہ رفتہ سختی میں پہنچا دینگے۔
+
+ayah 11  real_words=6  # whole (unsegmented)
+words: 1.وَمَا | 2.یُغْنِیْ | 3.عَنْهُ | 4.مَالُهٗۤ | 5.اِذَا | 6.تَرَدّٰی
+orig : اور جب وہ دوزخ کے گڑھے میں گرے گا تو اس کا مال اسکے کچھ بھی کام نہ آئے گا۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.اِنَّ | 2.عَلَیْنَا | 3.لَلْهُدٰی
+orig : یقینًا راہ دکھا دینا ہمارا ذمہ ہے۔
+
+ayah 13  real_words=4  # whole (unsegmented)
+words: 1.وَاِنَّ | 2.لَنَا | 3.لَلْاٰخِرَةَ | 4.وَالْاُوْلٰی
+orig : اور بیشک آخرت اور دنیا ہماری ہی ملکیت ہیں۔
+
+ayah 14  real_words=3  # whole (unsegmented)
+words: 1.فَاَنْذَرْتُكُمْ | 2.نَارًا | 3.تَلَظّٰی
+orig : سو میں نے تمکو بھڑکتی آگ سے خبردار کر دیا ہے۔
+
+ayah 15  real_words=4  # whole (unsegmented)
+words: 1.لَا | 2.یَصْلٰىهَاۤ | 3.اِلَّا | 4.الْاَشْقَی
+orig : اس میں وہی داخل ہو گا جو بڑا بدبخت ہے۔
+
+ayah 16  real_words=3  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.كَذَّبَ | 3.وَتَوَلّٰی
+orig : جس نے جھٹلایا اور منہ پھیرا۔
+
+ayah 17  real_words=2  # whole (unsegmented)
+words: 1.وَسَیُجَنَّبُهَا | 2.الْاَتْقَی
+orig : اور جو بڑا پرہیزگار ہے وہ اس سے بچا لیا جائے گا۔
+
+ayah 18  real_words=4  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.یُؤْتِیْ | 3.مَالَهٗ | 4.یَتَزَكّٰی
+orig : وہ جو اپنا مال دیتا ہے تاکہ پاک ہو۔
+
+ayah 19  real_words=6  # whole (unsegmented)
+words: 1.وَمَا | 2.لِاَحَدٍ | 3.عِنْدَهٗ | 4.مِنْ | 5.نِّعْمَةٍ | 6.تُجْزٰۤی
+orig : اور اس لئے نہیں دیتا کہ اس پر کسی کا احسان ہے جس کا بدلہ اتارا جائے۔
+
+ayah 20  real_words=5  # whole (unsegmented)
+words: 1.اِلَّا | 2.ابْتِغَآءَ | 3.وَجْهِ | 4.رَبِّهِ | 5.الْاَعْلٰی
+orig : بلکہ اپنے رب اعلیٰ کی رضامندی حاصل کرنے کے لئے دیتا ہے۔
+
+ayah 21  real_words=2  # whole (unsegmented)
+words: 1.وَلَسَوْفَ | 2.یَرْضٰی
+orig : اور وہ عنقریب خوش ہو جائے گا۔
