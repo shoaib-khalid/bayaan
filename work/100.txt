@@ -1,0 +1,46 @@
+# surah 100 translation 2 ayahs 1-11
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالْعٰدِیٰتِ | 2.ضَبْحًا
+orig : ان سرپٹ دوڑانے والے گھوڑوں کی قسم جو ہانپ اٹھتے ہیں۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.فَالْمُوْرِیٰتِ | 2.قَدْحًا
+orig : پھر پتھروں پر نعل مار کر آگ نکالتے ہیں۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.فَالْمُغِیْرٰتِ | 2.صُبْحًا
+orig : پھر صبح کو چھاپہ مارتے ہیں۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.فَاَثَرْنَ | 2.بِهٖ | 3.نَقْعًا
+orig : پھر اس وقت گرد اڑاتے ہیں۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.فَوَسَطْنَ | 2.بِهٖ | 3.جَمْعًا
+orig : پھر اس وقت دشمن کی فوج میں جا گھستے ہیں۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.اِنَّ | 2.الْاِنْسَانَ | 3.لِرَبِّهٖ | 4.لَكَنُوْدٌ
+orig : کہ انسان اپنے پروردگار کا بڑا ناشکرا ہے۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.وَاِنَّهٗ | 2.عَلٰی | 3.ذٰلِكَ | 4.لَشَهِیْدٌ
+orig : اور وہ اس بات سے آگاہ بھی ہے۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.وَاِنَّهٗ | 2.لِحُبِّ | 3.الْخَیْرِ | 4.لَشَدِیْدٌ
+orig : اور بیشک وہ مال سے بہت محبت کرنے والا ہے۔
+
+ayah 9  real_words=7  # whole (unsegmented)
+words: 1.اَفَلَا | 2.یَعْلَمُ | 3.اِذَا | 4.بُعْثِرَ | 5.مَا | 6.فِی | 7.الْقُبُوْرِ
+orig : کیا وہ اس وقت کو نہیں جانتا کہ جب مردے قبروں میں سے باہر نکال لئے جائیں گے۔
+
+ayah 10  real_words=4  # whole (unsegmented)
+words: 1.وَحُصِّلَ | 2.مَا | 3.فِی | 4.الصُّدُوْرِ
+orig : اور جو بھید دلوں میں ہیں وہ ظاہر کر دیئے جائیں گے۔
+
+ayah 11  real_words=5  # whole (unsegmented)
+words: 1.اِنَّ | 2.رَبَّهُمْ | 3.بِهِمْ | 4.یَوْمَىِٕذٍ | 5.لَّخَبِیْرٌ
+orig : بیشک ان کا پروردگار اس روز ان سے خوب واقف ہو گا۔
