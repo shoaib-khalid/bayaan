@@ -1,0 +1,22 @@
+# surah 105 translation 2 ayahs 1-5
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=7  # whole (unsegmented)
+words: 1.اَلَمْ | 2.تَرَ | 3.كَیْفَ | 4.فَعَلَ | 5.رَبُّكَ | 6.بِاَصْحٰبِ | 7.الْفِیْلِ
+orig : کیا تم نے نہیں دیکھا کہ تمہارے پروردگار نے ہاتھی والوں کے ساتھ کیا کیا۔
+
+ayah 2  real_words=5  # whole (unsegmented)
+words: 1.اَلَمْ | 2.یَجْعَلْ | 3.كَیْدَهُمْ | 4.فِیْ | 5.تَضْلِیْلٍ
+orig : کیا اس نے ان کا داؤں غلط نہیں کیا؟
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.وَّاَرْسَلَ | 2.عَلَیْهِمْ | 3.طَیْرًا | 4.اَبَابِیْلَ
+orig : اور اس نے ان پر جھنڈ کے جھنڈ پرندے چھوڑ دیئے۔
+
+ayah 4  real_words=4  # whole (unsegmented)
+words: 1.تَرْمِیْهِمْ | 2.بِحِجَارَةٍ | 3.مِّنْ | 4.سِجِّیْلٍ
+orig : جو ان پر کھنگر کی پتھریاں پھینکتے تھے۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.فَجَعَلَهُمْ | 2.كَعَصْفٍ | 3.مَّاْكُوْلٍ
+orig : تو اس نے ان کو ایسا کر دیا جیسے کھایا ہوا بھس۔
