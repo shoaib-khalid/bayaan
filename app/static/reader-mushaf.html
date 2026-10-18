@@ -125,6 +125,9 @@
 <body>
   <div class="bar" dir="ltr">
     <label>Surah <select id="surahSel"></select></label>
+    <label>Translation
+      <select id="trSel" title="Which translation appears under each line"></select>
+    </label>
     <span class="sep"></span>
     <button id="fontMinus" title="Smaller text — more fits on each page">A−</button>
     <span id="zoomLabel">100%</span>
@@ -1198,6 +1201,31 @@ async function loadSurahs() {
   }
 }
 
+/* The translations come from the database, so adding one there makes it
+   available here without touching this page. */
+async function loadTranslations() {
+  const sel = $("trSel");
+  try {
+    const list = await (await fetch("/translations")).json();
+    sel.innerHTML = "";
+    for (const t of list) {
+      const o = document.createElement("option");
+      o.value = t.id;
+      o.textContent = t.name;
+      sel.appendChild(o);
+    }
+  } catch (e) { /* keep whatever is there and still show the active id */ }
+  // If the URL names a translation the list does not have, keep it selectable
+  // rather than silently reading a different translation.
+  if (![...sel.options].some((o) => o.value === String(S.translationId))) {
+    const o = document.createElement("option");
+    o.value = S.translationId;
+    o.textContent = `translation ${S.translationId}`;
+    sel.appendChild(o);
+  }
+  sel.value = String(S.translationId);
+}
+
 async function loadSurah(id, opts = {}) {
   S.surahId = Math.max(1, Math.min(114, id));
   $("surahSel").value = String(S.surahId);
@@ -1223,6 +1251,13 @@ async function loadSurah(id, opts = {}) {
 
 /* --------------------------------------------------------------------------- */
 $("surahSel").addEventListener("change", (e) => loadSurah(+e.target.value, { page: 0 }));
+/* Changing the translation starts again at the first page: page numbers do not
+   correspond between translations, since one with no segments lays out far more
+   densely, so "page 40" would land somewhere unrelated. */
+$("trSel").addEventListener("change", (e) => {
+  S.translationId = Math.max(1, parseInt(e.target.value, 10) || 2);
+  loadSurah(S.surahId, { page: 0 });
+});
 $("btnNext").addEventListener("click", nextPage);
 $("btnPrev").addEventListener("click", prevPage);
 $("fontPlus").addEventListener("click", () => changeZoom(+1));
@@ -1281,6 +1316,7 @@ window.addEventListener("orientationchange", () => setTimeout(fit, 200));
 
   fit();
   await loadSurahs();
+  await loadTranslations();
   await loadSurah(startSurah, { page: startPage });
 })();
 </script>

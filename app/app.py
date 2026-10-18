@@ -280,6 +280,24 @@ def list_surahs():
 
 
 @app.get(
+    "/translations",
+    summary="List translations (id, name, language, direction)",
+    description="Used by the reader/editor to build the translation dropdown.",
+)
+def list_translations():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT id, name, language, direction FROM translations ORDER BY id"
+        )
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.get(
     "/original/{translation_id}/{surah_id}/{ayah_number}",
     summary="Get the original whole-ayah translation (read-only reference)",
     description=(
