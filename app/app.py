@@ -359,6 +359,14 @@ def editor_page():
     return FileResponse(index)
 
 
+@app.get("/editor/release-notes", response_class=HTMLResponse, include_in_schema=False)
+def editor_release_notes_page():
+    page = STATIC_DIR / "editor-release-notes.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="editor-release-notes.html not built")
+    return FileResponse(page)
+
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index_page():
     index = STATIC_DIR / "index.html"

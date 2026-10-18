@@ -98,6 +98,12 @@
 
   .pill { display:inline-block; font-family:system-ui,sans-serif; font-size:12px; border-radius:20px;
     padding:2px 10px; margin-inline-start:6px; background:#efe9db; color:var(--muted); }
+
+  /* version badge — links to the release notes for the running version */
+  .bar .ver { font-family:system-ui,sans-serif; font-size:12px; color:var(--gold);
+    text-decoration:none; border:1px solid rgba(156,124,62,.5); border-radius:999px;
+    padding:3px 9px; background:var(--btn); }
+  .bar .ver:hover { background:var(--amber); }
 </style>
 </head>
 <body>
@@ -110,19 +116,18 @@
     <select id="ayahSel" title="Choose a verse within this surah"></select>
   </label>
   <label>Translation
-    <select id="trSel" title="Which translation you are segmenting">
-      <option value="1">bayan-ul-quran</option>
-      <option value="2" selected>fateh-muhammad-jalandhry</option>
-    </select>
+    <select id="trSel" title="Which translation you are segmenting"></select>
   </label>
-  <button id="btnPrev" title="Previous ayah (keyboard: P)">◀ Prev</button>
-  <button id="btnNext" title="Next ayah — when AutoSave is ON, the current ayah is saved first (keyboard: N)">Next ▶</button>
+  <button id="btnNext" title="Next ayah — when AutoSave is ON, the current ayah is saved first (keyboard: N)">◀ Next</button>
+  <button id="btnPrev" title="Previous ayah (keyboard: P)">Prev ▶</button>
   <label title="When ON, pressing Next/Prev saves the current ayah automatically before navigating, so you never lose work and don't have to click Save repeatedly.">
     <input type="checkbox" id="autoSave" /> AutoSave
   </label>
   <button id="btnSave" class="primary" title="Save ALL segments of this ayah (overwrites what is in the database). Any un-assigned words + remaining translation are auto-added as the final segment. (keyboard: Alt+S)">Save</button>
   <button id="btnClear" class="danger" title="Clear all segments of this ayah and start over. The whole ayah translation is merged and put back into the script + translation boxes above; the table below is emptied. NOT saved until you press Save.">Start over</button>
   <button id="btnHelp" title="Show / hide the detailed usage guide">?</button>
+  <a id="verLink" class="ver" target="_blank" rel="noopener"
+     title="Release notes — what changed in this version"></a>
 </div>
 
 <div class="wrap">
@@ -133,7 +138,7 @@
     </h3>
     <div class="ayah-tag" id="ayahTag"></div>
 
-    <div class="hint rtl" id="scriptHint">Script (قرآن) — click one word, then shift+click another to select a range; only whole words can be selected.</div>
+    <div class="hint rtl" id="scriptHint">Script (قرآن) — click one word, then shift+click another to select a range; only whole words can be selected. Press Esc (or click the selected word again) to clear.</div>
     <div class="chiprow" id="chiprow" tabindex="0" dir="rtl" lang="ar"
          title="The remaining Arabic words. Click to select, shift+click for a range, or use ←/→ with shift. The golden ayah-end ornament is shown automatically and is NOT selectable."></div>
     <div class="legend">Sel: click = single word &nbsp;·&nbsp; shift+click / shift+←→ = range &nbsp;·&nbsp; the ayah marker (gold) is auto and never part of a segment</div>
@@ -154,7 +159,7 @@
       <button id="btnEditTr" title="Toggle editing of the translation box above (read-only by default so text isn’t changed by accident).">
         ✎ Edit translation
       </button>
-      <button id="btnAdd" class="primary" title="Create a segment from the currently selected script words + the currently selected translation text. The selected words and text are removed from this work area and appended (in order) to the segments table below. (keyboard: Alt+A, or Enter inside the translation box)">
+      <button id="btnAdd" class="primary" title="Create a segment from the currently selected script words + the currently selected translation text. The selected words and text are removed from this work area and appended (in order) to the segments table below. With NOTHING selected, the whole remainder (every un-assigned word + the remaining translation) becomes the final segment. (keyboard: Alt+A, or Enter inside the translation box)">
         + Add segment
       </button>
       <span class="meta">Selected script words: <b id="selWordsCount">0</b> &nbsp;·&nbsp; Selected translation chars: <b id="selTrCount">0</b></span>
@@ -240,6 +245,37 @@ function fillAyahSel(){
   sel.value = String(S.ayahNumber);
 }
 
+/* The editor version. Bump this on every change, and add a matching section to
+   /editor/release-notes (app/static/editor-release-notes.html). */
+const EDITOR_VERSION = "1.0.0";
+
+/* ---------------- translations ---------------- */
+/* The list comes from the database, so adding a translation there makes it
+   selectable here without touching this page. */
+let translationFromUrl = false;
+async function loadTranslations(){
+  const sel = $("trSel");
+  let list = [];
+  try { list = await (await fetch("/translations")).json(); }
+  catch(e){ list = []; }
+  sel.innerHTML = "";
+  for (const t of list){
+    const o = document.createElement("option");
+    o.value = t.id;
+    o.textContent = t.name;
+    sel.appendChild(o);
+  }
+  // No translation named in the URL: use the first in the table rather than a
+  // hardcoded id. An id the table does not contain falls back the same way, but
+  // says so, because silently editing a different translation would be worse.
+  const wanted = String(S.translationId);
+  if (!list.some(t => String(t.id) === wanted)){
+    if (translationFromUrl) toast(`Translation ${wanted} is not in the database — using the first one instead.`, "warn");
+    S.translationId = list.length ? list[0].id : S.translationId;
+  }
+  sel.value = String(S.translationId);
+}
+
 /* ---------------- load surah data ---------------- */
 async function loadSurahs(initial){
   const r = await fetch("/surahs");
@@ -263,6 +299,10 @@ async function loadSurah(initial){
 /* classify an ayah's word list and load its working state */
 function loadAyah(num){
   S.ayahNumber = num;
+  // Keep the ayah dropdown in step. It is populated when the surah loads, so
+  // without this, Next/Prev changed the ayah (and the URL) while the selector
+  // still showed the one you started on.
+  $("ayahSel").value = String(num);
   pushUrl();
   const meta = S.ayahMap[num];
   if (!meta) return;
@@ -356,6 +396,7 @@ $("chiprow").addEventListener("mousedown", e=>{
   e.preventDefault();
   const i = +sp.dataset.i;
   if (e.shiftKey && selA!==null){ selB = i; }
+  else if (selA === i && selB === i){ selA = selB = null; }   // click the selected word again = deselect
   else { selA = i; selB = i; }
   applySelClass($("chiprow"));
   updateSelCounts();
@@ -381,6 +422,24 @@ function updateSelCounts(){
   const ta = $("srcTr");
   const ns = (ta.selectionEnd-ta.selectionStart);
   $("selTrCount").textContent = Math.max(0,ns);
+}
+
+/* Clear the current selection (Esc, or clicking the selected word again).
+
+   Without this, one accidental click on a word left the editor insisting on a
+   matching translation with no way back — and "nothing selected" is exactly the
+   state + Add segment needs in order to take the whole remainder. */
+function clearSelection(quiet){
+  const hadWords = selA !== null || selB !== null;
+  const ta = $("srcTr");
+  const hadText = ta.selectionStart !== ta.selectionEnd;
+  selA = selB = null;
+  if (hadText) ta.setSelectionRange(ta.value.length, ta.value.length);
+  if (splitRow !== -1){ splitRow = -1; splitWordIdx = null; renderSegments(); }
+  applySelClass($("chiprow"));
+  updateSelCounts();
+  if ((hadWords || hadText) && !quiet)
+    toast("Selection cleared — with nothing selected, “+ Add segment” assigns the whole remainder.", "ok");
 }
 
 /* --- translation box events --- */
@@ -431,6 +490,34 @@ function addSegment(){
   const lo = rangeStart(), hi = rangeEnd();
   const s0 = Math.min(ta.selectionStart, ta.selectionEnd);
   const s1 = Math.max(ta.selectionStart, ta.selectionEnd);
+
+  // Nothing selected at all: assign the whole remainder — every un-assigned word
+  // plus the remaining translation — as the final segment, which is the same
+  // step Save takes when it finalizes a partial edit. With no segment yet it
+  // becomes the first. An empty segment is never added; if nothing is left, say
+  // so. Nothing is written until Save.
+  if (lo === null && s0 === s1){
+    if (!leftoverWords().length){
+      toast("Every word is already in a segment — nothing left to assign.", "warn");
+      return;
+    }
+    if (!(ta.value || "").trim()){
+      toast("No remaining translation text for the leftover words. Type it with “✎ Edit translation”, or select the words and their text.", "warn");
+      return;
+    }
+    const fin = Editor.finalize(S.cur.allWords, S.cur.segs, ta.value);
+    if (!fin.ok){ toast(fin.msg, "warn"); return; }
+    S.cur.segs = fin.segs;
+    S.cur.wholeText = "";
+    markDirty();
+    selA = selB = null;
+    editingRow = -1; splitRow = -1;
+    renderAll();
+    toast(`Remaining words and translation added as segment ${fin.segs.length} (not saved yet).`, "ok");
+    $("btnNext").focus();
+    return;
+  }
+
   const res = Editor.addSegment(S.cur.allWords, S.cur.segs, ta.value, { lo, hi, trStart: s0, trEnd: s1 });
   if (!res.ok){
     toast(res.msg, "warn");
@@ -708,6 +795,13 @@ $("btnHelp").addEventListener("click", ()=>{
 /* keyboard shortcuts (when not typing in a text field) */
 document.addEventListener("keydown", (e)=>{
   const typing = /TEXTAREA|INPUT|SELECT/.test((e.target.tagName||""));
+  // Esc has to work wherever the focus is, including inside the translation
+  // box: it is the way out of a stray word selection.
+  if (e.key === "Escape"){
+    e.preventDefault();
+    clearSelection();
+    return;
+  }
   if (e.altKey && !e.ctrlKey){
     const k = e.key.toLowerCase();
     if (k==="s"){ e.preventDefault(); saveAyah(); }
@@ -727,11 +821,16 @@ document.addEventListener("keydown", (e)=>{
 async function init(){
   // read URL params
   const q = new URLSearchParams(location.search);
-  if (q.get("translation_id")) S.translationId = +q.get("translation_id");
+  if (q.get("translation_id")) { S.translationId = +q.get("translation_id"); translationFromUrl = true; }
   if (q.get("surah")) S.surahId = +q.get("surah");
   if (q.get("ayah")) S.ayahNumber = +q.get("ayah");
-  $("trSel").value = String(S.translationId);
   $("ayahSel").value = String(S.ayahNumber);
+  // Version, and the badge that links to the release notes for it.
+  document.title = `Bayaan — Segment Editor v${EDITOR_VERSION}`;
+  const ver = $("verLink");
+  ver.textContent = `v${EDITOR_VERSION}`;
+  ver.href = `/editor/release-notes#v${EDITOR_VERSION}`;
+  await loadTranslations();
   await loadSurahs();
 }
 init();
@@ -747,21 +846,22 @@ const HELP_HTML = `
 <ul>
   <li><b>Surah</b> — dropdown lists every surah <i>by name</i> (not just a number).</li>
   <li><b>Ayah</b> — dropdown of the verses in that surah; it is populated when the surah loads.</li>
-  <li><b>Translation</b> — which translation you are segmenting (2 = Jalandhri has data now).</li>
+  <li><b>Translation</b> — which translation you are segmenting. The list is read from the database.</li>
   <li>The URL always reflects <code>translation_id</code>, <code>surah</code>, <code>ayah</code> — copy it to jump straight back to the same place.</li>
-  <li><b>◀ Prev / Next ▶</b> move between verses. When <b>AutoSave</b> is ON, the current ayah is saved first, so you never have to click Save repeatedly.</li>
+  <li><b>◀ Next / Prev ▶</b> move between verses — each button sits on the side its arrow points to. When <b>AutoSave</b> is ON, the current ayah is saved first, so you never have to click Save repeatedly.</li>
 </ul>
 
 <h4>2 · Work area (top)</h4>
 <p>When an ayah has not been segmented yet, the whole ayah is shown here: its <b>script words</b> as clickable chips (right), and its full <b>translation</b> in the box (left/below).</p>
 <ul>
-  <li><b>Selecting script words:</b> click one word = single word; <b>shift+click</b> another = whole range; keyboard: focus the script box, <b>←/→</b> to move, <b>shift+←/→</b> to extend. Only <i>whole words</i> are selectable (a segment boundary is always between two words).</li>
+  <li><b>Selecting script words:</b> click one word = single word; <b>shift+click</b> another = whole range; keyboard: focus the script box, <b>←/→</b> to move, <b>shift+←/→</b> to extend. Only <i>whole words</i> are selectable (a segment boundary is always between two words). <b>Esc</b> — or clicking the already-selected word again — clears the selection, which is what <b>+ Add segment</b> needs in order to take the whole remainder.</li>
   <li>The golden <b>end-of-ayah ornament</b> is shown automatically at the end. It is never part of a segment and is not selectable.</li>
   <li><b>Selecting translation text:</b> drag (or shift+click) inside the translation box to select the exact Urdu that matches the words you selected. The box is <b>read-only by default</b> so text is not changed by accident — press <b>✎ Edit translation</b> only when you need to type/paste.</li>
   <li>Press <b>+ Add segment</b> (keyboard <b>Alt+A</b>, or <b>Enter</b> while in the translation box). The selected words + text are removed from the work area and appended to the segments table below, in order.</li>
+  <li>With <b>nothing selected</b>, <b>+ Add segment</b> assigns the whole remainder — every un-assigned word plus the remaining translation — as the final segment (the first one if there are none yet). It is not saved until you press <b>Save</b>.</li>
   <li>If you only made ONE segment (or a few) and there are still words/text left, <b>Save</b> (or Next with AutoSave) automatically turns the remainder into the final segment — so a partial edit ends up as two segments, never a hole.</li>
   <li><b>👁 Show original translation</b> (button between the script and the translation) loads the pristine whole-ayah translation from <code>translation_originals</code>. It is always read-only — a reference to compare against what the ayah originally said, even after you have segmented/edited it. It hides again when you navigate to another ayah.</li>
-  <li>If you did not select words or text, a non-blocking alert explains what to select.</li>
+  <li>If there is nothing left to assign, a non-blocking alert says so rather than adding an empty segment.</li>
 </ul>
 
 <h4>3 · Segments table (below)</h4>
@@ -795,6 +895,7 @@ const HELP_HTML = `
   <li><kbd>Alt+S</kbd> — save all segments of this ayah.</li>
   <li><kbd>Ctrl+Enter</kbd> — save &amp; go to next ayah.</li>
   <li><kbd>N</kbd> / <kbd>P</kbd> — next / previous ayah (when not typing).</li>
+  <li><kbd>Esc</kbd> — clear the current selection.</li>
   <li><kbd>←</kbd>/<kbd>→</kbd> in the script box — move word selection; add <kbd>Shift</kbd> to extend the range.</li>
   <li><kbd>Tab</kbd> — move focus between script box → translation box → controls.</li>
 </ul>
