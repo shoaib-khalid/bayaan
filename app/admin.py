@@ -273,18 +273,23 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
   .card tr:last-child td { border-bottom:0; }
   .ar { font-family:Quran, "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:21px; line-height:2.1;
         direction:rtl; text-align:right; color:#f6efe2; }
-  .ur { font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:16px; line-height:2.1;
+  .ur { font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:26px; line-height:2.1;
         direction:rtl; text-align:right; color:#e8dcc8; }
+  a.btn { display:inline-block; text-decoration:none; border-radius:6px; padding:8px 12px;
+          font-size:13px; font-weight:600; background:#241f18; color:#cbbfae;
+          border:1px solid #3a332a; white-space:nowrap; }
+  a.btn:hover { background:#2e271e; color:#f2ece3; }
+  .card .actions { display:flex; flex-direction:column; gap:6px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Private edits</h1>
   <p class="sub">Signed in as $who &nbsp;·&nbsp; <a href="/admin/users">Users</a> &nbsp;·&nbsp; <a href="/">Bayaan</a></p>
+  <p class="hint" style="margin:0 0 20px">Approving replaces the shared segments of that ayah with this person's copy. Their copy stays as it is.</p>
   $picker
   $banner
   $body
-  <p class="hint">Promoting replaces the canonical segments of that ayah. The person's private copy stays as it is.</p>
 </div>
 </body>
 </html>
@@ -294,19 +299,25 @@ _PROMOTE_CARD = Template("""<div class="card">
   <div class="head">
     <div><span class="title">$surah · ayah $ayah</span>
       <span class="muted">translation $translation · $count · $updated</span></div>
-    <form method="post" action="/admin/promote">
-      <input type="hidden" name="user_id" value="$user_id">
-      <input type="hidden" name="translation_id" value="$translation_id">
-      <input type="hidden" name="surah_id" value="$surah_id">
-      <input type="hidden" name="ayah_number" value="$ayah_number">
-      <button type="submit">Approve</button>
-    </form>
+    <div class="actions">
+      <form method="post" action="/admin/promote">
+        <input type="hidden" name="user_id" value="$user_id">
+        <input type="hidden" name="translation_id" value="$translation_id">
+        <input type="hidden" name="surah_id" value="$surah_id">
+        <input type="hidden" name="ayah_number" value="$ayah_number">
+        <button type="submit">Approve</button>
+      </form>
+      <a class="btn" href="$edit_url">Edit &amp; approve</a>
+    </div>
   </div>
   <table><tbody>$rows</tbody></table>
 </div>""")
 
+# Translation first (left), script second (right) — the same order the editor
+# uses for its segment rows, so a reviewer reads script against translation
+# without re-learning the layout between pages.
 _SEGMENT_ROW = Template(
-    """<tr><td class="ar">$words</td><td class="ur">$text</td></tr>"""
+    """<tr><td class="ur">$text</td><td class="ar">$words</td></tr>"""
 )
 
 
@@ -378,6 +389,14 @@ def render_promotions(
                     translation_id=group["translation_id"],
                     surah_id=group["surah_id"],
                     ayah_number=group["ayah_number"],
+                    # Opens the editor on this person's copy of the ayah. Saving
+                    # there writes the shared text, which is the approval.
+                    edit_url=(
+                        f"/editor?translation_id={group['translation_id']}"
+                        f"&amp;surah={group['surah_id']}"
+                        f"&amp;ayah={group['ayah_number']}"
+                        f"&amp;as_user={selected_user_id}"
+                    ),
                     rows=rows,
                 )
             )

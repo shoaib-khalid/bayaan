@@ -174,6 +174,10 @@
      title="Release notes — what changed in this version"></a>
 </div>
 
+<div id="asUserNote" class="legend" hidden style="max-width:1180px;margin:0 auto 10px;padding:8px 12px;
+     border:1px solid var(--border);border-radius:8px;background:#f7f1e2;color:var(--ink);
+     direction:ltr;text-align:left;font-size:13px"></div>
+
 <div class="wrap">
   <!-- ============ SOURCE / WORK AREA ============ -->
   <div class="panel">
@@ -259,6 +263,7 @@ function toast(msg, kind){
 const S = {
   surahs: [],                 // [{id,name_arabic,name_english,ayah_count}]
   surahId: 1, ayahNumber: 1, translationId: 2,
+  asUser: null,               // admin review: load this account's private copy
   ayahMap: null,              // { [ayahNumber]: { words:[{id,word_index,text,is_word}], segments:[{...}] } }
   cur: null,                  // current ayah working state, see resetAyahState()
 };
@@ -333,7 +338,10 @@ async function loadSurahs(initial){
   await loadSurah(initial);
 }
 async function loadSurah(initial){
-  const r = await fetch(`/surah/${S.surahId}?translation_id=${S.translationId}`);
+  // as_user is only meaningful for an admin reviewing someone else's copy; the
+  // server ignores it for everyone else.
+  const query = `translation_id=${S.translationId}` + (S.asUser ? `&as_user=${S.asUser}` : "");
+  const r = await fetch(`/surah/${S.surahId}?${query}`);
   const data = await r.json();
   S.ayahMap = {};
   for (const a of data.ayahs){
@@ -1051,6 +1059,7 @@ function pushUrl(){
   p.set("translation_id", S.translationId);
   p.set("surah", S.surahId);
   p.set("ayah", S.ayahNumber);
+  if (S.asUser) p.set("as_user", S.asUser);
   history.replaceState(null, "", "/editor?"+p.toString());
 }
 
@@ -1130,7 +1139,15 @@ async function init(){
   if (q.get("translation_id")) { S.translationId = +q.get("translation_id"); translationFromUrl = true; }
   if (q.get("surah")) S.surahId = +q.get("surah");
   if (q.get("ayah")) S.ayahNumber = +q.get("ayah");
+  if (q.get("as_user")) S.asUser = +q.get("as_user");
   $("ayahSel").value = String(S.ayahNumber);
+  // Reviewing somebody else's copy: say so, because Save here writes the shared
+  // text rather than a private one — that is the approval.
+  if (S.asUser){
+    const note = $("asUserNote");
+    note.hidden = false;
+    note.textContent = "Reviewing another account's private segments. Saving this ayah writes them to the shared text that every reader gets — their own copy is left untouched.";
+  }
   // Version, and the badge that links to the release notes for it.
   document.title = `Bayaan — Segment Editor v${EDITOR_VERSION}`;
   const ver = $("verLink");

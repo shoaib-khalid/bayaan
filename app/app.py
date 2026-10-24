@@ -170,6 +170,13 @@ def get_surah_render(
     surah_id: int,
     request: Request,
     translation_id: int = Query(default=2, description="translations.id (1=bayan-ul-quran, 2=fateh-muhammad-jalandhry)"),
+    as_user: int | None = Query(
+        default=None,
+        description=(
+            "Admin only: show this account's private segments instead of your "
+            "own, so a review can open them in the editor. Ignored for other roles."
+        ),
+    ),
 ):
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
@@ -204,9 +211,14 @@ def get_surah_render(
     # ayah (see app/segments.py). Read outside the cursor block above so a
     # user with no rows costs nothing extra here.
     reader = getattr(request.state, "user", None)
-    seg_rows = segments.for_surah(
-        surah_id, translation_id, reader["id"] if reader else None
-    )
+    subject_id = reader["id"] if reader else None
+    # An admin reviewing somebody else's work: load that account's overlay
+    # instead of their own. Deliberately admin-only — for anyone else the
+    # parameter is ignored rather than rejected, since it is a review aid and
+    # not an access path.
+    if as_user and reader and reader["role"] == "admin":
+        subject_id = as_user
+    seg_rows = segments.for_surah(surah_id, translation_id, subject_id)
 
     words_by_ayah: dict[int, list[dict]] = {}
     for r in word_rows:
