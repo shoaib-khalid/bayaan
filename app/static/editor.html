@@ -51,7 +51,9 @@
   /* source translation */
   textarea.tr { width:100%; direction:rtl; text-align:right; resize:vertical; min-height:64px;
     font-family:"Noto Nastaliq Urdu", serif; font-size:19px; line-height:1.9;
-    border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu); }
+    border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu);
+    /* Grown to fit its text by autoGrow(); the scrollbar would only hide it. */
+    overflow:hidden; }
   textarea.tr:focus { outline:2px solid var(--sel2); }
   textarea.tr[readonly] { background:#f4efdd; }
 
@@ -793,9 +795,11 @@ function renderSegments(){
     ta.readOnly = (editingRow !== i);
     ta.dataset.i = i;
     ta.style.minHeight = "3.2em";
-    autoGrow(ta);
     ta.addEventListener("input", ()=>{ autoGrow(ta); seg.text = ta.value; markDirty(); });
     lc.appendChild(ta);
+    // Only now is it laid out: scrollHeight is 0 for a detached element, which
+    // is why this used to leave the translation clipped inside a short box.
+    autoGrow(ta);
     if (editingRow===i){
       const ok = document.createElement("div"); ok.className="rowactions";
       ok.appendChild(mkBtn("✓ Done editing", ()=>{editingRow=-1;renderSegments();}));
@@ -812,6 +816,15 @@ function renderSegments(){
       });
     }
     box.appendChild(row);
+  });
+
+  // The rows are in the document now, so every box can be fitted to its text.
+  if (document.fonts && document.fonts.status === "loaded") growAllSegmentTextareas();
+}
+
+function growAllSegmentTextareas(){
+  document.querySelectorAll(".segrow textarea.tr").forEach((ta)=>{
+    if (ta.offsetParent !== null) autoGrow(ta);
   });
 }
 
@@ -1094,6 +1107,15 @@ window.addEventListener("beforeunload", (e)=>{
 /* =====================================================================
    Init
    ===================================================================== */
+// Nastaliq arrives after first paint, and it is wider and taller than the
+// fallback: re-fit the translation boxes once it is really there, and on resize
+// (a narrower column means more wrapped lines).
+if (document.fonts){
+  document.fonts.ready.then(growAllSegmentTextareas);
+  document.fonts.addEventListener("loadingdone", growAllSegmentTextareas);
+}
+window.addEventListener("resize", growAllSegmentTextareas);
+
 async function init(){
   // read URL params
   const q = new URLSearchParams(location.search);
