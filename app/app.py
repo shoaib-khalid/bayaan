@@ -777,6 +777,40 @@ async def admin_users_active(request: Request):
     return _admin_back("ok=enabled" if make_active else "ok=disabled")
 
 
+@app.post("/admin/users/role", include_in_schema=False)
+async def admin_users_role(request: Request):
+    """Move an account to another role.
+
+    Takes effect on that person's next request — capabilities are read from the
+    database every time — so their open session is deliberately left alone.
+    """
+    form = await _admin_form(request)
+    target = auth.get_user(int(form.get("user_id") or 0))
+    if not target:
+        return _admin_back("error=user")
+
+    role = form.get("role", "").strip()
+    if not any(r["name"] == role for r in auth.list_roles()):
+        return _admin_back("error=role")
+
+    # Changing your own role can remove the very permission that lets you put it
+    # back, so it takes a second administrator.
+    if target["id"] == request.state.user["id"]:
+        return _admin_back("error=selfrole")
+
+    # Demoting the last administrator would leave nobody able to administer.
+    if target["role"] == "admin" and role != "admin":
+        others = [
+            u for u in auth.list_users()
+            if u["role"] == "admin" and u["is_active"] and u["id"] != target["id"]
+        ]
+        if not others:
+            return _admin_back("error=lastadmin")
+
+    auth.set_role(target["id"], role)
+    return _admin_back("ok=rolechanged")
+
+
 # ---------------------------------------------------------------------------
 # Promotion: a person's private copy -> the canonical text
 # ---------------------------------------------------------------------------

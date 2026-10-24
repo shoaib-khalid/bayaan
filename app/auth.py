@@ -244,6 +244,19 @@ def set_password(user_id: int, password: str) -> None:
     )
 
 
+def set_role(user_id: int, role: str) -> None:
+    """Move an account to another role.
+
+    Sessions are left alone on purpose: capabilities are read from the database
+    on every request, so the new role applies to the very next one. Signing
+    people out for a role change would only lose their place.
+    """
+    row = _query_one("SELECT id FROM roles WHERE name = %s", (role,))
+    if not row:
+        raise ValueError(f"unknown role: {role}")
+    _execute("UPDATE users SET role_id = %s WHERE id = %s", (row["id"], user_id))
+
+
 def set_active(user_id: int, active: bool) -> None:
     _execute(
         "UPDATE users SET is_active = %s WHERE id = %s", (1 if active else 0, user_id)

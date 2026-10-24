@@ -21,6 +21,7 @@ OK_MESSAGES = {
     "password": "Password changed, and that account's other sessions were ended.",
     "enabled": "Account enabled.",
     "disabled": "Account disabled, and its open sessions were ended.",
+    "rolechanged": "Role changed. It applies from that account's next request.",
 }
 
 ERROR_MESSAGES = {
@@ -31,6 +32,7 @@ ERROR_MESSAGES = {
     "mismatch": "The two passwords did not match.",
     "user": "No such account.",
     "self": "You cannot disable your own account.",
+    "selfrole": "You cannot change your own role — ask another administrator.",
     "lastadmin": "That is the last active administrator. Create another one first.",
 }
 
@@ -139,6 +141,11 @@ _ROW = Template("""<tr class="$rowclass">
   <td><span class="pill $statusclass">$status</span></td>
   <td class="pill">$last_login</td>
   <td>
+    <form class="inline" method="post" action="/admin/users/role" style="margin-bottom:6px">
+      <input type="hidden" name="user_id" value="$id">
+      <select name="role" style="padding:6px 8px;font-size:13px">$role_options</select>
+      <button type="submit" class="ghost">Set role</button>
+    </form>
     <form class="inline" method="post" action="/admin/users/password" autocomplete="off">
       <input type="hidden" name="user_id" value="$id">
       <input name="password" type="password" placeholder="New password" required style="width:135px">
@@ -162,11 +169,19 @@ def _banner(ok: str | None, error: str | None) -> str:
     return ""
 
 
-def _row(user: dict, current_user_id: int) -> str:
+def _row(user: dict, current_user_id: int, roles: list[dict]) -> str:
     last_login = (
         user["last_login_at"].strftime("%Y-%m-%d %H:%M")
         if user["last_login_at"]
         else "never"
+    )
+    # The row's own select, with the account's current role already chosen, so
+    # "change the role" is one pick and one click.
+    role_options = "".join(
+        f'<option value="{escape(r["name"])}"'
+        f'{" selected" if r["name"] == user["role"] else ""}>'
+        f'{escape(r["name"])}</option>'
+        for r in roles
     )
     return _ROW.substitute(
         rowclass="" if user["is_active"] else "off",
@@ -175,6 +190,7 @@ def _row(user: dict, current_user_id: int) -> str:
         display_name=escape(user["display_name"] or "—"),
         roleclass="admin" if user["role"] == "admin" else "",
         role=escape(user["role"]),
+        role_options=role_options,
         statusclass="on" if user["is_active"] else "",
         status="active" if user["is_active"] else "disabled",
         last_login=last_login,
@@ -201,7 +217,7 @@ def render_users(
         who=escape(current_user.get("display_name") or current_user["username"]),
         role=escape(current_user["role"]),
         banner=_banner(ok, error),
-        rows="".join(_row(u, current_user["id"]) for u in users),
+        rows="".join(_row(u, current_user["id"], roles) for u in users),
         role_options=role_options,
     )
 
