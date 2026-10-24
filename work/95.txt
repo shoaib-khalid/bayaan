@@ -1,0 +1,34 @@
+# surah 95 translation 2 ayahs 1-8
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالتِّیْنِ | 2.وَالزَّیْتُوْنِ
+orig : انجیر کی قسم اور زیتون کی۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.وَطُوْرِ | 2.سِیْنِیْنَ
+orig : اور طور سینین کی۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَهٰذَا | 2.الْبَلَدِ | 3.الْاَمِیْنِ
+orig : اور اس امن والے شہر کی۔
+
+ayah 4  real_words=6  # whole (unsegmented)
+words: 1.لَقَدْ | 2.خَلَقْنَا | 3.الْاِنْسَانَ | 4.فِیْۤ | 5.اَحْسَنِ | 6.تَقْوِیْمٍ
+orig : کہ ہم نے انسان کو بہترین سانچے میں ڈھال کر پیدا کیا ہے۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.رَدَدْنٰهُ | 3.اَسْفَلَ | 4.سٰفِلِیْنَ
+orig : پھر ہم نے اسکی حالت کو بدل کر پست سے پست کر دیا۔
+
+ayah 6  real_words=9  # whole (unsegmented)
+words: 1.اِلَّا | 2.الَّذِیْنَ | 3.اٰمَنُوْا | 4.وَعَمِلُوا | 5.الصّٰلِحٰتِ | 6.فَلَهُمْ | 7.اَجْرٌ | 8.غَیْرُ | 9.مَمْنُوْنٍ
+orig : مگر جو لوگ ایمان لائے اور نیک عمل کرتے رہے تو ان کے لئے بے انتہا اجر ہے۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.فَمَا | 2.یُكَذِّبُكَ | 3.بَعْدُ | 4.بِالدِّیْنِ
+orig : تو اے انسان اسکے بعد بھی تو جزا کے دن کو کیوں جھٹلاتا ہے۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.اَلَیْسَ | 2.اللّٰهُ | 3.بِاَحْكَمِ | 4.الْحٰكِمِیْنَ
+orig : کیا اللہ سب فیصلہ کرنے والوں سے بہتر فیصلہ کرنے والا نہیں ہے؟

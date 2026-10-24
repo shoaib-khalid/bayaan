@@ -1,0 +1,22 @@
+# surah 97 translation 2 ayahs 1-5
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=5  # whole (unsegmented)
+words: 1.اِنَّاۤ | 2.اَنْزَلْنٰهُ | 3.فِیْ | 4.لَیْلَةِ | 5.الْقَدْرِ
+orig : ہم نے اس قرآن کو شب قدر میں نازل کرنا شروع کیا۔
+
+ayah 2  real_words=5  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.لَیْلَةُ | 5.الْقَدْرِ
+orig : اور تمہیں کیا معلوم کہ شب قدر کیا ہے؟
+
+ayah 3  real_words=6  # whole (unsegmented)
+words: 1.لَیْلَةُ | 2.الْقَدْرِ ۙ۬ | 3.خَیْرٌ | 4.مِّنْ | 5.اَلْفِ | 6.شَهْرٍ
+orig : شب قدر ہزار مہینے سے بہتر ہے۔
+
+ayah 4  real_words=9  # whole (unsegmented)
+words: 1.تَنَزَّلُ | 2.الْمَلٰٓىِٕكَةُ | 3.وَالرُّوْحُ | 4.فِیْهَا | 5.بِاِذْنِ | 6.رَبِّهِمْ ۚ | 7.مِنْ | 8.كُلِّ | 9.اَمْرٍ
+orig : اس میں فرشتے اور روح القدس ہر کام کے انتظام کے لئے اپنے پروردگار کے حکم سے اترتے ہیں۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.سَلٰمٌ ۛ۫ | 2.هِیَ | 3.حَتّٰی | 4.مَطْلَعِ | 5.الْفَجْرِ
+orig : یہ رات طلوع فجر تک امن و سلامتی ہے۔

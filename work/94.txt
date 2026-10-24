@@ -1,0 +1,34 @@
+# surah 94 translation 2 ayahs 1-8
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.اَلَمْ | 2.نَشْرَحْ | 3.لَكَ | 4.صَدْرَكَ
+orig : اے نبی ﷺ کیا ہم نے تمہاری خاطر تمہارا سینہ کھول نہیں دیا۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَوَضَعْنَا | 2.عَنْكَ | 3.وِزْرَكَ
+orig : اور تم پر سے تمہارا وہ بوجھ بھی اتار دیا۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.الَّذِیْۤ | 2.اَنْقَضَ | 3.ظَهْرَكَ
+orig : جس نے تمہاری کمر جھکا دی تھی۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَرَفَعْنَا | 2.لَكَ | 3.ذِكْرَكَ
+orig : اور ہم نے تمہاری خاطر تمہارا ذکر بلند کیا۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.فَاِنَّ | 2.مَعَ | 3.الْعُسْرِ | 4.یُسْرًا
+orig : سو یقینًا مشکل کے ساتھ آسانی بھی ہے۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.اِنَّ | 2.مَعَ | 3.الْعُسْرِ | 4.یُسْرًا
+orig : بیشک مشکل کے ساتھ آسانی بھی ہے۔
+
+ayah 7  real_words=3  # whole (unsegmented)
+words: 1.فَاِذَا | 2.فَرَغْتَ | 3.فَانْصَبْ
+orig : سو جب تم فارغ ہوا کرو تو عبادت میں محنت کیا کرو۔
+
+ayah 8  real_words=3  # whole (unsegmented)
+words: 1.وَاِلٰی | 2.رَبِّكَ | 3.فَارْغَبْ
+orig : اور اپنے پروردگار کی طرف متوجہ ہو جایا کرو۔

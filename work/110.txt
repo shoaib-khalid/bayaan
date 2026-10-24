@@ -1,0 +1,14 @@
+# surah 110 translation 2 ayahs 1-3
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=5  # whole (unsegmented)
+words: 1.اِذَا | 2.جَآءَ | 3.نَصْرُ | 4.اللّٰهِ | 5.وَالْفَتْحُ
+orig : جب اللہ کی مدد آ پہنچی اور فتح حاصل ہو گئ۔
+
+ayah 2  real_words=7  # whole (unsegmented)
+words: 1.وَرَاَیْتَ | 2.النَّاسَ | 3.یَدْخُلُوْنَ | 4.فِیْ | 5.دِیْنِ | 6.اللّٰهِ | 7.اَفْوَاجًا
+orig : اور اے نبی ﷺ تم نے دیکھ لیا کہ لوگ فوج در فوج اللہ کے دین میں داخل ہو رہے ہیں۔
+
+ayah 3  real_words=7  # whole (unsegmented)
+words: 1.فَسَبِّحْ | 2.بِحَمْدِ | 3.رَبِّكَ | 4.وَاسْتَغْفِرْهُ ؔؕ | 5.اِنَّهٗ | 6.كَانَ | 7.تَوَّابًا
+orig : تو اپنے پروردگار کی تعریف کے ساتھ تسبیح کرو اور اس سے مغفرت مانگو۔ بیشک وہ بڑا معاف کرنے والا ہے۔

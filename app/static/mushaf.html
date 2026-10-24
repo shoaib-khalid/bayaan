@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bayaan — Mushaf</title>
+  <link rel="stylesheet" href="/static/mushaf/styles.css?v=1.1.0">
+  <script defer src="/static/mushaf/layout.js?v=1.1.0"></script>
+  <script defer src="/static/mushaf/renderer.js?v=1.1.0"></script>
+</head>
+<body>
+  <nav class="toolbar" aria-label="Reader settings">
+    <a class="home" href="/">Bayaan</a><strong>Mushaf <small>v1.1.0</small></strong>
+    <label>From <select id="surahSel" aria-label="First surah"></select></label>
+    <label>Through <select id="endSel" aria-label="Last surah"></select></label>
+    <label>Translation <select id="trSel"></select></label>
+    <button id="read">Read</button>
+    <label>Arabic <input id="arSize" type="range" min="26" max="42" value="34"><output id="arValue">34</output></label>
+    <label>Urdu <input id="urSize" type="range" min="18" max="32" value="24"><output id="urValue">24</output></label>
+    <button id="prev">Previous page</button><span id="pageInfo">—</span><button id="next">Next page</button>
+    <button id="continue">Continue next surah</button><button id="print">Print loaded pages</button>
+  </nav>
+  <div id="status" class="reader-status" role="status" aria-live="polite">Loading reader…</div>
+  <main id="pages" aria-label="Quran pages"></main>
+  <div id="measure" aria-hidden="true"></div>
+  <footer class="reader-note" dir="ltr">
+    Matching colours identify the same saved segment, including its continuation across rows.
+    Printing uses A4; enable background graphics. Select a range through surah 114 to load the whole Quran.
+    Structure metadata: <a href="https://tanzil.net/docs/Quran_Metadata">Tanzil (CC-BY)</a>.
+  </footer>
+</body>
+</html>

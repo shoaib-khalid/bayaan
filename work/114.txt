@@ -1,0 +1,26 @@
+# surah 114 translation 2 ayahs 1-6
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.قُلْ | 2.اَعُوْذُ | 3.بِرَبِّ | 4.النَّاسِ
+orig : کہو کہ میں انسانوں کے پروردگار کی پناہ مانگتا ہوں۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.مَلِكِ | 2.النَّاسِ
+orig : یعنی لوگوں کے بادشاہ کی۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.اِلٰهِ | 2.النَّاسِ
+orig : لوگوں کے معبود کی۔
+
+ayah 4  real_words=4  # whole (unsegmented)
+words: 1.مِنْ | 2.شَرِّ | 3.الْوَسْوَاسِ ۙ۬ | 4.الْخَنَّاسِ
+orig : اس بڑے وسوسہ ڈالنے والے کی برائی سے جو اللہ کا نام سن کر پیچھے ہٹ جاتا ہے۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.یُوَسْوِسُ | 3.فِیْ | 4.صُدُوْرِ | 5.النَّاسِ
+orig : جو لوگوں کے دلوں میں وسوسے ڈالتا ہے۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.مِنَ | 2.الْجِنَّةِ | 3.وَالنَّاسِ
+orig : خواہ وہ جنات میں سے ہو یا انسانوں میں سے۔

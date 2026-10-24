@@ -3,8 +3,16 @@
 Quran reading app: renders the Arabic text of the Qur'an with **Urdu translations that are aligned to word ranges within each ayah** (segment-based alignment), instead of dumping one whole translation under the whole ayah.
 
 > **Handoff note (2026‑09‑05):** This file is the single source of truth / handoff document. If you are a new agent starting here, read this whole file plus `TODO.md`. The live MySQL database `bayaan` (127.0.0.1:3212, root/root) is **fully loaded** and the minimal renderer works — see **[HowToRun.md](HowToRun.md)** for the exact commands to start the server and open the UI.
+>
+> **Branching & commits:** see **[CONTRIBUTING.md](CONTRIBUTING.md)** — git-flow (`main` + `develop` + `feature/release/hotfix`), Conventional Commits, and every commit referencing its issue.
 
 ---
+# How to Run:
+Run (from `\bayaan` i.e. the root):
+
+```bash
+python -m uvicorn app.app:app --host 127.0.0.1 --port 8000
+```
 
 ## 1. Repositories involved
 
@@ -120,18 +128,12 @@ With Nastaliq, Arabic wraps unpredictably and a segment's phrase can straddle tw
 - **Arabic:** Quran Foundation IndoPak Nastaleeq — CDN:
   `https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2`
   (family name in the reader: `"IndoPak Quran"`). Bundled font archives also exist under `fonts/` (tarteel.ai variant).
-- **Urdu:** Noto Nastaliq Urdu (Google Fonts). For a denser printed feel, Jameel Noori Nastaleeq is the classic but has licensing caveats.
+- **Urdu:** Noto Nastaliq Urdu (Google Fonts) in the on-screen readers. The print-ready mushaf (`/mushaf`) bundles **Jameel Noori Nastaleeq** (version 1, 2008, designer "Urdu Lover") for a denser printed feel — the face declares itself *"Free Of Charge For Urdu Lovers"*, which is the whole of the terms it states. Its credits and the substitution instructions live in `app/static/mushaf/fonts/README.md`.
 - Local font copies: `D:\Personal_repos\bayaan\fonts\` (ttf/woff/woff2 zip + usage notes).
 
 ---
 
 ## 6. API (FastAPI, this repo)
-
-Run (from `D:\Personal_repos\bayaan`):
-
-```bash
-python -m uvicorn app.app:app --host 127.0.0.1 --port 8000
-```
 
 DB connection is read from `app/config.py` ← `app/.env` (defaults already match the live DB: `127.0.0.1:3212`, root/root, db `bayaan`).
 
@@ -195,3 +197,18 @@ Covers: word vs. ornament classification, whole-ayah detection, `buildModel`, `l
 - `translations`: 2 rows (as above). `translation_segments`: 6,236 rows for `translation_id = 2`; 0 for `1`.
 - `translation_originals`: 6,236 rows for `translation_id = 2` (immutable whole-ayah reference; migration `data/002_translation_originals.sql`).
 - Schema/dump: `data/db-schema.sql`; migrations under `data/0*.sql` (e.g. `002_translation_originals.sql`); original word-load script: `data/import-quran-aya-words.py`.
+
+
+## Print-ready Mushaf — v1.1.0 (2026-10-22)
+
+Open `/mushaf` for the new A4 layout. It uses the live `/surah/{id}` API and saved translation segments, local fonts and original SVG decorations. Select any surah or a From/Through range (1–114 for the full Quran). Next page continues into the following surah at the end of the loaded range; Continue next surah appends it directly. New surah headers share the current page when there is room for the header and first row. Al-Fatiha's numbered basmala remains in its ayah text, and At-Tawba receives no opening basmala.
+
+Matching continuous colours identify Arabic/Urdu segments. Long segments can continue across rows; internal wrapping uses proportional word-boundary continuations, not a new word-level semantic alignment. All original Arabic tokens and saved translation characters are retained. Missing or invalid saved ranges fall back to a whole-ayah presentation and are reported in the reader status.
+
+Arabic and Urdu sizes are independent. Page borders are fixed to the chosen A4 paper; taller translation strips cause repagination. Page headers sit above the border, folio numbers run from 1 (or `?folio=N`), and ruku signs occupy the outer margin according to folio parity. URLs retain the range, translation, font sizes and current page.
+
+Print loaded pages exports exactly the selected/loaded range. Enable background graphics and choose A4, 100% scale, and no browser-added headers/footers. Reading resizes the physical page for the screen without changing its line breaks.
+
+Files: `app/static/mushaf.html`, `app/static/mushaf/{renderer.js,layout.js,styles.css}`, SVG artwork and local fonts. Structural metadata (114 surahs, 30 juz starts, 556 ruku starts) is from [Tanzil](https://tanzil.net/docs/Quran_Metadata), CC-BY, (C) 2008–2009 Tanzil.info. Only structure metadata is imported; Quran text and Urdu remain in Bayaan's database.
+
+Run `npm test` for editor and Mushaf layout invariants.

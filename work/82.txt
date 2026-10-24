@@ -1,0 +1,78 @@
+# surah 82 translation 2 ayahs 1-19
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=3  # whole (unsegmented)
+words: 1.اِذَا | 2.السَّمَآءُ | 3.انْفَطَرَتْ
+orig : جب آسمان پھٹ جائے گا۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْكَوَاكِبُ | 3.انْتَثَرَتْ
+orig : اور جب تارے جھڑ پڑیں گے۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْبِحَارُ | 3.فُجِّرَتْ
+orig : اور جب سمندر ابل پڑیں گے۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَاِذَا | 2.الْقُبُوْرُ | 3.بُعْثِرَتْ
+orig : اور جب قبریں اکھیڑ دی جائیں گی۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.عَلِمَتْ | 2.نَفْسٌ | 3.مَّا | 4.قَدَّمَتْ | 5.وَاَخَّرَتْ
+orig : تب ہر شخص معلوم کر لے گا کہ اس نے آگے کیا بھیجا تھا اور پیچھے کیا چھوڑا۔
+
+ayah 6  real_words=6  # whole (unsegmented)
+words: 1.یٰۤاَیُّهَا | 2.الْاِنْسَانُ | 3.مَا | 4.غَرَّكَ | 5.بِرَبِّكَ | 6.الْكَرِیْمِ
+orig : اے انسان تجھ کو اپنے رب کریم کے بارے میں کس چیز نے دھوکا دیا؟
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.الَّذِیْ | 2.خَلَقَكَ | 3.فَسَوّٰىكَ | 4.فَعَدَلَكَ
+orig : وہی تو ہے جس نے تجھے بنایا پھر تیرے اعضاء کو درست کیا اور تیری قامت کو معتدل رکھا۔
+
+ayah 8  real_words=6  # whole (unsegmented)
+words: 1.فِیْۤ | 2.اَیِّ | 3.صُوْرَةٍ | 4.مَّا | 5.شَآءَ | 6.رَكَّبَكَ
+orig : جس صورت میں چاہا تجھے جوڑ دیا۔
+
+ayah 9  real_words=4  # whole (unsegmented)
+words: 1.كَلَّا | 2.بَلْ | 3.تُكَذِّبُوْنَ | 4.بِالدِّیْنِ
+orig : مگر افسوس تم لوگ جزا کو جھٹلاتے ہو۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.وَاِنَّ | 2.عَلَیْكُمْ | 3.لَحٰفِظِیْنَ
+orig : حالانکہ تم پر نگہبان مقرر ہیں۔
+
+ayah 11  real_words=2  # whole (unsegmented)
+words: 1.كِرَامًا | 2.كَاتِبِیْنَ
+orig : یعنی معزز کاتبین۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.یَعْلَمُوْنَ | 2.مَا | 3.تَفْعَلُوْنَ
+orig : جو کچھ تم کرتے ہو وہ اسے جانتے ہیں۔
+
+ayah 13  real_words=4  # whole (unsegmented)
+words: 1.اِنَّ | 2.الْاَبْرَارَ | 3.لَفِیْ | 4.نَعِیْمٍ
+orig : بیشک نیکوکار نعمتوں کی بہشت میں ہونگے۔
+
+ayah 14  real_words=4  # whole (unsegmented)
+words: 1.وَاِنَّ | 2.الْفُجَّارَ | 3.لَفِیْ | 4.جَحِیْمٍ
+orig : اور بدکردار دوزخ میں۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.یَّصْلَوْنَهَا | 2.یَوْمَ | 3.الدِّیْنِ
+orig : یعنی جزا کے دن اس میں داخل ہوں گے۔
+
+ayah 16  real_words=4  # whole (unsegmented)
+words: 1.وَمَا | 2.هُمْ | 3.عَنْهَا | 4.بِغَآىِٕبِیْنَ
+orig : اور اس سے چھپ نہیں سکیں گے۔
+
+ayah 17  real_words=5  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.یَوْمُ | 5.الدِّیْنِ
+orig : اور تمہیں کیا معلوم کہ جزا کا دن کیسا ہے۔
+
+ayah 18  real_words=6  # whole (unsegmented)
+words: 1.ثُمَّ | 2.مَاۤ | 3.اَدْرٰىكَ | 4.مَا | 5.یَوْمُ | 6.الدِّیْنِ
+orig : پھر تمہیں کیا معلوم کہ جزا کا دن کیسا ہے۔
+
+ayah 19  real_words=9  # whole (unsegmented)
+words: 1.یَوْمَ | 2.لَا | 3.تَمْلِكُ | 4.نَفْسٌ | 5.لِّنَفْسٍ | 6.شَیْـًٔا ؕ | 7.وَالْاَمْرُ | 8.یَوْمَىِٕذٍ | 9.لِّلّٰهِ
+orig : جس روز کوئی کسی کے کچھ کام نہ آ سکے گا۔ اور حکم اس روز اللہ ہی کا ہو گا۔

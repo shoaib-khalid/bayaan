@@ -1,0 +1,170 @@
+# surah 80 translation 2 ayahs 1-42
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.عَبَسَ | 2.وَتَوَلّٰۤی
+orig : پیغمبر ﷺ نے تیوری چڑھائی اور منہ پھیر لیا۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.اَنْ | 2.جَآءَهُ | 3.الْاَعْمٰى
+orig : کہ انکے پاس ایک نابینا آیا۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.وَمَا | 2.یُدْرِیْكَ | 3.لَعَلَّهٗ | 4.یَزَّ
+orig : اور تم کو کیا خبر شاید وہ پاکیزگی حاصل کرتا۔
+
+ayah 4  real_words=4  # whole (unsegmented)
+words: 1.اَوْ | 2.یَذَّكَّرُ | 3.فَتَنْفَعَهُ | 4.الذِّكْرٰى
+orig : یا وہ سمجھ جاتا تو تمہارا سمجھانا اسے فائدہ دیتا۔
+
+ayah 5  real_words=3  # whole (unsegmented)
+words: 1.اَمَّا | 2.مَنِ | 3.اسْتَغْنٰى
+orig : اب وہ جو پروا نہیں کرتا۔
+
+ayah 6  real_words=3  # whole (unsegmented)
+words: 1.فَاَنْتَ | 2.لَهٗ | 3.تَصَدّٰى
+orig : سو اسکی طرف تو تم توجہ کرتے ہو۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.وَمَا | 2.عَلَیْكَ | 3.اَلَّا | 4.یَزَّكّٰى
+orig : حالانکہ اگر وہ نہ سنورے تو تم پر کچھ الزام نہیں۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.مَنْ | 3.جَآءَكَ | 4.یَسْعٰى
+orig : اور وہ جو تمہارے پاس دوڑتا ہوا آیا۔
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.وَهُوَ | 2.یَخْشٰى
+orig : اور وہ اللہ سے ڈرتا بھی ہے۔
+
+ayah 10  real_words=3  # whole (unsegmented)
+words: 1.فَاَنْتَ | 2.عَنْهُ | 3.تَلَهّٰى
+orig : تو اس سے تم بے رخی کرتے ہو۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.كَلَّاۤ | 2.اِنَّهَا | 3.تَذْكِرَةٌ
+orig : دیکھو یہ قرآن نصیحت ہے۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.فَمَنْ | 2.شَآءَ | 3.ذَكَرَهٗ
+orig : پس جو چاہے اسے یاد رکھے۔
+
+ayah 13  real_words=3  # whole (unsegmented)
+words: 1.فِیْ | 2.صُحُفٍ | 3.مُّكَرَّمَةٍ
+orig : قابل ادب ورقوں میں لکھا ہوا۔
+
+ayah 14  real_words=2  # whole (unsegmented)
+words: 1.مَّرْفُوْعَةٍ | 2.مُّطَهَّرَةٍۭ
+orig : جو بلند مقام پر رکھے ہوئے اور پاک ہیں۔
+
+ayah 15  real_words=2  # whole (unsegmented)
+words: 1.بِاَیْدِیْ | 2.سَفَرَةٍ
+orig : ایسے لکھنے والوں کے ہاتھوں میں ہیں۔
+
+ayah 16  real_words=2  # whole (unsegmented)
+words: 1.كِرَامٍ | 2.بَرَرَةٍ
+orig : جو بلند مرتبہ اور نیکو کار ہیں۔
+
+ayah 17  real_words=4  # whole (unsegmented)
+words: 1.قُتِلَ | 2.الْاِنْسَانُ | 3.مَاۤ | 4.اَكْفَرَهٗ
+orig : انسان مارا جائے یہ کیسا ناشکرا ہے۔
+
+ayah 18  real_words=4  # whole (unsegmented)
+words: 1.مِنْ | 2.اَیِّ | 3.شَیْءٍ | 4.خَلَقَهٗ
+orig : اسے اللہ نے کس چیز سے بنایا۔
+
+ayah 19  real_words=4  # whole (unsegmented)
+words: 1.مِنْ | 2.نُّطْفَةٍ ؕ | 3.خَلَقَهٗ | 4.فَقَدَّرَهٗ
+orig : نطفے سے بنایا پھر اسکا اندازہ مقرر کیا۔
+
+ayah 20  real_words=3  # whole (unsegmented)
+words: 1.ثُمَّ | 2.السَّبِیْلَ | 3.یَسَّرَهٗ
+orig : پھر اسکے لئے رستہ آسان کر دیا۔
+
+ayah 21  real_words=3  # whole (unsegmented)
+words: 1.ثُمَّ | 2.اَمَاتَهٗ | 3.فَاَقْبَرَهٗ
+orig : پھر اسکو موت دی سو اسے قبر میں پہنچایا۔
+
+ayah 22  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.اِذَا | 3.شَآءَ | 4.اَنْشَرَهٗ
+orig : پھر وہ جب چاہے گا اسے اٹھا کھڑا کریگا۔
+
+ayah 23  real_words=5  # whole (unsegmented)
+words: 1.كَلَّا | 2.لَمَّا | 3.یَقْضِ | 4.مَاۤ | 5.اَمَرَهٗ
+orig : کچھ شک نہیں کہ اللہ نے اسے جو حکم دیا اس نے اس پر عمل نہ کیا۔
+
+ayah 24  real_words=4  # whole (unsegmented)
+words: 1.فَلْیَنْظُرِ | 2.الْاِنْسَانُ | 3.اِلٰى | 4.طَعَامِهٖۤ
+orig : تو انسان کو چاہیئے کہ اپنے کھانے کی طرف نظر کرے۔
+
+ayah 25  real_words=4  # whole (unsegmented)
+words: 1.اَنَّا | 2.صَبَبْنَا | 3.الْمَآءَ | 4.صَبًّا
+orig : بیشک ہم ہی نے پانی برسایا۔
+
+ayah 26  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.شَقَقْنَا | 3.الْاَرْضَ | 4.شَقًّا
+orig : پھر ہم ہی نے زمین کو اچھی طرح پھاڑا۔
+
+ayah 27  real_words=3  # whole (unsegmented)
+words: 1.فَاَنْۢبَتْنَا | 2.فِیْهَا | 3.حَبًّا
+orig : پھر ہم ہی نے اس میں اناج اگایا۔
+
+ayah 28  real_words=2  # whole (unsegmented)
+words: 1.وَّعِنَبًا | 2.وَّقَضْبًا
+orig : اور انگور اور ترکاری۔
+
+ayah 29  real_words=2  # whole (unsegmented)
+words: 1.وَّزَیْتُوْنًا | 2.وَّنَخْلًا
+orig : اور زیتون اور کھجوریں۔
+
+ayah 30  real_words=2  # whole (unsegmented)
+words: 1.وَّحَدَآىِٕقَ | 2.غُلْبًا
+orig : اور گھنے گھنے باغ۔
+
+ayah 31  real_words=2  # whole (unsegmented)
+words: 1.وَّفَاكِهَةً | 2.وَّاَبًّا
+orig : اور میوے اور چارا۔
+
+ayah 32  real_words=3  # whole (unsegmented)
+words: 1.مَّتَاعًا | 2.لَّكُمْ | 3.وَلِاَنْعَامِكُمْ
+orig : یہ سب کچھ تمہارے اور تمہارے مویشیوں کیلئے بنایا۔
+
+ayah 33  real_words=3  # whole (unsegmented)
+words: 1.فَاِذَا | 2.جَآءَتِ | 3.الصَّآخَّةُ
+orig : تو جب کانوں کو پھاڑنے والی آواز آئے گی۔
+
+ayah 34  real_words=5  # whole (unsegmented)
+words: 1.یَوْمَ | 2.یَفِرُّ | 3.الْمَرْءُ | 4.مِنْ | 5.اَخِیْهِ
+orig : اس دن آدمی اپنے بھائی سے دور بھاگے گا۔
+
+ayah 35  real_words=2  # whole (unsegmented)
+words: 1.وَاُمِّهٖ | 2.وَاَبِیْهِ
+orig : اور اپنی ماں اور اپنے باپ سے۔
+
+ayah 36  real_words=2  # whole (unsegmented)
+words: 1.وَصَاحِبَتِهٖ | 2.وَبَنِیْهِ
+orig : اور اپنی بیوی اور اپنے بیٹوں سے بھی۔
+
+ayah 37  real_words=6  # whole (unsegmented)
+words: 1.لِكُلِّ | 2.امْرِئٍ | 3.مِّنْهُمْ | 4.یَوْمَىِٕذٍ | 5.شَاْنٌ | 6.یُّغْنِیْهِ
+orig : ہر شخص اس روز ایک فکر میں ہو گا جو اسے سب سے بے نیاز کر دیگی۔
+
+ayah 38  real_words=3  # whole (unsegmented)
+words: 1.وُجُوْهٌ | 2.یَّوْمَىِٕذٍ | 3.مُّسْفِرَةٌ
+orig : اور کتنے چہرے اس روز چمک رہے ہونگے۔
+
+ayah 39  real_words=2  # whole (unsegmented)
+words: 1.ضَاحِكَةٌ | 2.مُّسْتَبْشِرَةٌ
+orig : خنداں و شاداں یہ نیکوکار ہیں۔
+
+ayah 40  real_words=4  # whole (unsegmented)
+words: 1.وَوُجُوْهٌ | 2.یَّوْمَىِٕذٍ | 3.عَلَیْهَا | 4.غَبَرَةٌ
+orig : اور اس روز کتنے چہرے ایسے ہونگے جن پر گرد پڑ رہی ہو گی۔
+
+ayah 41  real_words=2  # whole (unsegmented)
+words: 1.تَرْهَقُهَا | 2.قَتَرَةٌ
+orig : اور ان پر سیاہی چڑھ رہی ہو گی۔
+
+ayah 42  real_words=4  # whole (unsegmented)
+words: 1.اُولٰٓىِٕكَ | 2.هُمُ | 3.الْكَفَرَةُ | 4.الْفَجَرَةُ
+orig : یہی لوگ ہونگے انکار کرنے والے بد کردار۔

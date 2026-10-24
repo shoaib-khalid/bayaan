@@ -26,7 +26,7 @@ DATABASE_CONFIG = {
 
 API_TITLE = "Bayaan API"
 API_DESCRIPTION = "API for Quran word retrieval and translation segment alignment"
-API_VERSION = "1.0.0"
+API_VERSION = "1.1.0"
 
 # -------------------------
 # Server Configuration

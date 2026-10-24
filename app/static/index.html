@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bayaan — Home</title>
+<style>
+  :root{
+    --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
+    --border:#a8946e; --gold:#9c7c3e; --green:#2f6b46;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;padding:28px 18px 56px;background:#efe9db;color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .sheet{
+    max-width:900px;margin:0 auto;background:var(--paper);border:1.5px solid var(--border);
+    box-shadow:inset 0 0 0 6px var(--paper),inset 0 0 0 7px rgba(160,124,58,.55),0 18px 50px rgba(60,36,18,.16);
+    padding:26px 30px 34px;
+  }
+  h1{margin:0;font-size:30px;letter-spacing:.2px;}
+  h1 .sub{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:6px;}
+  #status{
+    margin:14px 0 4px;padding:9px 12px;border:1px solid rgba(156,124,62,.4);
+    border-radius:8px;background:var(--paper2);font-size:13px;color:var(--muted);
+  }
+  #status .ok{color:var(--green);font-weight:600;}
+  #status .bad{color:#a12d2d;font-weight:600;}
+  h2{
+    font-size:14px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);
+    margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(156,124,62,.32);
+  }
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{margin:0 0 8px;}
+  a.row{
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;
+    text-decoration:none;color:var(--ink);padding:9px 12px;border-radius:8px;
+    border:1px solid rgba(156,124,62,.3);background:var(--paper2);
+  }
+  a.row:hover{border-color:var(--gold);background:#fffdf8;}
+  a.row:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  a.row .path{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#6b4d1f;}
+  a.row .desc{font-size:13px;color:var(--muted);}
+  a.row .tag{
+    font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--gold);
+    border-radius:999px;padding:2px 8px;
+  }
+  a.row .tag.post{background:#8a5a2b;}
+  .note{font-size:13px;color:var(--muted);margin:10px 0 0;}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#f0ead8;padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Bayaan <span style="font-size:14px;color:var(--gold)">v1.1.0</span>
+    <span class="sub">Qur'an text with Urdu translations aligned to word ranges within each ayah.</span>
+  </h1>
+
+  <div id="status">Checking API…</div>
+
+  <h2>Pages</h2>
+  <ul class="links">
+    <li><a class="row" href="/">
+      <span class="tag">home</span><span class="path">/</span>
+      <span class="desc">This page — every link in one place.</span></a></li>
+
+    <li><a class="row" href="/reader?translation_id=2&surah=1">
+      <span class="path">/reader?translation_id=2&amp;surah=1</span>
+      <span class="desc">Reader — <b>Phrase</b> layout (default): each segment's Arabic line with its Urdu tucked underneath.</span></a></li>
+
+    <li><a class="row" href="/reader?layout=inter&translation_id=2&surah=1">
+      <span class="path">/reader?layout=inter&amp;translation_id=2&amp;surah=1</span>
+      <span class="desc">Reader — <b>Lines</b> layout: one Arabic line + one Urdu line per segment, as a block.</span></a></li>
+
+    <li><a class="row" href="/reader?layout=flow&translation_id=2&surah=1">
+      <span class="path">/reader?layout=flow&amp;translation_id=2&amp;surah=1</span>
+      <span class="desc">Reader — <b>Flowing</b> layout: full ayah justified, translation below it.</span></a></li>
+
+    <li><a class="row" href="/mushaf">
+      <span class="tag">new · v1.1.0</span><span class="path">/mushaf</span>
+      <span class="desc">Print-ready Mushaf: flowing Arabic with its saved Urdu segments underneath, continuous alternating highlights, ornamental surah headers, para labels, folio numbers and outer-margin ruku marks. Read any of the 114 surahs, continue across surahs, adjust both fonts, and print a selected range on A4.</span></a></li>
+
+    <li><a class="row" href="/reader-mushaf?translation_id=2&surah=1">
+      <span class="path">/reader-mushaf?translation_id=2&amp;surah=1</span>
+      <span class="desc">Mushaf reader (Layout B): each word tinted by its segment, laid out on a fixed portrait page with page-turn navigation, A−/A+ text size, and swipe/keyboard paging across surahs.</span></a></li>
+
+    <li><a class="row" href="/editor?translation_id=2&surah=1&ayah=1">
+      <span class="path">/editor?translation_id=2&amp;surah=1&amp;ayah=1</span>
+      <span class="desc">Segment editor: split an ayah into word-anchored segments. Press <code>?</code> in the page for the usage guide.</span></a></li>
+  </ul>
+
+  <h2>API — JSON endpoints</h2>
+  <ul class="links">
+    <li><a class="row" href="/surahs">
+      <span class="path">/surahs</span>
+      <span class="desc">All 114 surahs with <code>name_arabic</code>, <code>name_english</code>, <code>ayah_count</code>.</span></a></li>
+
+    <li><a class="row" href="/surah/1?translation_id=2">
+      <span class="path">/surah/{surah_id}?translation_id=</span>
+      <span class="desc">Everything a renderer needs — per ayah: <code>words[]</code> with <code>is_word</code>, and <code>segments[]</code> with word-index bounds + <code>translation_text</code>.</span></a></li>
+
+    <li><a class="row" href="/original/2/1/1">
+      <span class="path">/original/{translation_id}/{surah}/{ayah}</span>
+      <span class="desc">Pristine whole-ayah translation from <code>translation_originals</code> (the editor's "Show original").</span></a></li>
+
+    <li><a class="row" href="/ayah/1/1">
+      <span class="path">/ayah/{surah}/{ayah}</span>
+      <span class="desc">Legacy — Arabic words of one ayah.</span></a></li>
+
+    <li><a class="row" href="/segments/2/1/1">
+      <span class="path">/segments/{translation_id}/{surah}/{ayah}</span>
+      <span class="desc">Legacy — segments of one ayah.</span></a></li>
+
+    <li><a class="row" href="#">
+      <span class="tag post">POST</span><span class="path">/segments</span>
+      <span class="desc">Overwrite all segments of an ayah. Not clickable — needs a JSON body, and its <code>start</code>/<code>end</code> semantics contradict the FK (see open task).</span></a></li>
+  </ul>
+
+  <h2>What's new — v1.1.0 · 22 October 2026</h2>
+  <p class="note">Added <a href="/mushaf">/mushaf</a>, the flowing, print-ready layout. It reads live saved translations, inserts the next surah header into the page flow, supports all 114 surahs and selected ranges, and keeps matched Arabic/Urdu highlights continuous through word spaces. The A4 pages include running surah/para labels, automatic page numbers and ruku marks that follow repagination. Arabic and Urdu font sizes are independently adjustable. Printing exports the pages currently loaded.</p>
+
+  <h2>Documentation</h2>
+  <ul class="links">
+    <li><a class="row" href="/docs">
+      <span class="path">/docs</span>
+      <span class="desc">Swagger UI — try every endpoint interactively.</span></a></li>
+    <li><a class="row" href="/redoc">
+      <span class="path">/redoc</span>
+      <span class="desc">ReDoc — the same API as reference documentation.</span></a></li>
+  </ul>
+
+  <p class="note">
+    <b>Note on pagination:</b> <code>/reader-mushaf</code> draws a fixed portrait page and divides it by
+    measured line boundaries, so a page may break mid-ayah or mid-segment but never slices a line in half.
+    Page contents depend only on the text size, not the window: resizing scales the page like an image.
+    <code>/reader</code> still renders a whole surah as one continuous scroll.
+  </p>
+</div>
+
+<script>
+  // Prove the API is reachable and show a couple of live counts.
+  (async () => {
+    const el = document.getElementById("status");
+    try {
+      const surahs = await (await fetch("/surahs")).json();
+      const withCount = surahs.filter((s) => s.ayah_count).length;
+      const ayahs = surahs.reduce((n, s) => n + (s.ayah_count || 0), 0);
+      el.innerHTML =
+        `<span class="ok">API OK</span> — ${surahs.length} surahs · ${ayahs.toLocaleString()} ayahs ` +
+        `(${withCount} surahs have counts). Click any link above.`;
+    } catch (err) {
+      el.innerHTML = `<span class="bad">API unreachable</span> — ${err.message}. Is the server up?`;
+    }
+  })();
+</script>
+</body>
+</html>

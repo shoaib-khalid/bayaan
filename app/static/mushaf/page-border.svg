@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="503.74pt" height="669.66pt" viewBox="0 0 1129 1500">
+  <title>Ornamental double-line page border</title>
+  <desc>Original vector design with mirrored botanical corner ornaments and a floral ornament at the midpoint of each side. Blank white interior.</desc>
+  <defs>
+    <g id="corner-ornament">
+      <path d="M0 0H100V12H12V100H0Z" fill="#000"/>
+      <g fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 94C2 87 10 82 6 74S2 62 6 55S10 43 6 36S2 22 6 16C9 11 11 9 16 6C22 2 29 2 36 6S48 10 55 6S67 2 74 6S87 10 94 6"/>
+        <path d="M6 80C13 76 10 69 6 71M6 59C1 54 1 48 6 49M6 40C13 36 10 29 6 31M20 6C24 12 31 10 29 6M42 6C47 1 53 1 52 6M63 6C68 12 75 10 73 6M82 6C87 1 92 2 92 5"/>
+        <path d="M4 12C1 6 5 1 11 4M4 12C8 12 12 8 12 4"/>
+      </g>
+      <g fill="#fff">
+        <path d="M6 89C0 87 1 83 4 82C7 83 8 86 6 89ZM6 66C12 65 12 60 9 59C6 60 4 63 6 66ZM6 45C0 43 1 39 4 38C7 39 8 42 6 45ZM6 25C12 24 12 19 9 18C6 19 4 22 6 25Z"/>
+        <path d="M18 6C19 12 24 12 25 9C24 6 21 4 18 6ZM38 6C40 0 44 1 45 4C44 7 41 8 38 6ZM59 6C60 12 65 12 66 9C65 6 62 4 59 6ZM82 6C84 0 88 1 89 4C88 7 85 8 82 6Z"/>
+        <path d="M5 5L8 3L10 5L8 8Z"/>
+      </g>
+    </g>
+    <g id="midpoint-ornament">
+      <rect x="-43" y="0" width="86" height="12" fill="#000"/>
+      <g fill="none" stroke="#fff" stroke-width="1.1" stroke-linecap="round">
+        <path d="M-38 6C-33 0-25 1-24 6C-24 11-32 11-32 7C-32 4-27 4-24 6C-18 10-12 10-7 6M38 6C33 0 25 1 24 6C24 11 32 11 32 7C32 4 27 4 24 6C18 10 12 10 7 6"/>
+        <path d="M-19 6C-16 1-11 2-9 5M19 6C16 1 11 2 9 5"/>
+      </g>
+      <g fill="#fff">
+        <path d="M0 1C4 3 4 5 0 6C-4 5-4 3 0 1ZM0 11C-4 9-4 7 0 6C4 7 4 9 0 11ZM-6 3C-1 2 0 4 0 6C-4 7-6 6-6 3ZM6 3C6 6 4 7 0 6C0 4 1 2 6 3ZM-6 9C-6 6-4 5 0 6C0 8-1 10-6 9ZM6 9C1 10 0 8 0 6C4 5 6 6 6 9Z"/>
+        <path d="M-20 7C-17 6-15 7-13 10C-17 11-20 10-20 7ZM20 7C20 10 17 11 13 10C15 7 17 6 20 7Z"/>
+      </g>
+      <circle cx="0" cy="6" r="1.25" fill="#000"/>
+    </g>
+  </defs>
+  <rect width="1129" height="1500" fill="#fff"/>
+  <g id="page-border" fill="none" stroke="#000" stroke-linejoin="miter">
+    <rect x="94" y="74" width="920" height="1320" stroke-width="3"/>
+    <rect x="106" y="86" width="896" height="1296" stroke-width="2"/>
+  </g>
+  <g id="corner-patterns">
+    <use xlink:href="#corner-ornament" transform="translate(94 74)"/>
+    <use xlink:href="#corner-ornament" transform="translate(1014 74) scale(-1 1)"/>
+    <use xlink:href="#corner-ornament" transform="translate(94 1394) scale(1 -1)"/>
+    <use xlink:href="#corner-ornament" transform="translate(1014 1394) scale(-1 -1)"/>
+  </g>
+  <g id="midpoint-patterns">
+    <use xlink:href="#midpoint-ornament" transform="translate(554 74)"/>
+    <use xlink:href="#midpoint-ornament" transform="translate(554 1394) scale(1 -1)"/>
+    <use xlink:href="#midpoint-ornament" transform="translate(94 734) rotate(-90)"/>
+    <use xlink:href="#midpoint-ornament" transform="translate(1014 734) rotate(90)"/>
+  </g>
+</svg>

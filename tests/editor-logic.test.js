@@ -15,6 +15,20 @@ function W(ids, startWordIndex = 1) {
 }
 
 describe("token classification", () => {
+
+  it("keeps complete IndoPak word ligatures in the editable word model", () => {
+    const tokens = [
+      { id: 1, word_index: 1, text: "\uf658" },
+      { id: 2, word_index: 2, text: "\uf666" },
+      { id: 3, word_index: 3, text: "۟\uf61e" },
+    ];
+    const model = E.buildModel(tokens, []);
+    assert.deepEqual(model.allWords.map((w) => w.id), [1, 2]);
+    assert.deepEqual(model.orn.map((w) => w.id), [3]);
+    assert.equal(E.isOrn("\uf658"), false);
+    assert.equal(E.isOrn("\uf666"), false);
+  });
+
   it("treats Arabic-letter tokens as words", () => {
     assert.equal(E.isWord("بِسْمِ"), true);
     assert.equal(E.isWord("اَلْحَمْدُ"), true);

@@ -1,0 +1,18 @@
+# surah 112 translation 2 ayahs 1-4
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=4  # whole (unsegmented)
+words: 1.قُلْ | 2.هُوَ | 3.اللّٰهُ | 4.اَحَدٌ
+orig : کہو کہ وہ معبود برحق جسکی میں عبادت کرتا ہوں اللہ ہے وہ ایک ہے۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.اَللّٰهُ | 2.الصَّمَدُ
+orig : اللہ بے نیاز ہے۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.لَمْ | 2.یَلِدْ ۙ۬ | 3.وَلَمْ | 4.یُوْلَدْ
+orig : وہ نہ کسی کا باپ ہے اور نہ کسی کا بیٹا۔
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.وَلَمْ | 2.یَكُنْ | 3.لَّهٗ | 4.كُفُوًا | 5.اَحَدٌ
+orig : اور کوئی اس کا ہمسر نہیں۔

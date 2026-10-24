@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 import mysql.connector
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 
-# A token is a real Arabic *word* only if it contains an Arabic letter.
+# Real Arabic words contain letters or a known complete-word font ligature.
 # The end-of-ayah ornament tokens (e.g. "۟ۙ\uf500") carry NO Arabic letter —
 # they are Private-Use glyphs the Quran Foundation IndoPak font turns into the
 # numbered ayah-end ornament. Treating them as ornaments (not words) lets a
@@ -156,9 +156,15 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 def _is_word(text: str) -> bool:
-    """True when a token contains an Arabic letter (i.e. it is a real word,
-    not an end-of-ayah ornament / pause-mark token)."""
-    return bool(_ARABIC_LETTER.search(text or ""))
+    """Recognize Arabic letters and complete-word font ligatures, excluding
+    end-of-ayah ornaments and pause-mark tokens."""
+    # The IndoPak font encodes these complete Quran words as ligatures:
+    # U+F658 = wa-l-yatalattaf (18:19), U+F666 = thuluthayi (73:20).
+    # Other private-use glyphs include verse ornaments and remain excluded.
+    value = text or ""
+    return bool(_ARABIC_LETTER.search(value)) or any(
+        glyph in value for glyph in ("\uf658", "\uf666")
+    )
 
 
 @app.get(
@@ -274,6 +280,24 @@ def list_surahs():
 
 
 @app.get(
+    "/translations",
+    summary="List translations (id, name, language, direction)",
+    description="Used by the reader/editor to build the translation dropdown.",
+)
+def list_translations():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT id, name, language, direction FROM translations ORDER BY id"
+        )
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.get(
     "/original/{translation_id}/{surah_id}/{ayah_number}",
     summary="Get the original whole-ayah translation (read-only reference)",
     description=(
@@ -319,6 +343,15 @@ def reader_page():
     return FileResponse(index, headers={"Cache-Control": "no-cache"})
 
 
+@app.get("/mushaf", response_class=HTMLResponse, include_in_schema=False)
+def mushaf_page():
+    """Flowing, print-ready reader backed by the saved Quran segments."""
+    page = STATIC_DIR / "mushaf.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="mushaf.html not built")
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
+
+
 @app.get("/reader-mushaf", response_class=HTMLResponse, include_in_schema=False)
 def reader_mushaf_page():
     index = STATIC_DIR / "reader-mushaf.html"
@@ -335,15 +368,17 @@ def editor_page():
     return FileResponse(index)
 
 
+@app.get("/editor/release-notes", response_class=HTMLResponse, include_in_schema=False)
+def editor_release_notes_page():
+    page = STATIC_DIR / "editor-release-notes.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="editor-release-notes.html not built")
+    return FileResponse(page)
+
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index_page():
-    return HTMLResponse(
-        "<html lang='en'><body style='font-family:sans-serif'>"
-        "<h2>Bayaan API</h2>"
-        "<ul>"
-        "<li>Interactive docs: <a href='/docs'>/docs</a></li>"
-        "<li>Segment editor: <a href='/editor?translation_id=2&surah=2&ayah=2'>/editor?translation_id=2&amp;surah=2&amp;ayah=2</a></li>"
-        "<li>Reader: <a href='/reader?translation_id=2&surah=2&layout=phrase'>/reader?translation_id=2&amp;surah=2&amp;layout=phrase</a></li>"
-        "<li>Data endpoint: <a href='/surah/2?translation_id=2'>/surah/2?translation_id=2</a></li>"
-        "</ul></body></html>"
-    )
+    index = STATIC_DIR / "index.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="index.html not built")
+    return FileResponse(index)

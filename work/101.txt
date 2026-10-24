@@ -1,0 +1,46 @@
+# surah 101 translation 2 ayahs 1-11
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=1  # whole (unsegmented)
+words: 1.اَلْقَارِعَةُ
+orig : کھڑکھڑانے والی۔
+
+ayah 2  real_words=2  # whole (unsegmented)
+words: 1.مَا | 2.الْقَارِعَةُ
+orig : کھڑکھڑانے والی کیا ہے؟
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.الْقَارِعَةُ
+orig : اور تم کیا جانو کہ کھڑکھڑانے والی کیا ہے؟
+
+ayah 4  real_words=5  # whole (unsegmented)
+words: 1.یَوْمَ | 2.یَكُوْنُ | 3.النَّاسُ | 4.كَالْفَرَاشِ | 5.الْمَبْثُوْثِ
+orig : وہ قیامت ہے جس دن لوگ ایسے ہوں گے جیسے بکھرے ہوئے پروانے۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.وَتَكُوْنُ | 2.الْجِبَالُ | 3.كَالْعِهْنِ | 4.الْمَنْفُوْشِ
+orig : اور پہاڑ ایسے ہو جائیں گے جیسے دھنکی ہوئی رنگ برنگی اون۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.فَاَمَّا | 2.مَنْ | 3.ثَقُلَتْ | 4.مَوَازِیْنُهٗ
+orig : اب جس کے اعمال کے وزن بھاری نکلیں گے۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.فَهُوَ | 2.فِیْ | 3.عِیْشَةٍ | 4.رَّاضِیَةٍ
+orig : وہ دلپسند عیش میں ہوگا۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.وَاَمَّا | 2.مَنْ | 3.خَفَّتْ | 4.مَوَازِیْنُهٗ
+orig : اور جس کے وزن ہلکے نکلیں گے۔
+
+ayah 9  real_words=2  # whole (unsegmented)
+words: 1.فَاُمُّهٗ | 2.هَاوِیَةٌ
+orig : اس کا ٹھکانہ ہاویہ ہے۔
+
+ayah 10  real_words=4  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.هِیَهْ
+orig : اور تم کیا سمجھے کہ ہاویہ کیا چیز ہے؟
+
+ayah 11  real_words=2  # whole (unsegmented)
+words: 1.نَارٌ | 2.حَامِیَةٌ
+orig : وہ دہکتی ہوئی آگ ہے۔

@@ -1,0 +1,70 @@
+# surah 86 translation 2 ayahs 1-17
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.وَالسَّمَآءِ | 2.وَالطَّارِقِ
+orig : آسمان کی اور رات کے وقت آنے والے کی قسم۔
+
+ayah 2  real_words=4  # whole (unsegmented)
+words: 1.وَمَاۤ | 2.اَدْرٰىكَ | 3.مَا | 4.الطَّارِقُ
+orig : اور تمکو کیا معلوم کے رات کے وقت آنے والا کیا ہے۔
+
+ayah 3  real_words=2  # whole (unsegmented)
+words: 1.النَّجْمُ | 2.الثَّاقِبُ
+orig : وہ تارا ہے چمکنے والا۔
+
+ayah 4  real_words=6  # whole (unsegmented)
+words: 1.اِنْ | 2.كُلُّ | 3.نَفْسٍ | 4.لَّمَّا | 5.عَلَیْهَا | 6.حَافِظٌ
+orig : کہ کوئی شخص ایسا نہیں جس پر کوئی نگہبان نہ ہو۔
+
+ayah 5  real_words=4  # whole (unsegmented)
+words: 1.فَلْیَنْظُرِ | 2.الْاِنْسَانُ | 3.مِمَّ | 4.خُلِقَ
+orig : تو انسان کو دیکھنا چاہیے کہ وہ کاہے سے پیدا ہوا ہے۔
+
+ayah 6  real_words=4  # whole (unsegmented)
+words: 1.خُلِقَ | 2.مِنْ | 3.مَّآءٍ | 4.دَافِقٍ
+orig : وہ اچھلتے ہوئے پانی سے پیدا ہوا ہے۔
+
+ayah 7  real_words=5  # whole (unsegmented)
+words: 1.یَّخْرُجُ | 2.مِنْ | 3.بَیْنِ | 4.الصُّلْبِ | 5.وَالتَّرَآىِٕبِ
+orig : جو پیٹھ اور سینے کے بیچ میں سے نکلتا ہے۔
+
+ayah 8  real_words=4  # whole (unsegmented)
+words: 1.اِنَّهٗ | 2.عَلٰی | 3.رَجْعِهٖ | 4.لَقَادِرٌ
+orig : بیشک وہ یعنی خالق اسکو دوبارہ پیدا کرنے پر قادر ہے۔
+
+ayah 9  real_words=3  # whole (unsegmented)
+words: 1.یَوْمَ | 2.تُبْلَی | 3.السَّرَآىِٕرُ
+orig : جس دن دلوں کے بھید جانچے جائیں گے۔
+
+ayah 10  real_words=6  # whole (unsegmented)
+words: 1.فَمَا | 2.لَهٗ | 3.مِنْ | 4.قُوَّةٍ | 5.وَّلَا | 6.نَاصِرٍ
+orig : تو انسان کی کچھ پیش نہ چل سکے گی اور نہ کوئی اس کا مددگار ہو گا۔
+
+ayah 11  real_words=3  # whole (unsegmented)
+words: 1.وَالسَّمَآءِ | 2.ذَاتِ | 3.الرَّجْعِ
+orig : آسمان کی قسم جو مینہ برساتا ہے۔
+
+ayah 12  real_words=3  # whole (unsegmented)
+words: 1.وَالْاَرْضِ | 2.ذَاتِ | 3.الصَّدْعِ
+orig : اور زمین کی قسم جو پھٹ جاتی ہے۔
+
+ayah 13  real_words=3  # whole (unsegmented)
+words: 1.اِنَّهٗ | 2.لَقَوْلٌ | 3.فَصْلٌ
+orig : کہ یہ فیصلہ کن کلام ہے۔
+
+ayah 14  real_words=3  # whole (unsegmented)
+words: 1.وَّمَا | 2.هُوَ | 3.بِالْهَزْلِ
+orig : اور یہ کوئی مذاق نہیں۔
+
+ayah 15  real_words=3  # whole (unsegmented)
+words: 1.اِنَّهُمْ | 2.یَكِیْدُوْنَ | 3.كَیْدًا
+orig : یہ لوگ اپنی تدبیروں میں لگ رہے ہیں۔
+
+ayah 16  real_words=2  # whole (unsegmented)
+words: 1.وَّاَكِیْدُ | 2.كَیْدًا
+orig : اور میں اپنی تدبیر کر رہا ہوں۔
+
+ayah 17  real_words=4  # whole (unsegmented)
+words: 1.فَمَهِّلِ | 2.الْكٰفِرِیْنَ | 3.اَمْهِلْهُمْ | 4.رُوَیْدًا
+orig : تو اے نبی ﷺ تم کافروں کو مہلت دو بس چند دن کی مہلت اور دیدو۔

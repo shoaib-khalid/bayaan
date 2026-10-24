@@ -1,0 +1,22 @@
+# surah 111 translation 2 ayahs 1-5
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=5  # whole (unsegmented)
+words: 1.تَبَّتْ | 2.یَدَاۤ | 3.اَبِیْ | 4.لَهَبٍ | 5.وَّتَبَّ
+orig : ابو لہب کے ہاتھ ٹوٹ گئے اور وہ خود ہلاک ہو گیا۔
+
+ayah 2  real_words=6  # whole (unsegmented)
+words: 1.مَاۤ | 2.اَغْنٰی | 3.عَنْهُ | 4.مَالُهٗ | 5.وَمَا | 6.كَسَبَ
+orig : نہ تو اس کا مال ہی اس کے کچھ کام آیا اور نہ وہ جو اس نے کمایا۔
+
+ayah 3  real_words=4  # whole (unsegmented)
+words: 1.سَیَصْلٰی | 2.نَارًا | 3.ذَاتَ | 4.لَهَبٍ
+orig : وہ ضرور بھڑکتی ہوئی آگ میں داخل ہو گا۔
+
+ayah 4  real_words=3  # whole (unsegmented)
+words: 1.وَّامْرَاَتُهٗ ؕ | 2.حَمَّالَةَ | 3.الْحَطَبِ
+orig : اور اسکی بیوی بھی جو ایندھن سر پر اٹھائے پھرتی ہے۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.فِیْ | 2.جِیْدِهَا | 3.حَبْلٌ | 4.مِّنْ | 5.مَّسَدٍ
+orig : اس کے گلے میں مونج کی رسّی ہو گی۔

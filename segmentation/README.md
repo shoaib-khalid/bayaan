@@ -7,7 +7,6 @@ segments, batch by batch, with a human reviewing every 50 ayahs.
 
 | File | Purpose |
 |------|---------|
-| `PROMPT.md` | Copy-paste prompt to give a **new/fresh instance** when starting a batch. |
 | `GUIDE.md`  | The living rulebook (segmentation criteria + hard constraints). Humans update it after reviewing batches; agents never edit it. |
 | `SAMPLES.md` | Approved examples (Al-Baqarah 2:1–18) so an agent can match style. |
 | `make_samples.py` | Regenerate `SAMPLES.md` + `samples/` JSON from the DB after a batch is approved. |

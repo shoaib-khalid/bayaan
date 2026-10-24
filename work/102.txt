@@ -1,0 +1,34 @@
+# surah 102 translation 2 ayahs 1-8
+# word indices are REAL-word indices; 'orig' is the pristine translation.
+
+ayah 1  real_words=2  # whole (unsegmented)
+words: 1.اَلْهٰىكُمُ | 2.التَّكَاثُرُ
+orig : لوگو تمکو زیادہ سے زیادہ مال سمیٹنے کی خواہش نے غفلت میں ڈالے رکھا۔
+
+ayah 2  real_words=3  # whole (unsegmented)
+words: 1.حَتّٰی | 2.زُرْتُمُ | 3.الْمَقَابِرَ
+orig : یہاں تک کہ تم نے قبریں جا دیکھیں۔
+
+ayah 3  real_words=3  # whole (unsegmented)
+words: 1.كَلَّا | 2.سَوْفَ | 3.تَعْلَمُوْنَ
+orig : دیکھو تمہیں عنقریب معلوم ہو جائے گا۔
+
+ayah 4  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.كَلَّا | 3.سَوْفَ | 4.تَعْلَمُوْنَ
+orig : پھر دیکھو تمہیں عنقریب معلوم ہو جائے گا۔
+
+ayah 5  real_words=5  # whole (unsegmented)
+words: 1.كَلَّا | 2.لَوْ | 3.تَعْلَمُوْنَ | 4.عِلْمَ | 5.الْیَقِیْنِ
+orig : دیکھو اگر تم جانتے یعنی یقینی علم رکھتے تو غفلت میں نہ پڑتے۔
+
+ayah 6  real_words=2  # whole (unsegmented)
+words: 1.لَتَرَوُنَّ | 2.الْجَحِیْمَ
+orig : تم ضرور دوزخ کو دیکھو گے۔
+
+ayah 7  real_words=4  # whole (unsegmented)
+words: 1.ثُمَّ | 2.لَتَرَوُنَّهَا | 3.عَیْنَ | 4.الْیَقِیْنِ
+orig : پھر تم اسکو یقین کی آنکھ سے دیکھ لو گے۔
+
+ayah 8  real_words=5  # whole (unsegmented)
+words: 1.ثُمَّ | 2.لَتُسْـَٔلُنَّ | 3.یَوْمَىِٕذٍ | 4.عَنِ | 5.النَّعِیْمِ
+orig : پھر اس روز تم سے شکر نعمت کے بارے میں ضرور پرسش ہو گی؟

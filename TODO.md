@@ -85,3 +85,14 @@ the schema comment when convenient.
   When a NEW translation is registered, snapshot its originals from
   `translation_segments` (while each ayah still has exactly one segment)
   BEFORE segmenting it — the copy uses `HAVING COUNT(*) = 1` as its check.
+
+## 8. Create Home Page with the links to editor and reader
+- Create a home page which displays all the links, so one doesn't have to remember what the links were
+
+## 9. Create login page, RBAC with admins able to eidt and normal users only able to view.
+
+## 10. Add user translations, allow users to edit and save their own translations, again this is going to be a permission, if the user is allowed to edit and save a translation.
+- This would be like cusotmizing a translation, only the edited segments/ayas would be saved as his, the rest would be rendered as is, so we don't create duplicates of the whole quran translation unnecessarily.
+
+## 11. Render page wise output.
+- right now all the surahs are rendered in a single page. Need to paginate the rendering, the page should be dynamic and will depend upong the screen that how much content could come into the page, put it has to look like a book page i.e. it has to be of a portrait ratio and ofcourse there needs to be next/previous page button which could navigate to the next/previous page.
