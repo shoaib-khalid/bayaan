@@ -59,6 +59,8 @@
     if (user.role === "admin") {
       bar.appendChild(el("span", { "class": "sep" }, "\u00b7"));
       bar.appendChild(el("a", { href: "/admin/users" }, "Users"));
+      bar.appendChild(el("span", { "class": "sep" }, "\u00b7"));
+      bar.appendChild(el("a", { href: "/admin/promotions" }, "Approve"));
     }
 
     bar.appendChild(el("span", { "class": "sep" }, "\u00b7"));
@@ -78,7 +80,15 @@
   function start() {
     fetch("/api/me", { credentials: "same-origin", headers: { "Accept": "application/json" } })
       .then(function (response) { return response.ok ? response.json() : null; })
-      .then(function (data) { if (data && data.user) { build(data.user); } })
+      .then(function (data) {
+        if (!data || !data.user) { return; }
+        // Pages that carry an admin-only block keep it hidden in the markup and
+        // let this reveal it, so the link never appears for anyone else and no
+        // page has to duplicate the role check.
+        var adminBlock = document.getElementById("adminLinks");
+        if (adminBlock && data.user.role === "admin") { adminBlock.hidden = false; }
+        build(data.user);
+      })
       .catch(function () { /* no strip is better than a broken page */ });
   }
 

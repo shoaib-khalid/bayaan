@@ -90,6 +90,19 @@
       <span class="desc">Segment editor: split an ayah into word-anchored segments. Opens on the ayah you were last editing. Press <code>?</code> in the page for the usage guide.</span></a></li>
   </ul>
 
+  <div id="adminLinks" hidden>
+    <h2>Administration</h2>
+    <ul class="links">
+      <li><a class="row" href="/admin/users">
+        <span class="path">/admin/users</span>
+        <span class="desc">Accounts — create, set a password, change a role, enable or disable. Accounts are disabled rather than deleted, so the segments someone wrote keep their author.</span></a></li>
+
+      <li><a class="row" href="/admin/promotions">
+        <span class="path">/admin/promotions</span>
+        <span class="desc">Approve private edits — pick an account, read their segments ayah by ayah with the Arabic each one covers, and promote a good one into the shared text every reader gets.</span></a></li>
+    </ul>
+  </div>
+
   <h2>API — JSON endpoints</h2>
   <ul class="links">
     <li><a class="row" href="/surahs">
@@ -154,6 +167,6 @@
     }
   })();
 </script>
-<script src="/static/auth-strip.js" defer></script>
+<script src="/static/auth-strip.js?v=3" defer></script>
 </body>
 </html>
