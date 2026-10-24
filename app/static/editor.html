@@ -968,7 +968,30 @@ async function nav(delta){
   const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
   const idx = nums.indexOf(S.ayahNumber);
   const next = nums[idx+delta];
-  if (next === undefined){ toast(delta>0?"This is the last ayah of the surah.":"This is the first ayah.", "warn"); return; }
+
+  // At the end of a surah, carry on into the neighbouring one instead of
+  // stopping: Next on the last ayah opens the next surah's first ayah, and Prev
+  // on the first opens the previous surah's last. Reading (and segmenting) is
+  // continuous, so the navigation should be too.
+  if (next === undefined){
+    const pos = S.surahs.findIndex(s => s.id === S.surahId);
+    const target = pos >= 0 ? S.surahs[pos + delta] : undefined;
+    if (!target){
+      toast(delta > 0 ? "This is the last ayah of the Qur'an." : "This is the first ayah of the Qur'an.", "warn");
+      return;
+    }
+    if (!(await confirmLeave())) return;
+    selA=selB=null; editingRow=-1; splitRow=-1;
+    S.surahId = target.id;
+    // Landing on the last ayah going backwards needs the count from /surahs;
+    // going forwards the first ayah is always 1.
+    S.ayahNumber = delta > 0 ? 1 : (target.ayah_count || 1);
+    $("surahSel").value = String(S.surahId);
+    await loadSurah();
+    toast(`${target.name_english} — ayah ${S.ayahNumber}`, "ok");
+    return;
+  }
+
   if (!(await confirmLeave())) return;
   selA=selB=null; editingRow=-1; splitRow=-1;
   loadAyah(next);
@@ -978,10 +1001,8 @@ async function saveAndGo(delta){
     const ok = await saveAyah();
     if (!ok) return;
   }
-  const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
-  const idx = nums.indexOf(S.ayahNumber);
-  const next = nums[idx+delta];
-  if (next !== undefined){ selA=selB=null; editingRow=-1; splitRow=-1; loadAyah(next); }
+  // Reuse nav() so Ctrl+Enter also crosses into the next surah.
+  await nav(delta);
 }
 $("btnNext").addEventListener("click", ()=>nav(+1));
 $("btnPrev").addEventListener("click", ()=>nav(-1));
