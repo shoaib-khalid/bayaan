@@ -1,0 +1,38 @@
+@font-face{font-family:Quran;src:url('/static/mushaf/fonts/indopak-v4.2.1.woff2') format('woff2');font-display:block}
+@font-face{font-family:Urdu;src:url('/static/mushaf/fonts/jameel-noori-nastaleeq.ttf') format('truetype');font-display:block}
+:root{--a:#dceaf6;--b:#f8e9bd;--ink:#171717}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#e8e7e3;color:var(--ink)}
+.toolbar{position:sticky;top:0;z-index:10;background:#fff;padding:12px 18px;border-bottom:1px solid #ccc;font:14px/1.4 system-ui,sans-serif;direction:ltr;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.toolbar label{display:flex;align-items:center;gap:7px}.toolbar input{width:120px}.toolbar button{padding:7px 15px;border:1px solid #aaa;background:#fff;border-radius:5px;cursor:pointer}
+.toolbar strong{font-size:15px}.status{font-size:12px;color:#555}
+#pages{direction:ltr;padding:28px 0}.sheet{direction:rtl;position:relative;width:793.7008px;height:1122.5197px;margin:0 auto 26px;background:white;box-shadow:0 4px 20px #0002;overflow:hidden}
+.frame{position:absolute;inset:30px;pointer-events:none}.frame svg{width:100%;height:100%}
+.content{position:absolute;top:48px;left:48px;right:48px;bottom:55px}
+.surah-header{position:relative;width:100%;aspect-ratio:1200/490;margin-bottom:10px;}
+.surah-header>svg{position:absolute;inset:0;width:100%;height:100%}
+.surah-title{position:absolute;left:18%;right:18%;top:22.5%;height:23%;display:flex;align-items:center;justify-content:center;font:36px/1.8 Quran;white-space:nowrap}
+.count{position:absolute;top:53.67%;height:12.65%;width:15.67%;display:flex;align-items:center;justify-content:center;font:22px/1.5 Urdu;white-space:nowrap}.left-count{left:13.25%}.right-count{right:13.25%}
+.basmala{position:absolute;left:24.67%;width:50.66%;top:84.90%;height:11.02%;font:24px/1.6 Quran;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.row{position:relative;margin:0 0 6px;border-top:.65px solid #555;border-bottom:.65px solid #555;break-inside:avoid}
+.artrack,.urtrack{position:relative;isolation:isolate;width:100%;overflow:visible}
+.artrack{border-bottom:.65px solid #777}
+.bands{position:absolute;inset:0;width:100%;height:100%;z-index:-1;display:block}
+.arunit{position:absolute;top:0;display:flex;align-items:center;justify-content:space-between;direction:rtl;padding:0 4px;height:100%;white-space:nowrap;font-family:Quran;line-height:2.1}
+.aw{display:inline-block;white-space:nowrap;flex:none}
+.urunit{position:absolute;top:0;padding:0 5px;direction:rtl;text-align:justify;text-align-last:right;font-family:Urdu;overflow-wrap:normal;word-break:normal}
+.umark{font-size:.78em;white-space:nowrap}
+.running{position:absolute;top:0;left:35px;right:35px;height:28px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;direction:ltr;font:24px/1.1 Urdu}
+.running .surah{text-align:left;direction:rtl}.running .para{text-align:right;direction:rtl}
+.page-number{font:20px/1 Georgia,'Times New Roman',serif;text-align:center;min-width:35px}
+.ruku-mark{position:absolute;width:27px;height:72px;pointer-events:none;direction:ltr;color:#111}
+.ruku-mark.left{left:1px}.ruku-mark.right{right:1px}
+.ruku-mark svg{display:block;width:27px;height:72px;overflow:visible}
+#measure{position:absolute;top:0;left:-10000px;visibility:hidden;white-space:nowrap;direction:rtl}
+@page{size:A4;margin:0}
+@media print{html,body{background:white}.toolbar,#measure{display:none!important}#pages{padding:0}.sheet{margin:0;box-shadow:none;break-after:page}.sheet:last-child{break-after:auto}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.toolbar select{max-width:175px;padding:5px;border:1px solid #aaa;border-radius:4px;font:inherit}.toolbar .home{color:#333;font-weight:700}.toolbar small{font-size:11px;font-weight:400}.toolbar{gap:10px;padding:8px;max-height:180px;overflow:auto}.toolbar button:disabled{opacity:.5;cursor:wait}.toolbar input{width:78px}.reader-status,.reader-note{direction:ltr;font:13px/1.5 system-ui,sans-serif;text-align:center;padding:10px 16px}.reader-status.error{color:#9c2222}.reader-note{max-width:900px;margin:auto}.sheet{zoom:var(--page-scale,1)}.row{contain:layout style}.missing-translation{font:14px/1.6 system-ui,sans-serif;color:#555;padding:8px;direction:ltr;text-align:center}.surah-header.compact{aspect-ratio:1200/400}.surah-header.compact .basmala{display:none}.surah-header.compact .surah-title{top:27.56%;height:28.18%}.surah-header.compact .count{top:65.75%;height:15.5%}.running{pointer-events:none}.header-title-urdu{font-family:Urdu}.arunit{gap:0}.aw.long-word{transform-origin:right center}
+@media print{.reader-status,.reader-note{display:none!important}.sheet{zoom:1!important}}
+
+.urunit{white-space:normal}#measure{white-space:normal}.sheet{scroll-margin-top:calc(var(--toolbar-height,130px) + 12px)}
+.urunit{overflow-wrap:anywhere}

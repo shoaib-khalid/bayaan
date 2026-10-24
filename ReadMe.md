@@ -197,3 +197,18 @@ Covers: word vs. ornament classification, whole-ayah detection, `buildModel`, `l
 - `translations`: 2 rows (as above). `translation_segments`: 6,236 rows for `translation_id = 2`; 0 for `1`.
 - `translation_originals`: 6,236 rows for `translation_id = 2` (immutable whole-ayah reference; migration `data/002_translation_originals.sql`).
 - Schema/dump: `data/db-schema.sql`; migrations under `data/0*.sql` (e.g. `002_translation_originals.sql`); original word-load script: `data/import-quran-aya-words.py`.
+
+
+## Print-ready Mushaf — v1.1.0 (2026-10-22)
+
+Open `/mushaf` for the new A4 layout. It uses the live `/surah/{id}` API and saved translation segments, local fonts and original SVG decorations. Select any surah or a From/Through range (1–114 for the full Quran). Next page continues into the following surah at the end of the loaded range; Continue next surah appends it directly. New surah headers share the current page when there is room for the header and first row. Al-Fatiha's numbered basmala remains in its ayah text, and At-Tawba receives no opening basmala.
+
+Matching continuous colours identify Arabic/Urdu segments. Long segments can continue across rows; internal wrapping uses proportional word-boundary continuations, not a new word-level semantic alignment. All original Arabic tokens and saved translation characters are retained. Missing or invalid saved ranges fall back to a whole-ayah presentation and are reported in the reader status.
+
+Arabic and Urdu sizes are independent. Page borders are fixed to the chosen A4 paper; taller translation strips cause repagination. Page headers sit above the border, folio numbers run from 1 (or `?folio=N`), and ruku signs occupy the outer margin according to folio parity. URLs retain the range, translation, font sizes and current page.
+
+Print loaded pages exports exactly the selected/loaded range. Enable background graphics and choose A4, 100% scale, and no browser-added headers/footers. Reading resizes the physical page for the screen without changing its line breaks.
+
+Files: `app/static/mushaf.html`, `app/static/mushaf/{renderer.js,layout.js,styles.css}`, SVG artwork and local fonts. Structural metadata (114 surahs, 30 juz starts, 556 ruku starts) is from [Tanzil](https://tanzil.net/docs/Quran_Metadata), CC-BY, (C) 2008–2009 Tanzil.info. Only structure metadata is imported; Quran text and Urdu remain in Bayaan's database.
+
+Run `npm test` for editor and Mushaf layout invariants.

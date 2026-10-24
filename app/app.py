@@ -343,6 +343,15 @@ def reader_page():
     return FileResponse(index, headers={"Cache-Control": "no-cache"})
 
 
+@app.get("/mushaf", response_class=HTMLResponse, include_in_schema=False)
+def mushaf_page():
+    """Flowing, print-ready reader backed by the saved Quran segments."""
+    page = STATIC_DIR / "mushaf.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="mushaf.html not built")
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
+
+
 @app.get("/reader-mushaf", response_class=HTMLResponse, include_in_schema=False)
 def reader_mushaf_page():
     index = STATIC_DIR / "reader-mushaf.html"
