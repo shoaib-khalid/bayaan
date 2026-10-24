@@ -982,13 +982,26 @@ async function nav(delta){
     }
     if (!(await confirmLeave())) return;
     selA=selB=null; editingRow=-1; splitRow=-1;
+    const prevSurah = S.surahId;
+    const prevAyah = S.ayahNumber;
     S.surahId = target.id;
     // Landing on the last ayah going backwards needs the count from /surahs;
     // going forwards the first ayah is always 1.
     S.ayahNumber = delta > 0 ? 1 : (target.ayah_count || 1);
     $("surahSel").value = String(S.surahId);
-    await loadSurah();
-    toast(`${target.name_english} — ayah ${S.ayahNumber}`, "ok");
+    try {
+      await loadSurah();
+      toast(`${target.name_english} — ayah ${S.ayahNumber}`, "ok");
+    } catch (err){
+      // The fetch failed (server down, session expired). Put everything back:
+      // leaving the selectors pointing at a surah that never loaded makes the
+      // page claim to be somewhere it is not.
+      S.surahId = prevSurah;
+      S.ayahNumber = prevAyah;
+      $("surahSel").value = String(prevSurah);
+      $("ayahSel").value = String(prevAyah);
+      toast("Could not load that surah — the server did not respond. Nothing was changed.", "warn");
+    }
     return;
   }
 

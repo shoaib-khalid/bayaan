@@ -390,7 +390,7 @@ def reader_mushaf_page(request: Request):
     index = STATIC_DIR / "reader-mushaf.html"
     if not index.is_file():
         raise HTTPException(status_code=404, detail="reader-mushaf.html not built")
-    return FileResponse(index)
+    return FileResponse(index, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/editor", response_class=HTMLResponse, include_in_schema=False)
@@ -401,7 +401,9 @@ def editor_page(request: Request):
     index = STATIC_DIR / "editor.html"
     if not index.is_file():
         raise HTTPException(status_code=404, detail="editor.html not built")
-    return FileResponse(index)
+    # no-cache matters here: an edit to this page must show up on the next load,
+    # not after the browser decides its copy has expired.
+    return FileResponse(index, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/editor/release-notes", response_class=HTMLResponse, include_in_schema=False)
@@ -409,7 +411,7 @@ def editor_release_notes_page():
     page = STATIC_DIR / "editor-release-notes.html"
     if not page.is_file():
         raise HTTPException(status_code=404, detail="editor-release-notes.html not built")
-    return FileResponse(page)
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
