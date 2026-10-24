@@ -239,12 +239,32 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
   button:hover { background:#d9bb7d; }
   .empty { padding:26px; text-align:center; color:#7d7264; border:1px dashed #3a332a; border-radius:10px; }
   .hint { font-size:12px; color:#7d7264; margin:14px 0 0; }
+  /* The IndoPak face carries the Private-Use ornament glyphs, so the Arabic
+     shows as it does in the readers rather than as boxes. */
+  @font-face { font-family:Quran; src:url('/static/mushaf/fonts/indopak-v4.2.1.woff2') format('woff2'); font-display:swap; }
+  .picker { display:flex; gap:10px; align-items:center; margin:0 0 22px; }
+  .picker label { font-size:13px; color:#cbbfae; }
+  select { background:#100e0b; color:#f2ece3; border:1px solid #3a332a; border-radius:6px;
+           padding:9px 11px; font:inherit; font-size:14px; min-width:280px; }
+  select:focus { outline:none; border-color:#c8a96a; box-shadow:0 0 0 3px rgba(200,169,106,.15); }
+  .card { border:1px solid #3a332a; border-radius:10px; background:#191612; margin:0 0 16px; overflow:hidden; }
+  .card .head { display:flex; justify-content:space-between; align-items:center; gap:12px;
+                padding:12px 14px; border-bottom:1px solid #241f18; }
+  .card .title { font-weight:600; color:#e5c88a; }
+  .card th { padding:9px 14px 6px; }
+  .card td { padding:9px 14px; border-bottom:1px solid #1d1913; }
+  .card tr:last-child td { border-bottom:0; }
+  .ar { font-family:Quran, "Noto Nastaliq Urdu", serif; font-size:21px; line-height:2.1;
+        direction:rtl; text-align:right; color:#f6efe2; }
+  .ur { font-family:"Noto Nastaliq Urdu", serif; font-size:16px; line-height:2.1;
+        direction:rtl; text-align:right; color:#e8dcc8; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Private edits</h1>
   <p class="sub">Signed in as $who &nbsp;·&nbsp; <a href="/admin/users">Users</a> &nbsp;·&nbsp; <a href="/">Bayaan</a></p>
+  $picker
   $banner
   $body
   <p class="hint">Promoting replaces the canonical segments of that ayah. The person's private copy stays as it is.</p>
@@ -253,27 +273,31 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
 </html>
 """)
 
-_PROMOTE_ROW = Template("""<tr>
-  <td class="who">$username</td>
-  <td>$surah <span class="muted">$ayah</span></td>
-  <td class="muted">$translation</td>
-  <td class="muted">$segments segments</td>
-  <td class="muted">$updated</td>
-  <td>
+_PROMOTE_CARD = Template("""<div class="card">
+  <div class="head">
+    <div><span class="title">$surah · ayah $ayah</span>
+      <span class="muted">translation $translation · $count · $updated</span></div>
     <form method="post" action="/admin/promote">
       <input type="hidden" name="user_id" value="$user_id">
       <input type="hidden" name="translation_id" value="$translation_id">
       <input type="hidden" name="surah_id" value="$surah_id">
       <input type="hidden" name="ayah_number" value="$ayah_number">
-      <button type="submit">Promote</button>
+      <button type="submit">Approve</button>
     </form>
-  </td>
-</tr>""")
+  </div>
+  <table><tbody>$rows</tbody></table>
+</div>""")
+
+_SEGMENT_ROW = Template(
+    """<tr><td class="ar">$words</td><td class="ur">$text</td></tr>"""
+)
 
 
 def render_promotions(
     current_user: dict,
-    overrides: list[dict],
+    accounts: list[dict],
+    selected_user_id: int | None,
+    groups: list[dict],
     ok: str | None = None,
     error: str | None = None,
     promoted_count: int | None = None,
@@ -283,40 +307,68 @@ def render_promotions(
     elif ok == "promoted":
         count = promoted_count if promoted_count is not None else 0
         banner = (
-            f'<div class="msg ok">Promoted {count} '
+            f'<div class="msg ok">Approved {count} '
             f'{"segment" if count == 1 else "segments"} into the canonical text.</div>'
         )
     else:
         banner = ""
 
-    if not overrides:
+    # Who is selected, and how to change it. Listing only accounts that
+    # actually have private work keeps the picker honest.
+    options = "".join(
+        f'<option value="{a["user_id"]}"'
+        f'{" selected" if a["user_id"] == selected_user_id else ""}>'
+        f'{escape(a["username"])} — {a["ayahs"]} '
+        f'{"ayah" if a["ayahs"] == 1 else "ayahs"}, {a["segments"]} segments</option>'
+        for a in accounts
+    )
+    picker = (
+        '<form class="picker" method="get" action="/admin/promotions">'
+        '<label for="user_id">Account</label>'
+        f'<select id="user_id" name="user_id">{options}</select>'
+        '<button type="submit">Show edits</button>'
+        "</form>"
+        if accounts
+        else ""
+    )
+
+    if not accounts:
         body = '<div class="empty">Nobody has a private edit yet.</div>'
+    elif selected_user_id is None:
+        body = '<div class="empty">Choose an account above to review its edits.</div>'
+    elif not groups:
+        body = '<div class="empty">That account has no private edits.</div>'
     else:
-        rows = "".join(
-            _PROMOTE_ROW.substitute(
-                username=escape(o["username"]),
-                surah=escape(o["surah_name"] or f"Surah {o['surah_id']}"),
-                ayah=f"{o['ayah_number']}",
-                translation=f"translation {o['translation_id']}",
-                segments=o["segment_count"],
-                updated=o["updated_at"].strftime("%Y-%m-%d %H:%M")
-                if o.get("updated_at")
-                else "",
-                user_id=o["user_id"],
-                translation_id=o["translation_id"],
-                surah_id=o["surah_id"],
-                ayah_number=o["ayah_number"],
+        cards = []
+        for group in groups:
+            rows = "".join(
+                _SEGMENT_ROW.substitute(
+                    words=escape(seg["words"]), text=escape(seg["text"])
+                )
+                for seg in group["segments"]
             )
-            for o in overrides
-        )
-        body = (
-            "<table><thead><tr><th>Account</th><th>Ayah</th><th>Translation</th>"
-            "<th>Size</th><th>Last edit</th><th></th></tr></thead>"
-            f"<tbody>{rows}</tbody></table>"
-        )
+            count = len(group["segments"])
+            cards.append(
+                _PROMOTE_CARD.substitute(
+                    surah=escape(group["surah_name"] or f"Surah {group['surah_id']}"),
+                    ayah=group["ayah_number"],
+                    translation=group["translation_id"],
+                    count=f"{count} segment" if count == 1 else f"{count} segments",
+                    updated=group["updated_at"].strftime("%Y-%m-%d %H:%M")
+                    if group.get("updated_at")
+                    else "",
+                    user_id=selected_user_id,
+                    translation_id=group["translation_id"],
+                    surah_id=group["surah_id"],
+                    ayah_number=group["ayah_number"],
+                    rows=rows,
+                )
+            )
+        body = "".join(cards)
 
     return _PROMOTIONS.substitute(
         who=escape(current_user.get("display_name") or current_user["username"]),
+        picker=picker,
         banner=banner,
         body=body,
     )

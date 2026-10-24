@@ -13,15 +13,10 @@ from starlette.concurrency import run_in_threadpool
 
 from . import admin, auth, positions, segments
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
+from .text import is_word as _is_word
 
-# Real Arabic words contain letters or a known complete-word font ligature.
-# The end-of-ayah ornament tokens (e.g. "۟ۙ\uf500") carry NO Arabic letter —
-# they are Private-Use glyphs the Quran Foundation IndoPak font turns into the
-# numbered ayah-end ornament. Treating them as ornaments (not words) lets a
-# renderer show the ayah marker once, at the ayah end, instead of inside a
-# word range. (Note: the DB `is_symbol` column was filled with a crude
-# len()<=2 heuristic, so we re-derive it here. See TODO.md.)
-_ARABIC_LETTER = re.compile(r"[\u0621-\u064a\u0671-\u06d3]")
+# Real Arabic words and end-of-ayah ornaments are told apart in app/text.py, so
+# the API and the admin review page cannot drift apart on the rule.
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -158,18 +153,6 @@ def create_segments(data: SegmentRequest, request: Request):
 # ---------------------------------------------------------------------------
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
-
-
-def _is_word(text: str) -> bool:
-    """Recognize Arabic letters and complete-word font ligatures, excluding
-    end-of-ayah ornaments and pause-mark tokens."""
-    # The IndoPak font encodes these complete Quran words as ligatures:
-    # U+F658 = wa-l-yatalattaf (18:19), U+F666 = thuluthayi (73:20).
-    # Other private-use glyphs include verse ornaments and remain excluded.
-    value = text or ""
-    return bool(_ARABIC_LETTER.search(value)) or any(
-        glyph in value for glyph in ("\uf658", "\uf666")
-    )
 
 
 @app.get(
@@ -799,9 +782,18 @@ async def admin_users_active(request: Request):
 # ---------------------------------------------------------------------------
 
 @app.get("/admin/promotions", response_class=HTMLResponse, include_in_schema=False)
-def admin_promotions_page(request: Request, ok: str = "", error: str = "", n: int = 0):
+def admin_promotions_page(
+    request: Request,
+    user_id: int | None = None,
+    ok: str = "",
+    error: str = "",
+    n: int = 0,
+):
+    """Review one account's private edits, ayah by ayah, and approve them."""
+    accounts = segments.users_with_overrides()
+    groups = segments.promotion_view(user_id) if user_id else []
     page = admin.render_promotions(
-        request.state.user, segments.list_overrides(), ok or None, error or None, n
+        request.state.user, accounts, user_id, groups, ok or None, error or None, n
     )
     return HTMLResponse(page, headers={"Cache-Control": "no-cache"})
 
@@ -810,16 +802,22 @@ def admin_promotions_page(request: Request, ok: str = "", error: str = "", n: in
 async def admin_promote(request: Request):
     """Copy one ayah from someone's private segments into `translation_segments`."""
     form = await _admin_form(request)
+    user_id = int(form.get("user_id") or 0)
     try:
         copied = segments.promote(
-            int(form.get("user_id") or 0),
+            user_id,
             int(form.get("translation_id") or 0),
             int(form.get("surah_id") or 0),
             int(form.get("ayah_number") or 0),
         )
     except ValueError:
-        return RedirectResponse("/admin/promotions?error=promote", status_code=303)
-    return RedirectResponse(f"/admin/promotions?ok=promoted&n={copied}", status_code=303)
+        return RedirectResponse(
+            f"/admin/promotions?user_id={user_id}&error=promote", status_code=303
+        )
+    # Back to the same account, so reviewing a batch does not mean re-picking.
+    return RedirectResponse(
+        f"/admin/promotions?user_id={user_id}&ok=promoted&n={copied}", status_code=303
+    )
 
 
 # ---------------------------------------------------------------------------

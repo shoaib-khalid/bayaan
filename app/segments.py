@@ -26,6 +26,7 @@ from __future__ import annotations
 import mysql.connector
 
 from . import auth
+from .text import is_word
 
 
 def _fetch(sql: str, params: tuple = ()) -> list[dict]:
@@ -301,25 +302,94 @@ def promote(
 # Browsing private work (for the admin promotion page)
 # ---------------------------------------------------------------------------
 
-def list_overrides(limit: int = 300) -> list[dict]:
-    """Every ayah somebody has taken over, newest first."""
+def users_with_overrides() -> list[dict]:
+    """Accounts that have private segments, with how much they have taken over."""
     return _fetch(
         """
         SELECT s.user_id,
                u.username,
-               s.translation_id,
-               s.surah_id,
-               su.name_english AS surah_name,
-               s.ayah_number,
-               COUNT(*)                     AS segment_count,
-               MAX(s.updated_at)             AS updated_at
+               COUNT(DISTINCT s.surah_id, s.ayah_number, s.translation_id) AS ayahs,
+               COUNT(*)                                                   AS segments,
+               MAX(s.updated_at)                                          AS updated_at
           FROM user_translation_segments s
-          JOIN users   u  ON u.id = s.user_id
-          JOIN surahs  su ON su.id = s.surah_id
-         GROUP BY s.user_id, u.username, s.translation_id, s.surah_id,
-                  su.name_english, s.ayah_number
+          JOIN users u ON u.id = s.user_id
+         GROUP BY s.user_id, u.username
          ORDER BY MAX(s.updated_at) DESC
-         LIMIT %s
-        """,
-        (limit,),
+        """
     )
+
+
+def _words_for_ayahs(pairs: list[tuple[int, int]]) -> dict[tuple[int, int], list[dict]]:
+    """Every word token for the given (surah, ayah) pairs, keyed the same way."""
+    if not pairs:
+        return {}
+    wanted = set(pairs)
+    surah_ids = sorted({surah for surah, _ in wanted})
+    placeholders = ",".join(["%s"] * len(surah_ids))
+    rows = _fetch(
+        f"""
+        SELECT id, surah_id, ayah_number, word_index, text
+          FROM ayah_words
+         WHERE surah_id IN ({placeholders})
+         ORDER BY surah_id, ayah_number, word_index
+        """,
+        tuple(surah_ids),
+    )
+    out: dict[tuple[int, int], list[dict]] = {}
+    for row in rows:
+        key = (row["surah_id"], row["ayah_number"])
+        if key in wanted:
+            out.setdefault(key, []).append(row)
+    return out
+
+
+def promotion_view(user_id: int) -> list[dict]:
+    """One account's private work, grouped by ayah and ready to render.
+
+    Each segment carries the Arabic words it covers, so an admin can judge the
+    edit without opening the editor — reviewing a translation with no sight of
+    the text it belongs to is not a review.
+    """
+    rows = _fetch(
+        """
+        SELECT s.surah_id, su.name_english AS surah_name, su.name_arabic,
+               s.ayah_number, s.translation_id, s.segment_index,
+               s.word_start, s.word_end, s.translation_text, s.updated_at
+          FROM user_translation_segments s
+          JOIN surahs su ON su.id = s.surah_id
+         WHERE s.user_id = %s
+         ORDER BY s.surah_id, s.ayah_number, s.translation_id, s.segment_index
+        """,
+        (user_id,),
+    )
+    if not rows:
+        return []
+
+    words = _words_for_ayahs(sorted({(r["surah_id"], r["ayah_number"]) for r in rows}))
+
+    groups: dict[tuple[int, int, int], dict] = {}
+    for row in rows:
+        key = (row["surah_id"], row["ayah_number"], row["translation_id"])
+        group = groups.get(key)
+        if group is None:
+            group = {
+                "surah_id": row["surah_id"],
+                "surah_name": row["surah_name"],
+                "name_arabic": row["name_arabic"],
+                "ayah_number": row["ayah_number"],
+                "translation_id": row["translation_id"],
+                "updated_at": row["updated_at"],
+                "segments": [],
+            }
+            groups[key] = group
+
+        covered = [
+            word["text"]
+            for word in words.get((row["surah_id"], row["ayah_number"]), [])
+            if row["word_start"] <= word["id"] <= row["word_end"] and is_word(word["text"])
+        ]
+        group["segments"].append(
+            {"words": " ".join(covered), "text": row["translation_text"]}
+        )
+
+    return [groups[key] for key in sorted(groups)]
