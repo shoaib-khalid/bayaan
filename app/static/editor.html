@@ -55,10 +55,18 @@
   textarea.tr:focus { outline:2px solid var(--sel2); }
   textarea.tr[readonly] { background:#f4efdd; }
 
+  /* the translation as word chips — same gestures as the script chips */
+  .trchips { direction:rtl; text-align:right; font-family:"Noto Nastaliq Urdu", serif;
+    font-size:19px; line-height:2.1; padding:8px 10px; border:1px solid var(--border);
+    border-radius:8px; min-height:3em; background:var(--paper2); cursor:text; outline:none; }
+  .trchips .w { padding:0 3px; }
+
   .btnrow { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; direction:ltr; }
   .btnrow button { font-family:system-ui,sans-serif; font-size:13px; padding:6px 12px;
     border:1px solid var(--gold); border-radius:8px; background:#fff; cursor:pointer; }
   .btnrow button.primary{ background:var(--gold); color:#fff; }
+  .btnrow label { font-family:system-ui,sans-serif; font-size:13px; color:var(--muted);
+    display:flex; align-items:center; gap:5px; cursor:pointer; }
 
   /* ---------- segments table ---------- */
   .segrows { display:grid; gap:8px; }
@@ -84,6 +92,20 @@
   .toast.warn { background:var(--err); }
   .toast.ok { background:#1b7a34; }
 
+  /* leave-with-unsaved-changes prompt */
+  .modal { display:none; position:fixed; inset:0; z-index:80; background:rgba(36,31,23,.45);
+    font-family:system-ui,sans-serif; }
+  .modal.open { display:flex; align-items:center; justify-content:center; }
+  .modalbox { background:var(--paper2); border:1px solid var(--gold); border-radius:12px;
+    padding:18px 20px; max-width:440px; width:calc(100% - 32px); box-shadow:0 12px 40px rgba(0,0,0,.35); }
+  .modalbox h3 { margin:0 0 6px; font-size:16px; color:var(--gold); }
+  .modalbox p { margin:0 0 14px; font-size:14px; line-height:1.6; }
+  .modalactions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .modalactions button { font:inherit; font-size:13px; padding:6px 12px; border-radius:8px;
+    border:1px solid var(--gold); background:#fff; cursor:pointer; }
+  .modalactions button.primary { background:var(--gold); color:#fff; font-weight:600; }
+  .modalactions button.danger { color:var(--err); border-color:var(--err); }
+
   .meta { font-family:system-ui,sans-serif; font-size:12px; color:var(--muted); direction:ltr; text-align:left; margin-top:6px; }
 
   /* help */
@@ -108,6 +130,18 @@
 </head>
 <body>
 
+<div class="modal" id="leaveModal" role="dialog" aria-modal="true">
+  <div class="modalbox">
+    <h3>Unsaved changes</h3>
+    <p id="leaveText">This ayah has unsaved changes.</p>
+    <div class="modalactions">
+      <button id="leaveSave" class="primary">Save and continue</button>
+      <button id="leaveDiscard" class="danger">Discard and continue</button>
+      <button id="leaveCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="bar" dir="ltr">
   <label>Surah
     <select id="surahSel" title="Choose a surah by name"></select>
@@ -124,7 +158,7 @@
     <input type="checkbox" id="autoSave" /> AutoSave
   </label>
   <button id="btnSave" class="primary" title="Save ALL segments of this ayah (overwrites what is in the database). Any un-assigned words + remaining translation are auto-added as the final segment. (keyboard: Alt+S)">Save</button>
-  <button id="btnClear" class="danger" title="Clear all segments of this ayah and start over. The whole ayah translation is merged and put back into the script + translation boxes above; the table below is emptied. NOT saved until you press Save.">Start over</button>
+  <button id="btnClear" class="danger" title="Discard the unsaved changes to this ayah and reload it from the database — segments, script words and translation all return to the saved state. Nothing is written to the database.">Start over</button>
   <button id="btnHelp" title="Show / hide the detailed usage guide">?</button>
   <a id="verLink" class="ver" target="_blank" rel="noopener"
      title="Release notes — what changed in this version"></a>
@@ -152,17 +186,22 @@
     </div>
 
     <div style="height:10px"></div>
-    <div class="hint rtl" id="trHint">Translation (ترجمہ) — select the text that belongs to the words you chose above. Read-only by default; press “Edit translation” to type/edit (e.g. when the source translation is empty).</div>
-    <textarea id="srcTr" class="tr" readonly spellcheck="false" dir="rtl" lang="ur"
-      title="Remaining translation text. Select the portion that matches your selected script words, then press “+ Add segment” (or Enter)."></textarea>
+    <div class="hint rtl" id="trHint">Translation (ترجمہ) — click the words that belong to the script words you chose above (shift+click for a range; Esc clears). Read-only by default; press “Edit translation” to type/edit the text itself.</div>
+    <div class="trchips" id="trChips" tabindex="0"
+      title="Remaining translation, one chip per word. Click a word, shift+click another to select a range. Punctuation that follows a word travels with it."></div>
+    <textarea id="srcTr" class="tr" readonly spellcheck="false" dir="rtl" lang="ur" style="display:none"
+      title="Remaining translation text, shown while editing. Press “Done editing” to return to word chips."></textarea>
     <div class="btnrow">
-      <button id="btnEditTr" title="Toggle editing of the translation box above (read-only by default so text isn’t changed by accident).">
+      <button id="btnEditTr" title="Show the translation as editable text (the word chips are read-only, so words are never split by accident).">
         ✎ Edit translation
       </button>
+      <label class="modetoggle" title="Checked: pick whole words as chips. Unchecked: select any characters in the text — use this when two words are not separated by a space.">
+        <input type="checkbox" id="wordSelect" checked /> Select whole words
+      </label>
       <button id="btnAdd" class="primary" title="Create a segment from the currently selected script words + the currently selected translation text. The selected words and text are removed from this work area and appended (in order) to the segments table below. With NOTHING selected, the whole remainder (every un-assigned word + the remaining translation) becomes the final segment. (keyboard: Alt+A, or Enter inside the translation box)">
         + Add segment
       </button>
-      <span class="meta">Selected script words: <b id="selWordsCount">0</b> &nbsp;·&nbsp; Selected translation chars: <b id="selTrCount">0</b></span>
+      <span class="meta">Selected script words: <b id="selWordsCount">0</b> &nbsp;·&nbsp; Selected translation <span id="trCountUnit">words</span>: <b id="selTrCount">0</b></span>
     </div>
   </div>
 
@@ -330,6 +369,8 @@ function renderAll(){
   renderChips();
   renderSegments();
   $("srcTr").value = S.cur.wholeText;
+  renderTrChips();
+  syncTrView();
   updateSelCounts();
 }
 
@@ -394,6 +435,7 @@ $("chiprow").addEventListener("mousedown", e=>{
   const sp = e.target.closest(".w[data-i]");
   if (!sp) return;
   e.preventDefault();
+  $("chiprow").focus();
   const i = +sp.dataset.i;
   if (e.shiftKey && selA!==null){ selB = i; }
   else if (selA === i && selB === i){ selA = selB = null; }   // click the selected word again = deselect
@@ -407,22 +449,145 @@ $("chiprow").addEventListener("keydown", e=>{
   const n = leftoverWords().length; if (!n) return;
   if (e.key==="ArrowRight" || e.key==="ArrowLeft"){
     e.preventDefault();
-    const dir = e.key==="ArrowRight"?1:-1;
-    if (e.shiftKey && selA!==null){ selB = Math.max(0, Math.min(n-1, (selB??selA)+dir)); }
+    // RTL: the NEXT word lies to the LEFT, so Left advances and Right goes back.
+    // With nothing selected yet, the first press selects the first word rather
+    // than skipping it.
+    const dir = e.key==="ArrowLeft" ? 1 : -1;
+    if (selA === null){ selA = selB = 0; }
+    else if (e.shiftKey && selA!==null){ selB = Math.max(0, Math.min(n-1, (selB??selA)+dir)); }
     else { selA = selB = Math.max(0, Math.min(n-1, (selA??0)+dir)); }
     applySelClass($("chiprow")); updateSelCounts();
   }
   if (e.key==="Enter"){ e.preventDefault(); addSegment(); }
 });
 
+/* ---- translation selection: one chip per word, exactly like the script ---- */
+let trA = null, trB = null;      // indices into trTokens(S.cur.wholeText)
+let trEditing = false;           // true while the raw textarea is showing
+
+/* The remaining translation split on whitespace, keeping each token's position
+   so a word range can be turned back into a character range and the tested
+   Editor.addSegment path can still be used. */
+function trTokens(text){
+  const out = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(text || ""))) out.push({ text: m[0], start: m.index, end: m.index + m[0].length });
+  return out;
+}
+/* A token that is nothing but punctuation (a bare full stop, comma, ! …). */
+const isPunctOnly = (t) => /^[\p{P}\p{S}]+$/u.test(t);
+
+function trLo(){ return trA === null ? null : Math.min(trA, trB); }
+function trHi(){ return trB === null ? null : Math.max(trA, trB); }
+
+/* The translation being worked on: the live textarea while editing, otherwise
+   the model. */
+const remainingText = () => trEditing ? $("srcTr").value : S.cur.wholeText;
+
+/* Word chips (default) or free character selection in the raw text. Free mode
+   exists for the case chips cannot express: two words with no space between
+   them, where the boundary has to be placed by hand. */
+const wordMode = () => $("wordSelect").checked;
+
+/* Show chips, the read-only text, or the editable text, according to the mode
+   and whether editing is on. */
+function syncTrView(){
+  const ta = $("srcTr"), chips = $("trChips");
+  const showText = trEditing || !wordMode();
+  ta.style.display = showText ? "block" : "none";
+  chips.style.display = showText ? "none" : "block";
+  ta.readOnly = !trEditing;
+}
+
+function renderTrChips(){
+  const box = $("trChips");
+  const toks = trTokens(S.cur.wholeText);
+  if (trA !== null && trA >= toks.length) trA = null;
+  if (trB !== null && trB >= toks.length) trB = null;
+  box.innerHTML = "";
+  if (!toks.length){
+    const i = document.createElement("i");
+    i.textContent = "— کوئی ترجمہ باقی نہیں —";
+    i.style.opacity = ".5";
+    box.appendChild(i);
+    return;
+  }
+  const lo = trLo(), hi = trHi();
+  toks.forEach((t, i) => {
+    const sp = document.createElement("span");
+    sp.className = "w";
+    sp.textContent = t.text;
+    sp.dataset.ti = i;
+    sp.title = `word ${i + 1} of ${toks.length}`;
+    if (lo !== null && i >= lo && i <= hi) sp.classList.add(i === lo ? "sel1" : (i === hi ? "sel2" : "sel1"));
+    box.appendChild(sp);
+    if (i < toks.length - 1) box.appendChild(document.createTextNode(" "));
+  });
+}
+
+/* Selected translation words → character range in wholeText.
+
+   Trailing punctuation-only tokens are absorbed: a full stop, comma or
+   exclamation that follows a word belongs to it, clicked or not, so a segment
+   can never end up without its closing mark. The whitespace after the range is
+   included too, so removing it cannot leave a double space behind. */
+function trRange(){
+  const toks = trTokens(S.cur.wholeText);
+  const lo = trLo(), hi = trHi();
+  if (lo === null || hi === null || !toks[lo] || !toks[hi]) return null;
+  let endTok = hi;
+  while (endTok + 1 < toks.length && isPunctOnly(toks[endTok + 1].text)) endTok++;
+  let end = toks[endTok].end;
+  const all = S.cur.wholeText;
+  while (end < all.length && /\s/.test(all[end])) end++;
+  return { start: toks[lo].start, end };
+}
+
 function updateSelCounts(){
   const lo = rangeStart(), hi = rangeEnd();
   const nw = (lo===null||hi===null)?0:(hi-lo+1);
   $("selWordsCount").textContent = nw;
-  const ta = $("srcTr");
-  const ns = (ta.selectionEnd-ta.selectionStart);
-  $("selTrCount").textContent = Math.max(0,ns);
+  let n = 0;
+  if (wordMode()){
+    const tlo = trLo(), thi = trHi();
+    n = (tlo===null||thi===null)?0:(thi-tlo+1);
+  } else {
+    const ta = $("srcTr");
+    n = Math.max(0, ta.selectionEnd - ta.selectionStart);
+  }
+  $("trCountUnit").textContent = wordMode() ? "words" : "characters";
+  $("selTrCount").textContent = n;
 }
+
+/* translation chips: the same gestures as the script chips */
+$("trChips").addEventListener("mousedown", e=>{
+  if (trEditing) return;
+  const sp = e.target.closest(".w[data-ti]");
+  if (!sp) return;
+  e.preventDefault();
+  $("trChips").focus();
+  const i = +sp.dataset.ti;
+  if (e.shiftKey && trA !== null){ trB = i; }
+  else if (trA === i && trB === i){ trA = trB = null; }
+  else { trA = i; trB = i; }
+  renderTrChips();
+  updateSelCounts();
+});
+$("trChips").addEventListener("keydown", e=>{
+  if (trEditing) return;
+  const n = trTokens(S.cur.wholeText).length;
+  if (!n) return;
+  if (e.key==="ArrowLeft" || e.key==="ArrowRight"){
+    e.preventDefault();
+    const dir = e.key==="ArrowLeft" ? 1 : -1;   // RTL: the next word lies to the left
+    if (trA === null){ trA = trB = 0; }
+    else if (e.shiftKey){ trB = Math.max(0, Math.min(n-1, (trB??trA)+dir)); }
+    else { trA = trB = Math.max(0, Math.min(n-1, (trA??0)+dir)); }
+    renderTrChips(); updateSelCounts();
+  }
+  if (e.key==="Enter"){ e.preventDefault(); addSegment(); }
+});
 
 /* Clear the current selection (Esc, or clicking the selected word again).
 
@@ -431,14 +596,16 @@ function updateSelCounts(){
    state + Add segment needs in order to take the whole remainder. */
 function clearSelection(quiet){
   const hadWords = selA !== null || selB !== null;
-  const ta = $("srcTr");
-  const hadText = ta.selectionStart !== ta.selectionEnd;
+  const hadTr = trA !== null || trB !== null;
+  const hadText = !trEditing && $("srcTr").selectionStart !== $("srcTr").selectionEnd;
   selA = selB = null;
-  if (hadText) ta.setSelectionRange(ta.value.length, ta.value.length);
+  trA = trB = null;
+  if (hadText) $("srcTr").setSelectionRange($("srcTr").value.length, $("srcTr").value.length);
   if (splitRow !== -1){ splitRow = -1; splitWordIdx = null; renderSegments(); }
   applySelClass($("chiprow"));
+  renderTrChips();
   updateSelCounts();
-  if ((hadWords || hadText) && !quiet)
+  if ((hadWords || hadTr || hadText) && !quiet)
     toast("Selection cleared — with nothing selected, “+ Add segment” assigns the whole remainder.", "ok");
 }
 
@@ -452,11 +619,35 @@ $("srcTr").addEventListener("input", ()=>{ if (!$("srcTr").readOnly) markDirty()
 
 $("btnEditTr").addEventListener("click", ()=>{
   const ta = $("srcTr");
-  ta.readOnly = !ta.readOnly;
-  ta.focus();
-  toast(ta.readOnly? "Translation box is now read-only (select, don’t type)."
-                   : "Translation box is now editable — type/paste the remaining translation.", "ok");
+  trEditing = !trEditing;
+  if (trEditing){
+    ta.value = S.cur.wholeText;
+    ta.focus();
+  } else {
+    // Commit what was typed back into the working state, then rebuild the chips.
+    S.cur.wholeText = ta.value;
+    trA = trB = null;
+    markDirty();
+    renderTrChips();
+    updateSelCounts();
+  }
+  syncTrView();
+  $("btnEditTr").textContent = trEditing ? "✓ Done editing" : "✎ Edit translation";
+  toast(trEditing ? "Translation is now editable — type/paste the remaining translation."
+                  : "Text updated in the working state (not saved to the database until Save).", "ok");
 });
+
+/* Whole-word chips (default) or free character selection in the raw text. */
+$("wordSelect").addEventListener("change", ()=>{
+  clearSelection(true);
+  syncTrView();
+  updateSelCounts();
+  if (wordMode())
+    toast("Whole words: click a chip, shift+click for a range.", "ok");
+  else
+    toast("Free selection: drag inside the text to pick any characters — useful where two words have no space between them.", "ok");
+});
+syncTrView();
 
 /* --- Show / hide the ORIGINAL whole-ayah translation (read-only reference) --- */
 let origShown = false;
@@ -486,26 +677,27 @@ $("btnOrig").addEventListener("click", toggleOriginal);
    Add a segment from current script + translation selections
    ===================================================================== */
 function addSegment(){
-  const ta = $("srcTr");
   const lo = rangeStart(), hi = rangeEnd();
-  const s0 = Math.min(ta.selectionStart, ta.selectionEnd);
-  const s1 = Math.max(ta.selectionStart, ta.selectionEnd);
+  const ta = $("srcTr");
+  // While the raw text is being edited, only a character selection makes sense.
+  const useWords = wordMode() && !trEditing;
+  const freeSel = !useWords && ta.selectionEnd > ta.selectionStart;
 
   // Nothing selected at all: assign the whole remainder — every un-assigned word
   // plus the remaining translation — as the final segment, which is the same
   // step Save takes when it finalizes a partial edit. With no segment yet it
   // becomes the first. An empty segment is never added; if nothing is left, say
   // so. Nothing is written until Save.
-  if (lo === null && s0 === s1){
+  if (lo === null && (useWords ? trA === null : !freeSel)){
     if (!leftoverWords().length){
       toast("Every word is already in a segment — nothing left to assign.", "warn");
       return;
     }
-    if (!(ta.value || "").trim()){
+    if (!(remainingText() || "").trim()){
       toast("No remaining translation text for the leftover words. Type it with “✎ Edit translation”, or select the words and their text.", "warn");
       return;
     }
-    const fin = Editor.finalize(S.cur.allWords, S.cur.segs, ta.value);
+    const fin = Editor.finalize(S.cur.allWords, S.cur.segs, remainingText());
     if (!fin.ok){ toast(fin.msg, "warn"); return; }
     S.cur.segs = fin.segs;
     S.cur.wholeText = "";
@@ -518,18 +710,21 @@ function addSegment(){
     return;
   }
 
-  const res = Editor.addSegment(S.cur.allWords, S.cur.segs, ta.value, { lo, hi, trStart: s0, trEnd: s1 });
+  const tr = useWords ? trRange()
+           : freeSel ? { start: ta.selectionStart, end: ta.selectionEnd }
+           : null;
+  const res = Editor.addSegment(S.cur.allWords, S.cur.segs, remainingText(), { lo, hi, trStart: tr ? tr.start : 0, trEnd: tr ? tr.end : 0 });
   if (!res.ok){
     toast(res.msg, "warn");
-    if (res.needTr) ta.focus();
+    if (res.needTr) (useWords ? $("trChips") : ta).focus();
     return;
   }
-  S.cur.segs = res.segs;
-  ta.value = res.wholeText;
+  S.cur.segs = res.segs.map(s => ({ ...s, text: (s.text || "").replace(/\s+$/, "") }));
   S.cur.wholeText = res.wholeText;
   markDirty();
-  selA = selB = null;
-  renderChips(); renderSegments(); updateSelCounts();
+  selA = selB = null; trA = trB = null;
+  $("srcTr").value = S.cur.wholeText;
+  renderChips(); renderSegments(); renderTrChips(); updateSelCounts();
 
   if (!leftoverWords().length){
     toast("Ayah fully segmented — moving focus to Next.","ok");
@@ -679,16 +874,24 @@ function deleteSeg(i){
 }
 
 /* =====================================================================
-   Start over / Clear
+   Start over
    ===================================================================== */
-$("btnClear").addEventListener("click", ()=>{
-  const all = S.cur.segs.map(s=>s.text).filter(Boolean).concat(S.cur.wholeText?[S.cur.wholeText]:[]);
-  S.cur.segs = [];
-  S.cur.wholeText = all.join(" ").trim();
-  selA = selB = null; editingRow = -1; splitRow = -1;
-  markDirty();
-  renderAll();
-  toast("All segments cleared — the whole ayah is back in the work area above (not saved yet).","");
+/* Reload the ayah from the database, discarding unsaved edits.
+
+   It used to merge the segment texts back into the work area in segment
+   order. That only reproduced the original sentence when every segment
+   happened to be in text order: assigning a word from the MIDDLE of the
+   translation to the FIRST words of the ayah moved that word to the front and
+   scrambled the rest. The order cannot be recovered from the segments, so the
+   saved state is the only correct thing to restore — which is also what a page
+   refresh gives you. */
+$("btnClear").addEventListener("click", async ()=>{
+  selA = selB = null; trA = trB = null;
+  editingRow = -1; splitRow = -1;
+  trEditing = false;
+  $("btnEditTr").textContent = "✎ Edit translation";
+  await loadSurah();
+  toast("Reloaded this ayah from the database — unsaved changes discarded.", "ok");
 });
 
 /* =====================================================================
@@ -697,7 +900,7 @@ $("btnClear").addEventListener("click", ()=>{
 function finalizeSegments(){
   // Auto-finalize (any leftover words + remaining translation become the final
   // segment) + coverage validation — pure logic in the tested module.
-  const res = Editor.finalize(S.cur.allWords, S.cur.segs, $("srcTr").value || "");
+  const res = Editor.finalize(S.cur.allWords, S.cur.segs, remainingText() || "");
   if (res.ok) S.cur.segs = res.segs;
   return res;
 }
@@ -730,19 +933,43 @@ $("btnSave").addEventListener("click", ()=>saveAyah());
 /* =====================================================================
    Navigation (prev / next) + AutoSave
    ===================================================================== */
+
+/* Ask before leaving an ayah that has unsaved changes.
+
+   Resolves true when navigation may continue — the change was saved, AutoSave
+   handled it, or the user chose to discard — and false when they cancel, in
+   which case the caller leaves everything as it was. */
+let leaveResolve = null;
+function showLeaveDialog(resolve){
+  leaveResolve = resolve;
+  $("leaveText").textContent =
+    `Ayah ${S.ayahNumber} has unsaved changes. Save them before leaving?`;
+  $("leaveModal").classList.add("open");
+  $("leaveSave").focus();
+}
+function closeLeave(go){
+  $("leaveModal").classList.remove("open");
+  const r = leaveResolve; leaveResolve = null;
+  if (r) r(!!go);
+}
+function confirmLeave(){
+  if (!dirty) return Promise.resolve(true);
+  if ($("autoSave").checked) return saveAyah();   // AutoSave: save, then go
+  return new Promise((resolve) => showLeaveDialog(resolve));
+}
+$("leaveSave").addEventListener("click", async ()=>{
+  const ok = await saveAyah();
+  closeLeave(!!ok);
+});
+$("leaveDiscard").addEventListener("click", ()=> closeLeave(true));
+$("leaveCancel").addEventListener("click", ()=> closeLeave(false));
+
 async function nav(delta){
   const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
   const idx = nums.indexOf(S.ayahNumber);
   const next = nums[idx+delta];
   if (next === undefined){ toast(delta>0?"This is the last ayah of the surah.":"This is the first ayah.", "warn"); return; }
-  if (dirty){   // only save / warn when the user actually changed something
-    if ($("autoSave").checked){
-      const ok = await saveAyah();
-      if (!ok) return;
-    } else {
-      toast("Warning: unsaved changes were discarded (enable AutoSave to save on Next/Prev).","warn");
-    }
-  }
+  if (!(await confirmLeave())) return;
   selA=selB=null; editingRow=-1; splitRow=-1;
   loadAyah(next);
 }
@@ -776,13 +1003,19 @@ function pushUrl(){
    Event wiring for dropdowns + help
    ===================================================================== */
 $("surahSel").addEventListener("change", async (e)=>{
+  const prev = String(S.surahId);
+  if (!(await confirmLeave())){ e.target.value = prev; return; }
   S.surahId = +e.target.value; S.ayahNumber = 1;
   await loadSurah();
 });
-$("ayahSel").addEventListener("change", (e)=>{
+$("ayahSel").addEventListener("change", async (e)=>{
+  const prev = String(S.ayahNumber);
+  if (!(await confirmLeave())){ e.target.value = prev; return; }
   loadAyah(+e.target.value);
 });
 $("trSel").addEventListener("change", async (e)=>{
+  const prev = String(S.translationId);
+  if (!(await confirmLeave())){ e.target.value = prev; return; }
   S.translationId = +e.target.value;
   await loadSurah();
 });
@@ -799,9 +1032,12 @@ document.addEventListener("keydown", (e)=>{
   // box: it is the way out of a stray word selection.
   if (e.key === "Escape"){
     e.preventDefault();
-    clearSelection();
+    if ($("leaveModal").classList.contains("open")) closeLeave(false);
+    else clearSelection();
     return;
   }
+  // While the save prompt is open, ignore the other shortcuts.
+  if ($("leaveModal").classList.contains("open")) return;
   if (e.altKey && !e.ctrlKey){
     const k = e.key.toLowerCase();
     if (k==="s"){ e.preventDefault(); saveAyah(); }
@@ -813,6 +1049,12 @@ document.addEventListener("keydown", (e)=>{
   const k = e.key.toLowerCase();
   if (k==="n") nav(+1);
   if (k==="p") nav(-1);
+});
+
+/* Reloading or closing the tab with unsaved work: the browser's own prompt is
+   the only thing allowed at that point, but it is better than silent loss. */
+window.addEventListener("beforeunload", (e)=>{
+  if (dirty){ e.preventDefault(); e.returnValue = ""; }
 });
 
 /* =====================================================================
@@ -848,15 +1090,16 @@ const HELP_HTML = `
   <li><b>Ayah</b> — dropdown of the verses in that surah; it is populated when the surah loads.</li>
   <li><b>Translation</b> — which translation you are segmenting. The list is read from the database.</li>
   <li>The URL always reflects <code>translation_id</code>, <code>surah</code>, <code>ayah</code> — copy it to jump straight back to the same place.</li>
-  <li><b>◀ Next / Prev ▶</b> move between verses — each button sits on the side its arrow points to. When <b>AutoSave</b> is ON, the current ayah is saved first, so you never have to click Save repeatedly.</li>
+  <li><b>◀ Next / Prev ▶</b> move between verses — each button sits on the side its arrow points to. When <b>AutoSave</b> is ON, the current ayah is saved first, so you never have to click Save repeatedly. When it is OFF and you have unsaved changes, leaving the ayah asks first: <b>Save and continue</b>, <b>Discard and continue</b>, or <b>Cancel</b> — the same question appears when you change the surah, ayah or translation.</li>
 </ul>
 
 <h4>2 · Work area (top)</h4>
 <p>When an ayah has not been segmented yet, the whole ayah is shown here: its <b>script words</b> as clickable chips (right), and its full <b>translation</b> in the box (left/below).</p>
 <ul>
-  <li><b>Selecting script words:</b> click one word = single word; <b>shift+click</b> another = whole range; keyboard: focus the script box, <b>←/→</b> to move, <b>shift+←/→</b> to extend. Only <i>whole words</i> are selectable (a segment boundary is always between two words). <b>Esc</b> — or clicking the already-selected word again — clears the selection, which is what <b>+ Add segment</b> needs in order to take the whole remainder.</li>
+  <li><b>Selecting script words:</b> click one word = single word; <b>shift+click</b> another = whole range; keyboard: focus the script box, <b>←</b> selects the next word and <b>→</b> the previous one (the script reads right-to-left), <b>shift+←/→</b> extends the range. Only <i>whole words</i> are selectable (a segment boundary is always between two words). <b>Esc</b> — or clicking the already-selected word again — clears the selection, which is what <b>+ Add segment</b> needs in order to take the whole remainder.</li>
   <li>The golden <b>end-of-ayah ornament</b> is shown automatically at the end. It is never part of a segment and is not selectable.</li>
-  <li><b>Selecting translation text:</b> drag (or shift+click) inside the translation box to select the exact Urdu that matches the words you selected. The box is <b>read-only by default</b> so text is not changed by accident — press <b>✎ Edit translation</b> only when you need to type/paste.</li>
+  <li><b>Selecting translation words:</b> the remaining translation is shown as <b>word chips</b>, one per space-separated word — you cannot select half a word. Click a word, <b>shift+click</b> another for a range, or use the same arrow keys (focus the row first) and <b>Esc</b> to clear. Punctuation that follows a word (full stop, comma, exclamation) travels with it, whether or not you clicked it. The chips are read-only; press <b>✎ Edit translation</b> when you need to type/paste the text itself.</li>
+  <li><b>When two words have no space between them</b>, chips cannot stop at the boundary. Untick <b>Select whole words</b> (next to <b>Edit translation</b>) to switch to free selection: the raw text appears read-only and you drag to select exactly the characters you want. The counter then shows characters instead of words.</li>
   <li>Press <b>+ Add segment</b> (keyboard <b>Alt+A</b>, or <b>Enter</b> while in the translation box). The selected words + text are removed from the work area and appended to the segments table below, in order.</li>
   <li>With <b>nothing selected</b>, <b>+ Add segment</b> assigns the whole remainder — every un-assigned word plus the remaining translation — as the final segment (the first one if there are none yet). It is not saved until you press <b>Save</b>.</li>
   <li>If you only made ONE segment (or a few) and there are still words/text left, <b>Save</b> (or Next with AutoSave) automatically turns the remainder into the final segment — so a partial edit ends up as two segments, never a hole.</li>
@@ -878,7 +1121,7 @@ const HELP_HTML = `
 </ul>
 
 <h4>4 · Start over</h4>
-<p><b>Start over</b> empties the segments table and merges the whole translation back into the work area above (every word + the full joined translation), leaving the table empty — like the ayah was never segmented. Nothing is written until you press <b>Save</b>.</p>
+<p><b>Start over</b> discards every unsaved change to this ayah and reloads it from the database: the segments table, the script words and the translation all return to their saved state. It never writes to the database.</p>
 
 <h4>5 · Save &amp; validation</h4>
 <ul>

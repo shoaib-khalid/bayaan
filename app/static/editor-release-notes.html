@@ -63,12 +63,21 @@
       <li><b>Version badge.</b> The toolbar shows the editor version (currently <b>v1.0.0</b>) and links to these notes. The version lives in one place — <code>EDITOR_VERSION</code> in <code>editor.html</code>.</li>
       <li><b>+ Add segment with nothing selected</b> now assigns the whole remainder — every un-assigned word plus the remaining translation — as the final segment. If no segment exists yet, it becomes the first. An empty segment is never added: if nothing is left, it says so. Nothing is saved until <b>Save</b>.</li>
       <li><b>Clearing a selection.</b> <b>Esc</b> — or clicking the already-selected word again — clears a stray word (and translation) selection, so <b>+ Add segment</b> goes back to taking the whole remainder instead of insisting on a matching translation.</li>
+      <li><b>Warning before leaving unsaved work.</b> With <b>AutoSave</b> off, navigating away from an ayah that has unsaved changes now asks <b>Save and continue</b> / <b>Discard and continue</b> / <b>Cancel</b> instead of silently discarding. The same question guards the surah, ayah and translation selectors, and closing or reloading the tab triggers the browser's own prompt.</li>
     </ul>
 
     <h3>Changed</h3>
     <ul>
       <li><b>Translations come from the database</b> (<code>GET /translations</code>) instead of two entries hardcoded into the page, so a translation added to the table is selectable immediately. When the URL names no translation, the first in the table is used.</li>
       <li><b>Navigation arrows follow the reading direction</b> — <b>Prev ▶</b> and <b>◀ Next</b> — and <b>◀ Next</b> now sits before <b>Prev ▶</b>, so each button is on the side its arrow points to. The keyboard mapping is unchanged (<code>P</code> = previous, <code>N</code> = next).</li>
+      <li><b>Arrow keys in the script follow its direction:</b> <b>←</b> selects the next word and <b>→</b> the previous one, since the script reads right-to-left. The first press selects the first word rather than skipping past it.</li>
+      <li><b>Translation selection is word-based.</b> The remaining translation is shown as one chip per space-separated word, so a partial word can no longer be selected. Click, shift+click, the arrow keys and <b>Esc</b> behave exactly as they do for the script, and punctuation that follows a word — a full stop, comma or exclamation, including a bare punctuation token — is absorbed into the segment even if it was not clicked. The raw text is still editable through <b>✎ Edit translation</b>.</li>
+      <li><b>Whole words or free characters.</b> A <b>Select whole words</b> checkbox (on by default, next to <b>Edit translation</b>) switches the translation back to free character selection in the read-only text — the only way to place a boundary where two words have no space between them. In that mode the counter shows characters instead of words.</li>
+    </ul>
+
+    <h3>Fixed</h3>
+    <ul>
+      <li><b>Start over scrambled the translation.</b> It merged the segment texts back into the work area in segment order, which only reproduced the original sentence when the segments happened to be in text order — assigning a word from the middle of the translation to the first words of the ayah moved that word to the front and the order could not be recovered. <b>Start over</b> now reloads the ayah from the database, matching what a page refresh gives you.</li>
     </ul>
   </section>
 
