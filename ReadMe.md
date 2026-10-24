@@ -128,7 +128,7 @@ With Nastaliq, Arabic wraps unpredictably and a segment's phrase can straddle tw
 - **Arabic:** Quran Foundation IndoPak Nastaleeq — CDN:
   `https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2`
   (family name in the reader: `"IndoPak Quran"`). Bundled font archives also exist under `fonts/` (tarteel.ai variant).
-- **Urdu:** Noto Nastaliq Urdu (Google Fonts). For a denser printed feel, Jameel Noori Nastaleeq is the classic but has licensing caveats.
+- **Urdu:** Noto Nastaliq Urdu (Google Fonts) in the on-screen readers. The print-ready mushaf (`/mushaf`) bundles **Jameel Noori Nastaleeq** (version 1, 2008, designer "Urdu Lover") for a denser printed feel — the face declares itself *"Free Of Charge For Urdu Lovers"*, which is the whole of the terms it states. Its credits and the substitution instructions live in `app/static/mushaf/fonts/README.md`.
 - Local font copies: `D:\Personal_repos\bayaan\fonts\` (ttf/woff/woff2 zip + usage notes).
 
 ---
