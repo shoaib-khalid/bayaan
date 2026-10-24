@@ -13,6 +13,14 @@
     src: url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");
     font-display: swap;
   }
+  /* Urdu face: Jameel Noori Nastaleeq, served locally (the same file the
+     print-ready mushaf uses) so it cannot fail to arrive mid-layout. Noto
+     Nastaliq Urdu stays in the stacks below as the fallback. */
+  @font-face {
+    font-family: "Jameel Noori Nastaleeq";
+    src: url("/static/mushaf/fonts/jameel-noori-nastaleeq.ttf") format("truetype");
+    font-display: swap;
+  }
   :root {
     --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
     --border:#a8946e; --gold:#9c7c3e; --urdu:#40392f; --err:#b3261e;
@@ -21,7 +29,7 @@
   }
   * { box-sizing:border-box; }
   body { margin:0; background:#efe9db; color:var(--ink);
-    font-family:"Noto Nastaliq Urdu", serif; }
+    font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; }
   .bar { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:8px;
     align-items:center; justify-content:center; padding:8px 10px; background:#fffdf5;
     border-bottom:1px solid var(--gold); font-family:system-ui,sans-serif; direction:ltr; }
@@ -50,7 +58,7 @@
 
   /* source translation */
   textarea.tr { width:100%; direction:rtl; text-align:right; resize:vertical; min-height:64px;
-    font-family:"Noto Nastaliq Urdu", serif; font-size:19px; line-height:1.9;
+    font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:19px; line-height:1.9;
     border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu);
     /* Grown to fit its text by autoGrow(); the scrollbar would only hide it. */
     overflow:hidden; }
@@ -58,7 +66,7 @@
   textarea.tr[readonly] { background:#f4efdd; }
 
   /* the translation as word chips — same gestures as the script chips */
-  .trchips { direction:rtl; text-align:right; font-family:"Noto Nastaliq Urdu", serif;
+  .trchips { direction:rtl; text-align:right; font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
     font-size:19px; line-height:2.1; padding:8px 10px; border:1px solid var(--border);
     border-radius:8px; min-height:3em; background:var(--paper2); cursor:text; outline:none; }
   .trchips .w { padding:0 3px; }

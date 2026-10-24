@@ -9,6 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
   @font-face{font-family:"IndoPak Quran";src:url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");font-display:swap;}
+/* Urdu face: Jameel Noori Nastaleeq, served locally so the measured widths and
+   the printed widths come from the same file. */
+@font-face{font-family:"Jameel Noori Nastaleeq";src:url("/static/mushaf/fonts/jameel-noori-nastaleeq.ttf") format("truetype");font-display:swap;}
 
   :root{
     --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
@@ -21,7 +24,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   body{
-    background:#efe9db;color:var(--ink);font-family:"Noto Nastaliq Urdu",serif;
+    background:#efe9db;color:var(--ink);font-family:"Jameel Noori Nastaleeq","Noto Nastaliq Urdu",serif;
     display:flex;flex-direction:column;height:100svh;overflow:hidden;
   }
 
@@ -97,7 +100,7 @@
      would otherwise inherit the Arabic font from .flow, and the widths would
      no longer match the ones measured for line filling. */
   .flow .urdu{position:absolute;top:0;left:0;right:0;pointer-events:none;
-    font-family:"Noto Nastaliq Urdu",serif;line-height:1;}
+    font-family:"Jameel Noori Nastaleeq","Noto Nastaliq Urdu",serif;line-height:1;}
   .flow .urdu .u{position:absolute;white-space:nowrap;color:var(--muted);}
   .page-foot{
     position:absolute;left:0;right:0;bottom:26px;text-align:center;
@@ -315,7 +318,7 @@ async function fontsReady() {
     await Promise.all([
       ensureFont(size + ' "IndoPak Quran"'),
       ensureFont('26px "IndoPak Quran"'),
-      ensureFont(S.urduPx + 'px "Noto Nastaliq Urdu"'),
+      ensureFont(S.urduPx + 'px "Jameel Noori Nastaleeq"'),
     ]);
     await document.fonts.ready;
   } catch (e) { /* measurement still proceeds with fallback metrics */ }
@@ -453,7 +456,7 @@ function measureUrduWidths() {
   const probe = document.createElement("div");
   probe.style.cssText =
     "position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;" +
-    "font-family:'Noto Nastaliq Urdu',serif;";
+    "font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;";
   probe.style.fontSize = S.urduPx + "px";
 
   const uniq = [...new Set(S.urduWords.flat())];
@@ -1035,7 +1038,7 @@ function renderPaired() {
       }
       us.style.cssText =
         `position:absolute;top:${row.urduTopY}px;right:${u.x}px;white-space:nowrap;line-height:${S.urduH}px;` +
-        `color:var(--muted);font-family:'Noto Nastaliq Urdu',serif;` +
+        `color:var(--muted);font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;` +
         `font-size:${S.urduPx}px;`;
       justifyUnit(us, u.w - u.natU);
       layer.appendChild(us);

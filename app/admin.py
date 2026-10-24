@@ -258,6 +258,7 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
   /* The IndoPak face carries the Private-Use ornament glyphs, so the Arabic
      shows as it does in the readers rather than as boxes. */
   @font-face { font-family:Quran; src:url('/static/mushaf/fonts/indopak-v4.2.1.woff2') format('woff2'); font-display:swap; }
+  @font-face { font-family:'Jameel Noori Nastaleeq'; src:url('/static/mushaf/fonts/jameel-noori-nastaleeq.ttf') format('truetype'); font-display:swap; }
   .picker { display:flex; gap:10px; align-items:center; margin:0 0 22px; }
   .picker label { font-size:13px; color:#cbbfae; }
   select { background:#100e0b; color:#f2ece3; border:1px solid #3a332a; border-radius:6px;
@@ -270,9 +271,9 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
   .card th { padding:9px 14px 6px; }
   .card td { padding:9px 14px; border-bottom:1px solid #1d1913; }
   .card tr:last-child td { border-bottom:0; }
-  .ar { font-family:Quran, "Noto Nastaliq Urdu", serif; font-size:21px; line-height:2.1;
+  .ar { font-family:Quran, "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:21px; line-height:2.1;
         direction:rtl; text-align:right; color:#f6efe2; }
-  .ur { font-family:"Noto Nastaliq Urdu", serif; font-size:16px; line-height:2.1;
+  .ur { font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:16px; line-height:2.1;
         direction:rtl; text-align:right; color:#e8dcc8; }
 </style>
 </head>
