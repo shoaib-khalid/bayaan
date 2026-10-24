@@ -63,6 +63,13 @@ class SegmentRequest(BaseModel):
     surah_id: int = Field(..., example=2)
     ayah_number: int = Field(..., example=177)
     segments: list[Segment]
+    as_user: int | None = Field(
+        default=None,
+        description=(
+            "Admin only: after writing the shared text, clear this account's "
+            "private copy of the ayah — that is what approving means."
+        ),
+    )
 
 # -------------------------
 # Get Ayah Words
@@ -142,10 +149,22 @@ def create_segments(data: SegmentRequest, request: Request):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    # An admin saving while reviewing somebody's copy is approving it: the
+    # shared text now holds those segments, so the overlay is redundant and the
+    # ayah should leave the review list. Ignored for any other role.
+    cleared = False
+    if target_user is None and data.as_user and user and user["role"] == "admin":
+        cleared = bool(
+            segments.discard_private(
+                data.as_user, data.translation_id, data.surah_id, data.ayah_number
+            )
+        )
+
     return {
         "status": "success",
         # Told plainly, so a caller can say where the edit landed.
         "saved_to": "user" if target_user else "canonical",
+        "cleared_private": cleared,
     }
 
 # ---------------------------------------------------------------------------

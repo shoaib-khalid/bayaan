@@ -286,7 +286,7 @@ _PROMOTIONS = Template("""<!DOCTYPE html>
 <div class="wrap">
   <h1>Private edits</h1>
   <p class="sub">Signed in as $who &nbsp;·&nbsp; <a href="/admin/users">Users</a> &nbsp;·&nbsp; <a href="/">Bayaan</a></p>
-  <p class="hint" style="margin:0 0 20px">Approving replaces the shared segments of that ayah with this person's copy. Their copy stays as it is.</p>
+  <p class="hint" style="margin:0 0 20px">Approving copies this person's segments into the shared text and clears their private copy — they then read the shared text, and the ayah leaves this list.</p>
   $picker
   $banner
   $body
@@ -336,7 +336,8 @@ def render_promotions(
         count = promoted_count if promoted_count is not None else 0
         banner = (
             f'<div class="msg ok">Approved {count} '
-            f'{"segment" if count == 1 else "segments"} into the canonical text.</div>'
+            f'{"segment" if count == 1 else "segments"} into the shared text, and '
+            f'cleared that account\'s private copy.</div>'
         )
     else:
         banner = ""

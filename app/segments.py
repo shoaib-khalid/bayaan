@@ -246,10 +246,16 @@ def discard_private(
 def promote(
     user_id: int, translation_id: int, surah_id: int, ayah_number: int
 ) -> int:
-    """Copy one ayah from a person's private rows into the canonical table.
+    """Copy one ayah from a person's private rows into the canonical table, then
+    clear their private rows.
 
-    Done in a single transaction, so the canonical ayah is never left empty
-    between the DELETE and the INSERTs. Returns the number of segments copied.
+    Clearing is what makes the review page a to-do list rather than an archive:
+    once the shared text *is* their copy, the overlay only shadows an identical
+    value, and the ayah would otherwise stay on the page forever. Their private
+    rows are deleted in the same transaction as the copy, so there is no moment
+    where the ayah exists in neither place.
+
+    Returns the number of segments copied.
     """
     rows = _fetch(
         f"""
@@ -292,6 +298,14 @@ def promote(
                     row["translation_text"],
                 ),
             )
+        cur.execute(
+            """
+            DELETE FROM user_translation_segments
+             WHERE user_id = %s AND translation_id = %s AND surah_id = %s
+               AND ayah_number = %s
+            """,
+            (user_id, translation_id, surah_id, ayah_number),
+        )
         conn.commit()
         return len(rows)
     finally:

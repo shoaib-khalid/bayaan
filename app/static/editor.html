@@ -942,6 +942,9 @@ async function saveAyah(){
     surah_id: S.surahId,
     ayah_number: S.ayahNumber,
     segments: res.segs.map(s=>({ start:s.startId, end:s.endId, text:s.text.trim() })),
+    // Reviewing somebody else's copy: the server writes the shared text and
+    // clears their private rows, so this save is the approval.
+    as_user: S.asUser || null,
   };
   try {
     const r = await fetch("/segments", {
@@ -1146,7 +1149,7 @@ async function init(){
   if (S.asUser){
     const note = $("asUserNote");
     note.hidden = false;
-    note.textContent = "Reviewing another account's private segments. Saving this ayah writes them to the shared text that every reader gets — their own copy is left untouched.";
+    note.textContent = "Reviewing another account's private segments. Saving this ayah writes them to the shared text that every reader gets and clears their private copy — the ayah then leaves the approval list.";
   }
   // Version, and the badge that links to the release notes for it.
   document.title = `Bayaan — Segment Editor v${EDITOR_VERSION}`;
