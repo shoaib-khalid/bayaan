@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 import mysql.connector
 from starlette.concurrency import run_in_threadpool
 
-from . import admin, auth
+from . import admin, auth, positions, segments
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 
 # Real Arabic words contain letters or a known complete-word font ligature.
@@ -109,23 +109,12 @@ def get_ayah(surah_id: int, ayah_number: int):
     summary="Get Translation Segments",
     description="Retrieve segmented translation for a specific ayah"
 )
-def get_segments(translation_id: int, surah_id: int, ayah_number: int):
-    conn = get_db()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT segment_index, word_start, word_end, translation_text
-        FROM translation_segments
-        WHERE translation_id=%s AND surah_id=%s AND ayah_number=%s
-        ORDER BY segment_index
-    """, (translation_id, surah_id, ayah_number))
-
-    segments = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return segments
+def get_segments(translation_id: int, surah_id: int, ayah_number: int, request: Request):
+    """Segments of one ayah — the caller's own copy if they have one."""
+    user = getattr(request.state, "user", None)
+    return segments.for_ayah(
+        surah_id, ayah_number, translation_id, user["id"] if user else None
+    )
 
 # -------------------------
 # Create / Update Segments
@@ -136,42 +125,33 @@ def get_segments(translation_id: int, surah_id: int, ayah_number: int):
     summary="Create or Update Segments",
     description="Replaces all segments for a given ayah and translation"
 )
-def create_segments(data: SegmentRequest):
-    conn = get_db()
-    cursor = conn.cursor()
+def create_segments(data: SegmentRequest, request: Request):
+    """Replace all segments of one ayah.
 
-    # Remove existing segments (overwrite strategy)
-    cursor.execute("""
-        DELETE FROM translation_segments
-        WHERE translation_id=%s AND surah_id=%s AND ayah_number=%s
-    """, (data.translation_id, data.surah_id, data.ayah_number))
+    An admin edits the canonical text. Everyone else writes their own private
+    copy, so two people can segment the same ayah without overwriting each
+    other; an admin can then promote a private copy into the canonical text
+    from /admin/promotions.
+    """
+    user = getattr(request.state, "user", None)
+    target_user = user["id"] if user and user["role"] != "admin" else None
 
-    # Insert new segments
-    for i, seg in enumerate(data.segments, start=1):
-        if seg.start > seg.end:
-            raise HTTPException(status_code=400, detail="start cannot be greater than end")
-
-        cursor.execute("""
-            INSERT INTO translation_segments (
-                surah_id, ayah_number, translation_id,
-                segment_index, word_start, word_end, translation_text
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
+    try:
+        segments.replace_ayah(
+            [seg.model_dump() for seg in data.segments],
+            data.translation_id,
             data.surah_id,
             data.ayah_number,
-            data.translation_id,
-            i,
-            seg.start,
-            seg.end,
-            seg.text
-        ))
+            user_id=target_user,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return {"status": "success"}
+    return {
+        "status": "success",
+        # Told plainly, so a caller can say where the edit landed.
+        "saved_to": "user" if target_user else "canonical",
+    }
 
 # ---------------------------------------------------------------------------
 # Rendering API (minimal, word-based)
@@ -205,6 +185,7 @@ def _is_word(text: str) -> bool:
 )
 def get_surah_render(
     surah_id: int,
+    request: Request,
     translation_id: int = Query(default=2, description="translations.id (1=bayan-ul-quran, 2=fateh-muhammad-jalandhry)"),
 ):
     conn = get_db()
@@ -232,18 +213,17 @@ def get_surah_render(
             (surah_id,),
         )
         word_rows = cursor.fetchall()
-
-        cursor.execute(
-            "SELECT ayah_number, segment_index, word_start, word_end, translation_text "
-            "FROM translation_segments "
-            "WHERE surah_id=%s AND translation_id=%s "
-            "ORDER BY ayah_number, segment_index",
-            (surah_id, translation_id),
-        )
-        seg_rows = cursor.fetchall()
     finally:
         cursor.close()
         conn.close()
+
+    # The caller's own copy of an ayah wins over the canonical one, ayah by
+    # ayah (see app/segments.py). Read outside the cursor block above so a
+    # user with no rows costs nothing extra here.
+    reader = getattr(request.state, "user", None)
+    seg_rows = segments.for_surah(
+        surah_id, translation_id, reader["id"] if reader else None
+    )
 
     words_by_ayah: dict[int, list[dict]] = {}
     for r in word_rows:
@@ -262,9 +242,11 @@ def get_surah_render(
             }
             for w in words
         ]
-        segments = []
+        # Named `ayah_segments`: `segments` is the module imported above, and a
+        # local of that name would shadow it for the whole function.
+        ayah_segments = []
         for s in (x for x in seg_rows if x["ayah_number"] == ayah_number):
-            segments.append(
+            ayah_segments.append(
                 {
                     "segment_index": s["segment_index"],
                     "word_start": s["word_start"],
@@ -272,9 +254,13 @@ def get_surah_render(
                     "word_start_index": id_to_wi.get(s["word_start"]),
                     "word_end_index": id_to_wi.get(s["word_end"]),
                     "translation_text": s["translation_text"],
+                    # "user" means this ayah is the caller's own copy.
+                    "source": s.get("source", "canonical"),
                 }
             )
-        ayahs.append({"ayah_number": ayah_number, "words": words_out, "segments": segments})
+        ayahs.append(
+            {"ayah_number": ayah_number, "words": words_out, "segments": ayah_segments}
+        )
 
     return {
         "surah": surah,
@@ -360,8 +346,41 @@ if STATIC_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+def _resume_or_remember(request: Request, context: str) -> RedirectResponse | None:
+    """Resume a bare URL where this user left off, or record this one.
+
+    A URL carrying parameters is an explicit request — a shared link, a
+    bookmark, a deliberate jump — so it always wins over the stored position and
+    becomes the new one. Only a bare page URL resumes, which is what makes
+    `/editor` with nothing attached reopen the last ayah that person edited.
+    """
+    user = getattr(request.state, "user", None)
+    if not user:
+        return None
+
+    query = request.url.query
+    if not query:
+        saved = positions.get(user["id"], context)
+        if saved and saved["location"]:
+            return RedirectResponse(
+                request.url.path + saved["location"], status_code=302
+            )
+        return None
+
+    raw = (parse_qs(query).get("translation_id") or ["2"])[0]
+    try:
+        translation_id = int(raw)
+    except ValueError:
+        translation_id = 2
+    positions.save(user["id"], context, translation_id, "?" + query)
+    return None
+
+
 @app.get("/reader", response_class=HTMLResponse, include_in_schema=False)
-def reader_page():
+def reader_page(request: Request):
+    jump = _resume_or_remember(request, "reader")
+    if jump:
+        return jump
     index = STATIC_DIR / "reader.html"
     if not index.is_file():
         raise HTTPException(status_code=404, detail="reader.html not built")
@@ -369,8 +388,11 @@ def reader_page():
 
 
 @app.get("/mushaf", response_class=HTMLResponse, include_in_schema=False)
-def mushaf_page():
+def mushaf_page(request: Request):
     """Flowing, print-ready reader backed by the saved Quran segments."""
+    jump = _resume_or_remember(request, "mushaf")
+    if jump:
+        return jump
     page = STATIC_DIR / "mushaf.html"
     if not page.is_file():
         raise HTTPException(status_code=404, detail="mushaf.html not built")
@@ -378,7 +400,10 @@ def mushaf_page():
 
 
 @app.get("/reader-mushaf", response_class=HTMLResponse, include_in_schema=False)
-def reader_mushaf_page():
+def reader_mushaf_page(request: Request):
+    jump = _resume_or_remember(request, "reader-mushaf")
+    if jump:
+        return jump
     index = STATIC_DIR / "reader-mushaf.html"
     if not index.is_file():
         raise HTTPException(status_code=404, detail="reader-mushaf.html not built")
@@ -386,7 +411,10 @@ def reader_mushaf_page():
 
 
 @app.get("/editor", response_class=HTMLResponse, include_in_schema=False)
-def editor_page():
+def editor_page(request: Request):
+    jump = _resume_or_remember(request, "editor")
+    if jump:
+        return jump
     index = STATIC_DIR / "editor.html"
     if not index.is_file():
         raise HTTPException(status_code=404, detail="editor.html not built")
@@ -764,3 +792,57 @@ async def admin_users_active(request: Request):
 
     auth.set_active(target["id"], make_active)
     return _admin_back("ok=enabled" if make_active else "ok=disabled")
+
+
+# ---------------------------------------------------------------------------
+# Promotion: a person's private copy -> the canonical text
+# ---------------------------------------------------------------------------
+
+@app.get("/admin/promotions", response_class=HTMLResponse, include_in_schema=False)
+def admin_promotions_page(request: Request, ok: str = "", error: str = "", n: int = 0):
+    page = admin.render_promotions(
+        request.state.user, segments.list_overrides(), ok or None, error or None, n
+    )
+    return HTMLResponse(page, headers={"Cache-Control": "no-cache"})
+
+
+@app.post("/admin/promote", include_in_schema=False)
+async def admin_promote(request: Request):
+    """Copy one ayah from someone's private segments into `translation_segments`."""
+    form = await _admin_form(request)
+    try:
+        copied = segments.promote(
+            int(form.get("user_id") or 0),
+            int(form.get("translation_id") or 0),
+            int(form.get("surah_id") or 0),
+            int(form.get("ayah_number") or 0),
+        )
+    except ValueError:
+        return RedirectResponse("/admin/promotions?error=promote", status_code=303)
+    return RedirectResponse(f"/admin/promotions?ok=promoted&n={copied}", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# Reading position (self-service, see app/positions.py)
+# ---------------------------------------------------------------------------
+
+@app.post("/api/position", include_in_schema=False)
+async def save_position(request: Request):
+    """Record where the signed-in user is, as pages change URL client-side.
+
+    The page routes already record a position when they are loaded with
+    parameters; this is for movement inside a page (next page, next surah)
+    that never reaches the server.
+    """
+    user = getattr(request.state, "user", None)
+    if not user:
+        return JSONResponse({"detail": "Sign in required."}, status_code=401)
+
+    form = parse_qs((await request.body()).decode("utf-8"))
+    context = form.get("context", [""])[0]
+    try:
+        translation_id = int(form.get("translation_id", ["2"])[0])
+        positions.save(user["id"], context, translation_id, form.get("location", [""])[0])
+    except ValueError as exc:
+        return JSONResponse({"detail": str(exc)}, status_code=400)
+    return {"status": "saved"}

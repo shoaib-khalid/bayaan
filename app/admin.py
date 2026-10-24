@@ -85,7 +85,7 @@ _PAGE = Template("""<!DOCTYPE html>
 <body>
 <div class="wrap">
   <h1>Users</h1>
-  <p class="sub">Signed in as $who ($role). &nbsp;·&nbsp; <a href="/">Back to Bayaan</a></p>
+  <p class="sub">Signed in as $who ($role). &nbsp;·&nbsp; <a href="/admin/promotions">Private edits</a> &nbsp;·&nbsp; <a href="/">Back to Bayaan</a></p>
 
   $banner
 
@@ -203,4 +203,120 @@ def render_users(
         banner=_banner(ok, error),
         rows="".join(_row(u, current_user["id"]) for u in users),
         role_options=role_options,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Promotion page: private copies that could become the canonical text
+# ---------------------------------------------------------------------------
+
+_PROMOTIONS = Template("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private edits — Bayaan</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 24px 64px; background:#12100e; color:#f2ece3;
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:22px; color:#c8a96a; font-weight:600; }
+  .sub { margin:0 0 22px; font-size:13px; color:#a89b88; }
+  .sub a { color:#c8a96a; }
+  .msg { margin:0 0 20px; padding:11px 14px; border-radius:6px; font-size:13.5px; }
+  .msg.ok { background:#1d2b21; border:1px solid #35543d; color:#c7e6cf; }
+  .msg.error { background:#3a1e1c; border:1px solid #6d3330; color:#f0c9c4; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-weight:600; font-size:12px; letter-spacing:.05em; text-transform:uppercase;
+       color:#8a7c66; padding:0 10px 8px; border-bottom:1px solid #3a332a; }
+  td { padding:10px; border-bottom:1px solid #241f18; }
+  .who { font-weight:600; }
+  .muted { color:#7d7264; }
+  button { border:0; border-radius:6px; padding:7px 11px; font:inherit; font-size:13px;
+           cursor:pointer; background:#c8a96a; color:#1b1710; font-weight:600; }
+  button:hover { background:#d9bb7d; }
+  .empty { padding:26px; text-align:center; color:#7d7264; border:1px dashed #3a332a; border-radius:10px; }
+  .hint { font-size:12px; color:#7d7264; margin:14px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Private edits</h1>
+  <p class="sub">Signed in as $who &nbsp;·&nbsp; <a href="/admin/users">Users</a> &nbsp;·&nbsp; <a href="/">Bayaan</a></p>
+  $banner
+  $body
+  <p class="hint">Promoting replaces the canonical segments of that ayah. The person's private copy stays as it is.</p>
+</div>
+</body>
+</html>
+""")
+
+_PROMOTE_ROW = Template("""<tr>
+  <td class="who">$username</td>
+  <td>$surah <span class="muted">$ayah</span></td>
+  <td class="muted">$translation</td>
+  <td class="muted">$segments segments</td>
+  <td class="muted">$updated</td>
+  <td>
+    <form method="post" action="/admin/promote">
+      <input type="hidden" name="user_id" value="$user_id">
+      <input type="hidden" name="translation_id" value="$translation_id">
+      <input type="hidden" name="surah_id" value="$surah_id">
+      <input type="hidden" name="ayah_number" value="$ayah_number">
+      <button type="submit">Promote</button>
+    </form>
+  </td>
+</tr>""")
+
+
+def render_promotions(
+    current_user: dict,
+    overrides: list[dict],
+    ok: str | None = None,
+    error: str | None = None,
+    promoted_count: int | None = None,
+) -> str:
+    if error:
+        banner = '<div class="msg error">That private copy could not be promoted.</div>'
+    elif ok == "promoted":
+        count = promoted_count if promoted_count is not None else 0
+        banner = (
+            f'<div class="msg ok">Promoted {count} '
+            f'{"segment" if count == 1 else "segments"} into the canonical text.</div>'
+        )
+    else:
+        banner = ""
+
+    if not overrides:
+        body = '<div class="empty">Nobody has a private edit yet.</div>'
+    else:
+        rows = "".join(
+            _PROMOTE_ROW.substitute(
+                username=escape(o["username"]),
+                surah=escape(o["surah_name"] or f"Surah {o['surah_id']}"),
+                ayah=f"{o['ayah_number']}",
+                translation=f"translation {o['translation_id']}",
+                segments=o["segment_count"],
+                updated=o["updated_at"].strftime("%Y-%m-%d %H:%M")
+                if o.get("updated_at")
+                else "",
+                user_id=o["user_id"],
+                translation_id=o["translation_id"],
+                surah_id=o["surah_id"],
+                ayah_number=o["ayah_number"],
+            )
+            for o in overrides
+        )
+        body = (
+            "<table><thead><tr><th>Account</th><th>Ayah</th><th>Translation</th>"
+            "<th>Size</th><th>Last edit</th><th></th></tr></thead>"
+            f"<tbody>{rows}</tbody></table>"
+        )
+
+    return _PROMOTIONS.substitute(
+        who=escape(current_user.get("display_name") or current_user["username"]),
+        banner=banner,
+        body=body,
     )
