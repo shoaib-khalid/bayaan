@@ -1,0 +1,395 @@
+"""Segment reads and writes, with the per-user overlay on top.
+
+Two tables hold segments:
+
+    translation_segments       the canonical text — what the readers show when
+                               nobody has their own opinion
+    user_translation_segments  one person's private copy of particular ayahs
+
+The rule, in one sentence: **for each ayah, if the signed-in user has any rows
+of their own, that ayah is served entirely from their rows; otherwise it comes
+from the canonical table.** Never a mix — a person's half-finished edit of an
+ayah would otherwise interleave with the canonical segments and produce a
+translation that matches no one's intent.
+
+Granularity is the ayah, not the surah. Overriding one ayah must not blank out
+the other 285 in that surah.
+
+Who writes where: an admin edits the canonical table directly. Everyone else
+writes their private rows. An admin can then promote somebody's private copy
+into the canonical text with `promote()` — the route into the book that keeps
+personal work from being invisible.
+"""
+
+from __future__ import annotations
+
+import mysql.connector
+
+from . import auth
+from .text import is_word
+
+
+def _fetch(sql: str, params: tuple = ()) -> list[dict]:
+    conn = auth.connect()
+    try:
+        cur = conn.cursor(dictionary=True)
+        cur.execute(sql, params)
+        return cur.fetchall()
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Reads
+# ---------------------------------------------------------------------------
+
+_SEGMENT_COLUMNS = "ayah_number, segment_index, word_start, word_end, translation_text"
+
+
+def canonical_for_surah(surah_id: int, translation_id: int) -> list[dict]:
+    return _fetch(
+        f"""
+        SELECT {_SEGMENT_COLUMNS}
+          FROM translation_segments
+         WHERE surah_id = %s AND translation_id = %s
+         ORDER BY ayah_number, segment_index
+        """,
+        (surah_id, translation_id),
+    )
+
+
+def private_for_surah(user_id: int, surah_id: int, translation_id: int) -> list[dict]:
+    return _fetch(
+        f"""
+        SELECT {_SEGMENT_COLUMNS}
+          FROM user_translation_segments
+         WHERE user_id = %s AND surah_id = %s AND translation_id = %s
+         ORDER BY ayah_number, segment_index
+        """,
+        (user_id, surah_id, translation_id),
+    )
+
+
+def for_surah(surah_id: int, translation_id: int, user_id: int | None) -> list[dict]:
+    """Segments for a whole surah, per-user overlay applied.
+
+    Each row carries `source` ("user" or "canonical") so a page can tell the
+    reader that an ayah is their own copy rather than the shared one.
+    """
+    canonical = canonical_for_surah(surah_id, translation_id)
+    private = private_for_surah(user_id, surah_id, translation_id) if user_id else []
+
+    # Any ayah present here wins outright, even a single row.
+    overridden = {row["ayah_number"] for row in private}
+
+    merged = []
+    for row in canonical:
+        if row["ayah_number"] in overridden:
+            continue
+        merged.append({**row, "source": "canonical"})
+    for row in private:
+        merged.append({**row, "source": "user"})
+
+    merged.sort(key=lambda r: (r["ayah_number"], r["segment_index"]))
+    return merged
+
+
+def for_ayah(
+    surah_id: int, ayah_number: int, translation_id: int, user_id: int | None
+) -> list[dict]:
+    """Segments of a single ayah, same rule as `for_surah`."""
+    if user_id:
+        private = _fetch(
+            f"""
+            SELECT {_SEGMENT_COLUMNS}
+              FROM user_translation_segments
+             WHERE user_id = %s AND surah_id = %s AND ayah_number = %s
+               AND translation_id = %s
+             ORDER BY segment_index
+            """,
+            (user_id, surah_id, ayah_number, translation_id),
+        )
+        if private:
+            return [{**row, "source": "user"} for row in private]
+
+    canonical = _fetch(
+        f"""
+        SELECT {_SEGMENT_COLUMNS}
+          FROM translation_segments
+         WHERE surah_id = %s AND ayah_number = %s AND translation_id = %s
+         ORDER BY segment_index
+        """,
+        (surah_id, ayah_number, translation_id),
+    )
+    return [{**row, "source": "canonical"} for row in canonical]
+
+
+def has_private(user_id: int, surah_id: int, ayah_number: int, translation_id: int) -> bool:
+    rows = _fetch(
+        """
+        SELECT 1 FROM user_translation_segments
+         WHERE user_id = %s AND surah_id = %s AND ayah_number = %s
+           AND translation_id = %s LIMIT 1
+        """,
+        (user_id, surah_id, ayah_number, translation_id),
+    )
+    return bool(rows)
+
+
+# ---------------------------------------------------------------------------
+# Writes
+# ---------------------------------------------------------------------------
+
+def replace_ayah(
+    segments: list[dict],
+    translation_id: int,
+    surah_id: int,
+    ayah_number: int,
+    user_id: int | None = None,
+) -> None:
+    """Overwrite all segments of one ayah.
+
+    `user_id = None` writes the canonical table. Otherwise the rows go to that
+    person's private copy, and the canonical table is not touched at all.
+    """
+    conn = auth.connect()
+    try:
+        cur = conn.cursor()
+        if user_id is None:
+            cur.execute(
+                """
+                DELETE FROM translation_segments
+                 WHERE translation_id = %s AND surah_id = %s AND ayah_number = %s
+                """,
+                (translation_id, surah_id, ayah_number),
+            )
+            for index, seg in enumerate(segments, start=1):
+                if seg["start"] > seg["end"]:
+                    raise ValueError("start cannot be greater than end")
+                cur.execute(
+                    """
+                    INSERT INTO translation_segments (
+                        surah_id, ayah_number, translation_id,
+                        segment_index, word_start, word_end, translation_text
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        surah_id,
+                        ayah_number,
+                        translation_id,
+                        index,
+                        seg["start"],
+                        seg["end"],
+                        seg["text"],
+                    ),
+                )
+        else:
+            cur.execute(
+                """
+                DELETE FROM user_translation_segments
+                 WHERE user_id = %s AND translation_id = %s AND surah_id = %s
+                   AND ayah_number = %s
+                """,
+                (user_id, translation_id, surah_id, ayah_number),
+            )
+            for index, seg in enumerate(segments, start=1):
+                if seg["start"] > seg["end"]:
+                    raise ValueError("start cannot be greater than end")
+                cur.execute(
+                    """
+                    INSERT INTO user_translation_segments (
+                        user_id, surah_id, ayah_number, translation_id,
+                        segment_index, word_start, word_end, translation_text
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        user_id,
+                        surah_id,
+                        ayah_number,
+                        translation_id,
+                        index,
+                        seg["start"],
+                        seg["end"],
+                        seg["text"],
+                    ),
+                )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def discard_private(
+    user_id: int, translation_id: int, surah_id: int, ayah_number: int
+) -> int:
+    """Drop a private edit, so the ayah falls back to the canonical segments."""
+    conn = auth.connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            DELETE FROM user_translation_segments
+             WHERE user_id = %s AND translation_id = %s AND surah_id = %s
+               AND ayah_number = %s
+            """,
+            (user_id, translation_id, surah_id, ayah_number),
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Promotion: private copy -> canonical text
+# ---------------------------------------------------------------------------
+
+def promote(
+    user_id: int, translation_id: int, surah_id: int, ayah_number: int
+) -> int:
+    """Copy one ayah from a person's private rows into the canonical table.
+
+    Done in a single transaction, so the canonical ayah is never left empty
+    between the DELETE and the INSERTs. Returns the number of segments copied.
+    """
+    rows = _fetch(
+        f"""
+        SELECT {_SEGMENT_COLUMNS}
+          FROM user_translation_segments
+         WHERE user_id = %s AND translation_id = %s AND surah_id = %s
+           AND ayah_number = %s
+         ORDER BY segment_index
+        """,
+        (user_id, translation_id, surah_id, ayah_number),
+    )
+    if not rows:
+        raise ValueError("that account has no private segments for this ayah")
+
+    conn = auth.connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            DELETE FROM translation_segments
+             WHERE translation_id = %s AND surah_id = %s AND ayah_number = %s
+            """,
+            (translation_id, surah_id, ayah_number),
+        )
+        for index, row in enumerate(rows, start=1):
+            cur.execute(
+                """
+                INSERT INTO translation_segments (
+                    surah_id, ayah_number, translation_id,
+                    segment_index, word_start, word_end, translation_text
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    surah_id,
+                    ayah_number,
+                    translation_id,
+                    index,
+                    row["word_start"],
+                    row["word_end"],
+                    row["translation_text"],
+                ),
+            )
+        conn.commit()
+        return len(rows)
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Browsing private work (for the admin promotion page)
+# ---------------------------------------------------------------------------
+
+def users_with_overrides() -> list[dict]:
+    """Accounts that have private segments, with how much they have taken over."""
+    return _fetch(
+        """
+        SELECT s.user_id,
+               u.username,
+               COUNT(DISTINCT s.surah_id, s.ayah_number, s.translation_id) AS ayahs,
+               COUNT(*)                                                   AS segments,
+               MAX(s.updated_at)                                          AS updated_at
+          FROM user_translation_segments s
+          JOIN users u ON u.id = s.user_id
+         GROUP BY s.user_id, u.username
+         ORDER BY MAX(s.updated_at) DESC
+        """
+    )
+
+
+def _words_for_ayahs(pairs: list[tuple[int, int]]) -> dict[tuple[int, int], list[dict]]:
+    """Every word token for the given (surah, ayah) pairs, keyed the same way."""
+    if not pairs:
+        return {}
+    wanted = set(pairs)
+    surah_ids = sorted({surah for surah, _ in wanted})
+    placeholders = ",".join(["%s"] * len(surah_ids))
+    rows = _fetch(
+        f"""
+        SELECT id, surah_id, ayah_number, word_index, text
+          FROM ayah_words
+         WHERE surah_id IN ({placeholders})
+         ORDER BY surah_id, ayah_number, word_index
+        """,
+        tuple(surah_ids),
+    )
+    out: dict[tuple[int, int], list[dict]] = {}
+    for row in rows:
+        key = (row["surah_id"], row["ayah_number"])
+        if key in wanted:
+            out.setdefault(key, []).append(row)
+    return out
+
+
+def promotion_view(user_id: int) -> list[dict]:
+    """One account's private work, grouped by ayah and ready to render.
+
+    Each segment carries the Arabic words it covers, so an admin can judge the
+    edit without opening the editor — reviewing a translation with no sight of
+    the text it belongs to is not a review.
+    """
+    rows = _fetch(
+        """
+        SELECT s.surah_id, su.name_english AS surah_name, su.name_arabic,
+               s.ayah_number, s.translation_id, s.segment_index,
+               s.word_start, s.word_end, s.translation_text, s.updated_at
+          FROM user_translation_segments s
+          JOIN surahs su ON su.id = s.surah_id
+         WHERE s.user_id = %s
+         ORDER BY s.surah_id, s.ayah_number, s.translation_id, s.segment_index
+        """,
+        (user_id,),
+    )
+    if not rows:
+        return []
+
+    words = _words_for_ayahs(sorted({(r["surah_id"], r["ayah_number"]) for r in rows}))
+
+    groups: dict[tuple[int, int, int], dict] = {}
+    for row in rows:
+        key = (row["surah_id"], row["ayah_number"], row["translation_id"])
+        group = groups.get(key)
+        if group is None:
+            group = {
+                "surah_id": row["surah_id"],
+                "surah_name": row["surah_name"],
+                "name_arabic": row["name_arabic"],
+                "ayah_number": row["ayah_number"],
+                "translation_id": row["translation_id"],
+                "updated_at": row["updated_at"],
+                "segments": [],
+            }
+            groups[key] = group
+
+        covered = [
+            word["text"]
+            for word in words.get((row["surah_id"], row["ayah_number"]), [])
+            if row["word_start"] <= word["id"] <= row["word_end"] and is_word(word["text"])
+        ]
+        group["segments"].append(
+            {"words": " ".join(covered), "text": row["translation_text"]}
+        )
+
+    return [groups[key] for key in sorted(groups)]

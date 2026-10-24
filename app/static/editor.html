@@ -13,6 +13,14 @@
     src: url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");
     font-display: swap;
   }
+  /* Urdu face: Jameel Noori Nastaleeq, served locally (the same file the
+     print-ready mushaf uses) so it cannot fail to arrive mid-layout. Noto
+     Nastaliq Urdu stays in the stacks below as the fallback. */
+  @font-face {
+    font-family: "Jameel Noori Nastaleeq";
+    src: url("/static/mushaf/fonts/jameel-noori-nastaleeq.ttf") format("truetype");
+    font-display: swap;
+  }
   :root {
     --paper:#fbf7ea; --paper2:#fffdf5; --ink:#241f17; --muted:#756b5a;
     --border:#a8946e; --gold:#9c7c3e; --urdu:#40392f; --err:#b3261e;
@@ -21,7 +29,7 @@
   }
   * { box-sizing:border-box; }
   body { margin:0; background:#efe9db; color:var(--ink);
-    font-family:"Noto Nastaliq Urdu", serif; }
+    font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; }
   .bar { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:8px;
     align-items:center; justify-content:center; padding:8px 10px; background:#fffdf5;
     border-bottom:1px solid var(--gold); font-family:system-ui,sans-serif; direction:ltr; }
@@ -50,14 +58,16 @@
 
   /* source translation */
   textarea.tr { width:100%; direction:rtl; text-align:right; resize:vertical; min-height:64px;
-    font-family:"Noto Nastaliq Urdu", serif; font-size:19px; line-height:1.9;
-    border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu); }
+    font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:26px; line-height:1.9;
+    border:1px solid var(--border); border-radius:8px; background:var(--paper2); padding:6px 10px; color:var(--urdu);
+    /* Grown to fit its text by autoGrow(); the scrollbar would only hide it. */
+    overflow:hidden; }
   textarea.tr:focus { outline:2px solid var(--sel2); }
   textarea.tr[readonly] { background:#f4efdd; }
 
   /* the translation as word chips — same gestures as the script chips */
-  .trchips { direction:rtl; text-align:right; font-family:"Noto Nastaliq Urdu", serif;
-    font-size:19px; line-height:2.1; padding:8px 10px; border:1px solid var(--border);
+  .trchips { direction:rtl; text-align:right; font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
+    font-size:26px; line-height:2.1; padding:8px 10px; border:1px solid var(--border);
     border-radius:8px; min-height:3em; background:var(--paper2); cursor:text; outline:none; }
   .trchips .w { padding:0 3px; }
 
@@ -286,7 +296,7 @@ function fillAyahSel(){
 
 /* The editor version. Bump this on every change, and add a matching section to
    /editor/release-notes (app/static/editor-release-notes.html). */
-const EDITOR_VERSION = "1.0.0";
+const EDITOR_VERSION = "1.1.0";
 
 /* ---------------- translations ---------------- */
 /* The list comes from the database, so adding a translation there makes it
@@ -793,9 +803,11 @@ function renderSegments(){
     ta.readOnly = (editingRow !== i);
     ta.dataset.i = i;
     ta.style.minHeight = "3.2em";
-    autoGrow(ta);
     ta.addEventListener("input", ()=>{ autoGrow(ta); seg.text = ta.value; markDirty(); });
     lc.appendChild(ta);
+    // Only now is it laid out: scrollHeight is 0 for a detached element, which
+    // is why this used to leave the translation clipped inside a short box.
+    autoGrow(ta);
     if (editingRow===i){
       const ok = document.createElement("div"); ok.className="rowactions";
       ok.appendChild(mkBtn("✓ Done editing", ()=>{editingRow=-1;renderSegments();}));
@@ -812,6 +824,15 @@ function renderSegments(){
       });
     }
     box.appendChild(row);
+  });
+
+  // The rows are in the document now, so every box can be fitted to its text.
+  if (document.fonts && document.fonts.status === "loaded") growAllSegmentTextareas();
+}
+
+function growAllSegmentTextareas(){
+  document.querySelectorAll(".segrow textarea.tr").forEach((ta)=>{
+    if (ta.offsetParent !== null) autoGrow(ta);
   });
 }
 
@@ -968,7 +989,43 @@ async function nav(delta){
   const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
   const idx = nums.indexOf(S.ayahNumber);
   const next = nums[idx+delta];
-  if (next === undefined){ toast(delta>0?"This is the last ayah of the surah.":"This is the first ayah.", "warn"); return; }
+
+  // At the end of a surah, carry on into the neighbouring one instead of
+  // stopping: Next on the last ayah opens the next surah's first ayah, and Prev
+  // on the first opens the previous surah's last. Reading (and segmenting) is
+  // continuous, so the navigation should be too.
+  if (next === undefined){
+    const pos = S.surahs.findIndex(s => s.id === S.surahId);
+    const target = pos >= 0 ? S.surahs[pos + delta] : undefined;
+    if (!target){
+      toast(delta > 0 ? "This is the last ayah of the Qur'an." : "This is the first ayah of the Qur'an.", "warn");
+      return;
+    }
+    if (!(await confirmLeave())) return;
+    selA=selB=null; editingRow=-1; splitRow=-1;
+    const prevSurah = S.surahId;
+    const prevAyah = S.ayahNumber;
+    S.surahId = target.id;
+    // Landing on the last ayah going backwards needs the count from /surahs;
+    // going forwards the first ayah is always 1.
+    S.ayahNumber = delta > 0 ? 1 : (target.ayah_count || 1);
+    $("surahSel").value = String(S.surahId);
+    try {
+      await loadSurah();
+      toast(`${target.name_english} — ayah ${S.ayahNumber}`, "ok");
+    } catch (err){
+      // The fetch failed (server down, session expired). Put everything back:
+      // leaving the selectors pointing at a surah that never loaded makes the
+      // page claim to be somewhere it is not.
+      S.surahId = prevSurah;
+      S.ayahNumber = prevAyah;
+      $("surahSel").value = String(prevSurah);
+      $("ayahSel").value = String(prevAyah);
+      toast("Could not load that surah — the server did not respond. Nothing was changed.", "warn");
+    }
+    return;
+  }
+
   if (!(await confirmLeave())) return;
   selA=selB=null; editingRow=-1; splitRow=-1;
   loadAyah(next);
@@ -978,10 +1035,8 @@ async function saveAndGo(delta){
     const ok = await saveAyah();
     if (!ok) return;
   }
-  const nums = Object.keys(S.ayahMap).map(Number).sort((a,b)=>a-b);
-  const idx = nums.indexOf(S.ayahNumber);
-  const next = nums[idx+delta];
-  if (next !== undefined){ selA=selB=null; editingRow=-1; splitRow=-1; loadAyah(next); }
+  // Reuse nav() so Ctrl+Enter also crosses into the next surah.
+  await nav(delta);
 }
 $("btnNext").addEventListener("click", ()=>nav(+1));
 $("btnPrev").addEventListener("click", ()=>nav(-1));
@@ -1060,6 +1115,15 @@ window.addEventListener("beforeunload", (e)=>{
 /* =====================================================================
    Init
    ===================================================================== */
+// Nastaliq arrives after first paint, and it is wider and taller than the
+// fallback: re-fit the translation boxes once it is really there, and on resize
+// (a narrower column means more wrapped lines).
+if (document.fonts){
+  document.fonts.ready.then(growAllSegmentTextareas);
+  document.fonts.addEventListener("loadingdone", growAllSegmentTextareas);
+}
+window.addEventListener("resize", growAllSegmentTextareas);
+
 async function init(){
   // read URL params
   const q = new URLSearchParams(location.search);
@@ -1151,5 +1215,7 @@ const HELP_HTML = `
 </ul>
 `;
 </script>
+<script src="/static/position-tracker.js" defer data-context="editor"></script>
+<script src="/static/auth-strip.js" defer></script>
 </body>
 </html>

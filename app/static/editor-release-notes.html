@@ -43,8 +43,26 @@
     <a class="back" href="/editor">← Back to the editor</a>
   </header>
 
-  <section class="rel current" id="v1.0.0">
-    <h2>v1.0.0 <span class="tag">current</span></h2>
+  <section class="rel current" id="v1.1.0">
+    <h2>v1.1.0 <span class="tag">current</span></h2>
+    <div class="date">2026-10-24</div>
+
+    <h3>Added</h3>
+    <ul>
+      <li><b>Next and Prev cross surah boundaries.</b> Next on the last ayah opens the next surah's first ayah, and Prev on the first opens the previous surah's last — segmenting a surah does not end at its last verse. The ends of the Qur'an still say so and stay put. <b>Ctrl+Enter</b> crosses too, since it reuses the same navigation.</li>
+      <li><b>The editor opens where you left off.</b> Your last ayah is remembered per translation, and a bare <code>/editor</code> returns to it; a link that carries <code>surah</code>/<code>ayah</code> always opens exactly where the link says. The same applies to each reader, independently.</li>
+      <li><b>Your edits are your own.</b> A save from this account writes a private copy of that ayah, so two people can segment the same verse without overwriting each other. Readers fall back to the shared text ayah by ayah, so an ayah you have not touched still shows the shared segmentation. An administrator can approve one of your ayahs into the shared text.</li>
+    </ul>
+
+    <h3>Fixed</h3>
+    <ul>
+      <li><b>The page could be served from cache.</b> The editor, its release notes and the mushaf reader were the only pages sent without <code>Cache-Control</code>, so a browser was free to keep an old copy and make a fix look like it had not been applied. All three are now served <code>no-cache</code>.</li>
+      <li><b>Crossing a surah could leave the page lying about where it was.</b> The surah selector was changed before the new surah had loaded, so a failed request left it pointing at surah 2 while the ayahs, heading and segments still belonged to surah 1. The previous position is now restored, with a message saying nothing changed.</li>
+    </ul>
+  </section>
+
+  <section class="rel" id="v1.0.0">
+    <h2>v1.0.0</h2>
     <div class="date">2026-10-18 · first versioned release</div>
 
     <h3>Editor features</h3>
@@ -90,5 +108,6 @@
     Bayaan — structured text alignment over a word-tokenised Qur’anic corpus.
   </div>
 </div>
+<script src="/static/auth-strip.js" defer></script>
 </body>
 </html>

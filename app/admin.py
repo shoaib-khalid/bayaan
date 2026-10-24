@@ -1,0 +1,391 @@
+"""The user-administration page, rendered on the server.
+
+Kept out of `app.py` because it is mostly markup, and kept server-rendered on
+purpose: every action is a plain form POST followed by a redirect back here, so
+the page works with JavaScript disabled, the back button behaves, and there is
+no second JSON endpoint listing every account that would need its own guard.
+
+Every value that comes from the database is escaped. Usernames are chosen by an
+administrator and a display name is free text, so neither is trusted in markup.
+"""
+
+from __future__ import annotations
+
+from html import escape
+from string import Template
+
+# Messages are keyed by the code in the redirect, so the URL carries `?ok=created`
+# rather than the message itself — nothing a user typed is ever reflected back.
+OK_MESSAGES = {
+    "created": "Account created. Pass the password on by hand.",
+    "password": "Password changed, and that account's other sessions were ended.",
+    "enabled": "Account enabled.",
+    "disabled": "Account disabled, and its open sessions were ended.",
+    "rolechanged": "Role changed. It applies from that account's next request.",
+}
+
+ERROR_MESSAGES = {
+    "missing": "Fill in every field.",
+    "duplicate": "That username is already taken.",
+    "role": "That role does not exist.",
+    "short": "The password must be at least 8 characters.",
+    "mismatch": "The two passwords did not match.",
+    "user": "No such account.",
+    "self": "You cannot disable your own account.",
+    "selfrole": "You cannot change your own role — ask another administrator.",
+    "lastadmin": "That is the last active administrator. Create another one first.",
+}
+
+_PAGE = Template("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Users — Bayaan</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 24px 64px; background:#12100e; color:#f2ece3;
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:22px; color:#c8a96a; font-weight:600; }
+  h2 { margin:34px 0 12px; font-size:15px; letter-spacing:.06em; text-transform:uppercase; color:#8a7c66; }
+  .sub { margin:0 0 26px; font-size:13px; color:#a89b88; }
+  .sub a { color:#c8a96a; }
+  .msg { margin:0 0 20px; padding:11px 14px; border-radius:6px; font-size:13.5px; }
+  .msg.ok { background:#1d2b21; border:1px solid #35543d; color:#c7e6cf; }
+  .msg.error { background:#3a1e1c; border:1px solid #6d3330; color:#f0c9c4; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-weight:600; font-size:12px; letter-spacing:.05em; text-transform:uppercase;
+       color:#8a7c66; padding:0 10px 8px; border-bottom:1px solid #3a332a; }
+  td { padding:10px; border-bottom:1px solid #241f18; vertical-align:middle; }
+  tr.off td { color:#7d7264; }
+  .name { font-weight:600; }
+  .role { font-size:12px; padding:2px 8px; border-radius:999px; background:#241f18; color:#cbbfae; }
+  .role.admin { background:#3a2c10; color:#e5c88a; }
+  .pill { font-size:12px; color:#8a7c66; }
+  .pill.on { color:#8fce9f; }
+  form.inline { display:flex; gap:6px; align-items:center; }
+  input[type=text], input[type=password], select {
+    background:#100e0b; color:#f2ece3; border:1px solid #3a332a; border-radius:6px;
+    padding:8px 10px; font:inherit; font-size:14px; }
+  input[type=text]:focus, input[type=password]:focus, select:focus {
+    outline:none; border-color:#c8a96a; box-shadow:0 0 0 3px rgba(200,169,106,.15); }
+  button { border:0; border-radius:6px; padding:8px 12px; font:inherit; font-size:13px;
+           cursor:pointer; background:#c8a96a; color:#1b1710; font-weight:600; white-space:nowrap; }
+  button:hover { background:#d9bb7d; }
+  button.ghost { background:#241f18; color:#cbbfae; border:1px solid #3a332a; font-weight:400; }
+  button.ghost:hover { background:#2e271e; color:#f2ece3; }
+  .create { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 16px;
+            padding:18px; border:1px solid #3a332a; border-radius:10px; background:#191612; }
+  .create label { display:block; font-size:12px; color:#cbbfae; margin:0 0 5px; }
+  .create .wide { grid-column:1 / -1; }
+  .hint { font-size:12px; color:#7d7264; margin:6px 0 0; }
+  @media (max-width:640px) { .create { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Users</h1>
+  <p class="sub">Signed in as $who ($role). &nbsp;·&nbsp; <a href="/admin/promotions">Private edits</a> &nbsp;·&nbsp; <a href="/">Back to Bayaan</a></p>
+
+  $banner
+
+  <h2>Accounts</h2>
+  <table>
+    <thead>
+      <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last sign-in</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      $rows
+    </tbody>
+  </table>
+  <p class="hint">Accounts are disabled rather than deleted, so the segments a person wrote keep their author.</p>
+
+  <h2>Create an account</h2>
+  <form class="create" method="post" action="/admin/users/create" autocomplete="off">
+    <div>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" required autocapitalize="none" spellcheck="false" style="width:100%">
+    </div>
+    <div>
+      <label for="display_name">Display name <span style="color:#7d7264">(optional)</span></label>
+      <input id="display_name" name="display_name" type="text" style="width:100%">
+    </div>
+    <div>
+      <label for="role">Role</label>
+      <select id="role" name="role" style="width:100%">$role_options</select>
+    </div>
+    <div>
+      <label for="password">Initial password</label>
+      <input id="password" name="password" type="password" required style="width:100%">
+    </div>
+    <div>
+      <label for="confirm">Repeat password</label>
+      <input id="confirm" name="confirm" type="password" required style="width:100%">
+    </div>
+    <div class="wide">
+      <button type="submit">Create account</button>
+      <p class="hint">At least 8 characters. There is no email step — pass it on by hand.</p>
+    </div>
+  </form>
+</div>
+</body>
+</html>
+""")
+
+_ROW = Template("""<tr class="$rowclass">
+  <td class="name">$username</td>
+  <td>$display_name</td>
+  <td><span class="role $roleclass">$role</span></td>
+  <td><span class="pill $statusclass">$status</span></td>
+  <td class="pill">$last_login</td>
+  <td>
+    <form class="inline" method="post" action="/admin/users/role" style="margin-bottom:6px">
+      <input type="hidden" name="user_id" value="$id">
+      <select name="role" style="padding:6px 8px;font-size:13px">$role_options</select>
+      <button type="submit" class="ghost">Set role</button>
+    </form>
+    <form class="inline" method="post" action="/admin/users/password" autocomplete="off">
+      <input type="hidden" name="user_id" value="$id">
+      <input name="password" type="password" placeholder="New password" required style="width:135px">
+      <input name="confirm" type="password" placeholder="Repeat" required style="width:110px">
+      <button type="submit" class="ghost">Set</button>
+    </form>
+    <form class="inline" method="post" action="/admin/users/active" style="margin-top:6px">
+      <input type="hidden" name="user_id" value="$id">
+      <input type="hidden" name="active" value="$next_active">
+      <button type="submit" class="ghost">$toggle_label</button>
+    </form>
+  </td>
+</tr>""")
+
+
+def _banner(ok: str | None, error: str | None) -> str:
+    if ok and ok in OK_MESSAGES:
+        return f'<div class="msg ok">{escape(OK_MESSAGES[ok])}</div>'
+    if error and error in ERROR_MESSAGES:
+        return f'<div class="msg error">{escape(ERROR_MESSAGES[error])}</div>'
+    return ""
+
+
+def _row(user: dict, current_user_id: int, roles: list[dict]) -> str:
+    last_login = (
+        user["last_login_at"].strftime("%Y-%m-%d %H:%M")
+        if user["last_login_at"]
+        else "never"
+    )
+    # The row's own select, with the account's current role already chosen, so
+    # "change the role" is one pick and one click.
+    role_options = "".join(
+        f'<option value="{escape(r["name"])}"'
+        f'{" selected" if r["name"] == user["role"] else ""}>'
+        f'{escape(r["name"])}</option>'
+        for r in roles
+    )
+    return _ROW.substitute(
+        rowclass="" if user["is_active"] else "off",
+        id=user["id"],
+        username=escape(user["username"]),
+        display_name=escape(user["display_name"] or "—"),
+        roleclass="admin" if user["role"] == "admin" else "",
+        role=escape(user["role"]),
+        role_options=role_options,
+        statusclass="on" if user["is_active"] else "",
+        status="active" if user["is_active"] else "disabled",
+        last_login=last_login,
+        # The button always offers the opposite of the current state.
+        next_active="0" if user["is_active"] else "1",
+        toggle_label="Disable" if user["is_active"] else "Enable",
+    )
+
+
+def render_users(
+    current_user: dict,
+    users: list[dict],
+    roles: list[dict],
+    ok: str | None = None,
+    error: str | None = None,
+) -> str:
+    role_options = "".join(
+        f'<option value="{escape(r["name"])}"'
+        f'{" selected" if r["name"] == "viewer" else ""}>'
+        f'{escape(r["name"])} — {escape(r["description"] or "")}</option>'
+        for r in roles
+    )
+    return _PAGE.substitute(
+        who=escape(current_user.get("display_name") or current_user["username"]),
+        role=escape(current_user["role"]),
+        banner=_banner(ok, error),
+        rows="".join(_row(u, current_user["id"], roles) for u in users),
+        role_options=role_options,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Promotion page: private copies that could become the canonical text
+# ---------------------------------------------------------------------------
+
+_PROMOTIONS = Template("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private edits — Bayaan</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 24px 64px; background:#12100e; color:#f2ece3;
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:22px; color:#c8a96a; font-weight:600; }
+  .sub { margin:0 0 22px; font-size:13px; color:#a89b88; }
+  .sub a { color:#c8a96a; }
+  .msg { margin:0 0 20px; padding:11px 14px; border-radius:6px; font-size:13.5px; }
+  .msg.ok { background:#1d2b21; border:1px solid #35543d; color:#c7e6cf; }
+  .msg.error { background:#3a1e1c; border:1px solid #6d3330; color:#f0c9c4; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-weight:600; font-size:12px; letter-spacing:.05em; text-transform:uppercase;
+       color:#8a7c66; padding:0 10px 8px; border-bottom:1px solid #3a332a; }
+  td { padding:10px; border-bottom:1px solid #241f18; }
+  .who { font-weight:600; }
+  .muted { color:#7d7264; }
+  button { border:0; border-radius:6px; padding:7px 11px; font:inherit; font-size:13px;
+           cursor:pointer; background:#c8a96a; color:#1b1710; font-weight:600; }
+  button:hover { background:#d9bb7d; }
+  .empty { padding:26px; text-align:center; color:#7d7264; border:1px dashed #3a332a; border-radius:10px; }
+  .hint { font-size:12px; color:#7d7264; margin:14px 0 0; }
+  /* The IndoPak face carries the Private-Use ornament glyphs, so the Arabic
+     shows as it does in the readers rather than as boxes. */
+  @font-face { font-family:Quran; src:url('/static/mushaf/fonts/indopak-v4.2.1.woff2') format('woff2'); font-display:swap; }
+  @font-face { font-family:'Jameel Noori Nastaleeq'; src:url('/static/mushaf/fonts/jameel-noori-nastaleeq.ttf') format('truetype'); font-display:swap; }
+  .picker { display:flex; gap:10px; align-items:center; margin:0 0 22px; }
+  .picker label { font-size:13px; color:#cbbfae; }
+  select { background:#100e0b; color:#f2ece3; border:1px solid #3a332a; border-radius:6px;
+           padding:9px 11px; font:inherit; font-size:14px; min-width:280px; }
+  select:focus { outline:none; border-color:#c8a96a; box-shadow:0 0 0 3px rgba(200,169,106,.15); }
+  .card { border:1px solid #3a332a; border-radius:10px; background:#191612; margin:0 0 16px; overflow:hidden; }
+  .card .head { display:flex; justify-content:space-between; align-items:center; gap:12px;
+                padding:12px 14px; border-bottom:1px solid #241f18; }
+  .card .title { font-weight:600; color:#e5c88a; }
+  .card th { padding:9px 14px 6px; }
+  .card td { padding:9px 14px; border-bottom:1px solid #1d1913; }
+  .card tr:last-child td { border-bottom:0; }
+  .ar { font-family:Quran, "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:21px; line-height:2.1;
+        direction:rtl; text-align:right; color:#f6efe2; }
+  .ur { font-family:"Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; font-size:16px; line-height:2.1;
+        direction:rtl; text-align:right; color:#e8dcc8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Private edits</h1>
+  <p class="sub">Signed in as $who &nbsp;·&nbsp; <a href="/admin/users">Users</a> &nbsp;·&nbsp; <a href="/">Bayaan</a></p>
+  $picker
+  $banner
+  $body
+  <p class="hint">Promoting replaces the canonical segments of that ayah. The person's private copy stays as it is.</p>
+</div>
+</body>
+</html>
+""")
+
+_PROMOTE_CARD = Template("""<div class="card">
+  <div class="head">
+    <div><span class="title">$surah · ayah $ayah</span>
+      <span class="muted">translation $translation · $count · $updated</span></div>
+    <form method="post" action="/admin/promote">
+      <input type="hidden" name="user_id" value="$user_id">
+      <input type="hidden" name="translation_id" value="$translation_id">
+      <input type="hidden" name="surah_id" value="$surah_id">
+      <input type="hidden" name="ayah_number" value="$ayah_number">
+      <button type="submit">Approve</button>
+    </form>
+  </div>
+  <table><tbody>$rows</tbody></table>
+</div>""")
+
+_SEGMENT_ROW = Template(
+    """<tr><td class="ar">$words</td><td class="ur">$text</td></tr>"""
+)
+
+
+def render_promotions(
+    current_user: dict,
+    accounts: list[dict],
+    selected_user_id: int | None,
+    groups: list[dict],
+    ok: str | None = None,
+    error: str | None = None,
+    promoted_count: int | None = None,
+) -> str:
+    if error:
+        banner = '<div class="msg error">That private copy could not be promoted.</div>'
+    elif ok == "promoted":
+        count = promoted_count if promoted_count is not None else 0
+        banner = (
+            f'<div class="msg ok">Approved {count} '
+            f'{"segment" if count == 1 else "segments"} into the canonical text.</div>'
+        )
+    else:
+        banner = ""
+
+    # Who is selected, and how to change it. Listing only accounts that
+    # actually have private work keeps the picker honest.
+    options = "".join(
+        f'<option value="{a["user_id"]}"'
+        f'{" selected" if a["user_id"] == selected_user_id else ""}>'
+        f'{escape(a["username"])} — {a["ayahs"]} '
+        f'{"ayah" if a["ayahs"] == 1 else "ayahs"}, {a["segments"]} segments</option>'
+        for a in accounts
+    )
+    picker = (
+        '<form class="picker" method="get" action="/admin/promotions">'
+        '<label for="user_id">Account</label>'
+        f'<select id="user_id" name="user_id">{options}</select>'
+        '<button type="submit">Show edits</button>'
+        "</form>"
+        if accounts
+        else ""
+    )
+
+    if not accounts:
+        body = '<div class="empty">Nobody has a private edit yet.</div>'
+    elif selected_user_id is None:
+        body = '<div class="empty">Choose an account above to review its edits.</div>'
+    elif not groups:
+        body = '<div class="empty">That account has no private edits.</div>'
+    else:
+        cards = []
+        for group in groups:
+            rows = "".join(
+                _SEGMENT_ROW.substitute(
+                    words=escape(seg["words"]), text=escape(seg["text"])
+                )
+                for seg in group["segments"]
+            )
+            count = len(group["segments"])
+            cards.append(
+                _PROMOTE_CARD.substitute(
+                    surah=escape(group["surah_name"] or f"Surah {group['surah_id']}"),
+                    ayah=group["ayah_number"],
+                    translation=group["translation_id"],
+                    count=f"{count} segment" if count == 1 else f"{count} segments",
+                    updated=group["updated_at"].strftime("%Y-%m-%d %H:%M")
+                    if group.get("updated_at")
+                    else "",
+                    user_id=selected_user_id,
+                    translation_id=group["translation_id"],
+                    surah_id=group["surah_id"],
+                    ayah_number=group["ayah_number"],
+                    rows=rows,
+                )
+            )
+        body = "".join(cards)
+
+    return _PROMOTIONS.substitute(
+        who=escape(current_user.get("display_name") or current_user["username"]),
+        picker=picker,
+        banner=banner,
+        body=body,
+    )

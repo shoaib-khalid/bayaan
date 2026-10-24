@@ -13,6 +13,12 @@
     src: url("https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.woff2") format("woff2");
     font-display: swap;
   }
+  /* Urdu face: Jameel Noori Nastaleeq, served locally. */
+  @font-face {
+    font-family: "Jameel Noori Nastaleeq";
+    src: url("/static/mushaf/fonts/jameel-noori-nastaleeq.ttf") format("truetype");
+    font-display: swap;
+  }
   :root {
     --desk: #e7dcc6;
     --paper: #fbf6ea;
@@ -29,7 +35,7 @@
     margin: 0;
     min-height: 100vh;
     color: var(--ink);
-    font-family: "Noto Nastaliq Urdu", serif;
+    font-family: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
     background:
       radial-gradient(1200px 500px at 50% -10%, #f3ead6, transparent 60%),
       var(--desk);
@@ -124,7 +130,7 @@
     margin: 0;
   }
   .couplet .ur {
-    font-family: "Noto Nastaliq Urdu", serif;
+    font-family: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
     font-size: var(--ur);
     line-height: 1.95;
     margin: 0.16em 0 0.42em;
@@ -289,7 +295,7 @@
       if (document.fonts) {
         document.fonts.ready.then(again);
         Promise.all([
-          document.fonts.load(getComputedStyle(document.body).fontSize + ' "Noto Nastaliq Urdu"'),
+          document.fonts.load(getComputedStyle(document.body).fontSize + ' "Jameel Noori Nastaleeq"'),
           document.fonts.load('36px "IndoPak Quran"'),
         ]).then(again);
       }
@@ -571,5 +577,7 @@
 
   load();
 </script>
+<script src="/static/position-tracker.js" defer data-context="reader"></script>
+<script src="/static/auth-strip.js" defer></script>
 </body>
 </html>
