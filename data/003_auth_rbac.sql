@@ -194,6 +194,10 @@ INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_met
 SELECT `id`, '/static',     'GET',      1 FROM `permissions` WHERE `perm_key` = 'public';
 INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`, `is_public`)
 SELECT `id`, '/favicon.ico','GET',      1 FROM `permissions` WHERE `perm_key` = 'public';
+-- Public by design: with no valid cookie it answers {"user": null} and nothing
+-- else, so the sign-out strip can call it from the sign-in page too.
+INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`, `is_public`)
+SELECT `id`, '/api/me',     'GET',      1 FROM `permissions` WHERE `perm_key` = 'public';
 
 INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`)
 SELECT `id`, '/',                'GET' FROM `permissions` WHERE `perm_key` = 'page.home';
@@ -212,6 +216,9 @@ INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_met
 SELECT `id`, '/docs',            'GET' FROM `permissions` WHERE `perm_key` = 'page.docs';
 INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`)
 SELECT `id`, '/openapi.json',    'GET' FROM `permissions` WHERE `perm_key` = 'page.docs';
+-- FastAPI serves a second docs page at /redoc; it needs the same guard.
+INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`)
+SELECT `id`, '/redoc',           'GET' FROM `permissions` WHERE `perm_key` = 'page.docs';
 
 INSERT IGNORE INTO `permission_paths` (`permission_id`, `path_prefix`, `http_methods`)
 SELECT `id`, '/surahs',          'GET' FROM `permissions` WHERE `perm_key` = 'api.read';

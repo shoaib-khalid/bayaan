@@ -35,7 +35,7 @@ from datetime import datetime, timezone
 
 import mysql.connector
 
-from .config import DATABASE_CONFIG
+from .config import ADMIN_PASSWORD, ADMIN_USERNAME, DATABASE_CONFIG
 
 # ---------------------------------------------------------------------------
 # Policy
@@ -47,6 +47,11 @@ PBKDF2_ALGORITHM = "pbkdf2_sha256"
 PBKDF2_ITERATIONS = 600_000
 
 SESSION_COOKIE = "bayaan_session"
+# A floor, not a policy: no upper bound, no character-class rules. Length is the
+# only requirement that reliably helps, and an over-eager policy produces
+# passwords written on a sticky note.
+MIN_PASSWORD_LENGTH = 8
+
 # Idle expiry: the deadline is pushed forward while the person is using the
 # app, so this is "time since last activity", not "time since sign-in".
 IDLE_SECONDS = 12 * 60 * 60
@@ -106,8 +111,10 @@ def _execute(sql: str, params: tuple = ()) -> int:
 
 def hash_password(password: str, iterations: int = PBKDF2_ITERATIONS) -> str:
     """Return the storable verifier for a new or changed password."""
-    if not password:
-        raise ValueError("password must not be empty")
+    if not password or len(password) < MIN_PASSWORD_LENGTH:
+        raise ValueError(
+            f"the password must be at least {MIN_PASSWORD_LENGTH} characters"
+        )
     salt = secrets.token_bytes(16)
     digest = hashlib.pbkdf2_hmac(
         "sha256", password.encode("utf-8"), salt, iterations
@@ -261,6 +268,23 @@ def list_users() -> list[dict]:
 
 def list_roles() -> list[dict]:
     return _query_all("SELECT id, name, description FROM roles ORDER BY id")
+
+
+def ensure_first_admin() -> str | None:
+    """Seed an administrator from the environment, once.
+
+    Guarded on the table being empty rather than on the username existing, so
+    this can never re-create or overwrite an account that was later renamed,
+    demoted or disabled. Once any user exists the environment is ignored.
+    """
+    if _query_one("SELECT id FROM users LIMIT 1"):
+        return None
+    if not ADMIN_USERNAME or not ADMIN_PASSWORD:
+        return None
+    create_user(
+        ADMIN_USERNAME, ADMIN_PASSWORD, role="admin", display_name="Administrator"
+    )
+    return ADMIN_USERNAME
 
 
 # ---------------------------------------------------------------------------

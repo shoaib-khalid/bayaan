@@ -1,10 +1,17 @@
 import re
+from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, HTMLResponse
+from string import Template
+from urllib.parse import parse_qs, quote, urlencode
+
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import mysql.connector
+from starlette.concurrency import run_in_threadpool
+
+from . import auth
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 
 # Real Arabic words contain letters or a known complete-word font ligature.
@@ -16,10 +23,28 @@ from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 # len()<=2 heuristic, so we re-derive it here. See TODO.md.)
 _ARABIC_LETTER = re.compile(r"[\u0621-\u064a\u0671-\u06d3]")
 
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """First start only: create an administrator from ADMIN_USERNAME/PASSWORD.
+
+    On an empty `users` table with neither variable set, the app starts with no
+    accounts at all — nobody can sign in, and `scripts/manage_users.py create`
+    is the way in. That is deliberate: no default password ever exists.
+    """
+    try:
+        seeded = auth.ensure_first_admin()
+        if seeded:
+            print(f"[auth] created the first administrator '{seeded}' from .env")
+    except Exception as exc:  # a DB hiccup must not stop the app from starting
+        print(f"[auth] could not seed the first administrator: {exc}")
+    yield
+
+
 app = FastAPI(
     title=API_TITLE,
     description=API_DESCRIPTION,
-    version=API_VERSION
+    version=API_VERSION,
+    lifespan=lifespan,
 )
 
 # -------------------------
@@ -382,3 +407,260 @@ def index_page():
     if not index.is_file():
         raise HTTPException(status_code=404, detail="index.html not built")
     return FileResponse(index)
+
+
+# ---------------------------------------------------------------------------
+# Access control
+#
+# The rules are rows, not code: `permission_paths` says which capability a URL
+# needs and `role_permissions` says which role holds it. Both are read per
+# request, so a grant or revocation applies to the next request with no restart
+# (see app/auth.py and data/003_auth_rbac.sql).
+#
+# A path with no row is not protected, so every page and endpoint here must have
+# one. `python scripts/manage_users.py permissions` lists the covered paths.
+# ---------------------------------------------------------------------------
+
+_FORBIDDEN_PAGE = Template("""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not permitted — Bayaan</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#12100e; color:#f2ece3; font:16px/1.6 system-ui, sans-serif; padding:24px; }
+  .card { max-width:540px; padding:32px 36px; border:1px solid #3a332a; border-radius:10px; background:#191612; }
+  h1 { margin:0 0 10px; font-size:20px; letter-spacing:.02em; }
+  code { background:#241f18; padding:1px 5px; border-radius:4px; font-size:14px; }
+  a { color:#c8a96a; }
+  p { margin:0 0 14px; }
+  .who { color:#c8a96a; }
+  .muted { color:#a89b88; font-size:14px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Not permitted</h1>
+    <p class="who">Signed in as $who ($role).</p>
+    <p>This page needs the <code>$permission</code> permission, which your role does not have.</p>
+    <p class="muted">Ask an administrator to grant it, or <a href="/logout">sign out</a>.</p>
+    <p class="muted">Access rules live in the database, so a grant applies on your next request.</p>
+  </div>
+</body>
+</html>
+""")
+
+
+def _forbidden_page(user: dict, permission: str) -> HTMLResponse:
+    return HTMLResponse(
+        _FORBIDDEN_PAGE.substitute(
+            who=user.get("display_name") or user["username"],
+            role=user["role"],
+            permission=permission,
+        ),
+        status_code=403,
+    )
+
+
+def _redirect_target(request: Request) -> str:
+    """The path (with query) to come back to after signing in."""
+    return request.url.path + (("?" + request.url.query) if request.url.query else "")
+
+
+def _client_ip(request: Request) -> str | None:
+    return request.client.host if request.client else None
+
+
+def _wants_html(request: Request) -> bool:
+    """Is this a browser following a page, or a client calling the API?
+
+    The method alone cannot tell them apart: a page and a JSON endpoint are both
+    a GET. The Accept header can — a browser navigating asks for `text/html`,
+    and a `fetch()` from a page or a script sends `*/*`, which must get a status
+    it can handle instead of a login page it cannot parse.
+    """
+    return "text/html" in request.headers.get("accept", "").lower()
+
+
+@app.middleware("http")
+async def require_permission(request: Request, call_next):
+    """Reject a request whose URL needs a capability the caller lacks.
+
+    The two database reads happen in a worker thread: the connection and the
+    cursor are blocking, and running them on the event loop would stall every
+    other in-flight request for the duration.
+    """
+    rule = await run_in_threadpool(
+        auth.resolve_rule, request.url.path, request.method
+    )
+    if rule is None or rule["is_public"]:
+        return await call_next(request)
+
+    user = await run_in_threadpool(
+        auth.get_session, request.cookies.get(auth.SESSION_COOKIE)
+    )
+    if user is None:
+        # A page gets sent to sign in and comes back; an API call gets a status
+        # it can actually act on, rather than a page of HTML.
+        if request.method in auth.NAVIGATION_METHODS and _wants_html(request):
+            return RedirectResponse(
+                "/login?next=" + quote(_redirect_target(request), safe=""),
+                status_code=303,
+            )
+        return JSONResponse({"detail": "Sign in required."}, status_code=401)
+
+    held = await run_in_threadpool(auth.role_permissions, user["role_id"])
+    if rule["perm_key"] not in held:
+        if request.method in auth.NAVIGATION_METHODS and _wants_html(request):
+            return _forbidden_page(user, rule["perm_key"])
+        return JSONResponse(
+            {"detail": f"Not permitted: {rule['perm_key']}."}, status_code=403
+        )
+
+    request.state.user = user
+    return await call_next(request)
+
+
+@app.get("/login", response_class=HTMLResponse, include_in_schema=False)
+def login_page(request: Request, next: str = "/"):
+    """The sign-in form. Already signed in means no reason to show it."""
+    if auth.get_session(request.cookies.get(auth.SESSION_COOKIE)):
+        return RedirectResponse(auth.safe_next(next), status_code=303)
+    page = STATIC_DIR / "login.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="login.html not built")
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
+
+
+@app.post("/login", include_in_schema=False)
+async def login_submit(request: Request):
+    """Verify the form and start a session.
+
+    The body is parsed here rather than declared with `Form(...)`, which would
+    drag in python-multipart for one form. The page posts urlencoded, so
+    parse_qs is enough and the app keeps its current dependency list.
+    """
+    form = parse_qs((await request.body()).decode("utf-8"))
+    username = form.get("username", [""])[0].strip()
+    password = form.get("password", [""])[0]
+    remember = bool(form.get("remember", [""])[0])
+    next_path = auth.safe_next(form.get("next", ["/"])[0])
+
+    user = await run_in_threadpool(auth.authenticate, username, password)
+    if not user:
+        # One message for every failure: an unknown user, a wrong password and
+        # a disabled account must be indistinguishable from outside.
+        query = urlencode({"error": "1", "next": next_path, "username": username})
+        return RedirectResponse("/login?" + query, status_code=303)
+
+    token = await run_in_threadpool(
+        auth.create_session,
+        user["id"],
+        remember,
+        _client_ip(request),
+        request.headers.get("user-agent"),
+    )
+    response = RedirectResponse(next_path, status_code=303)
+    response.set_cookie(
+        auth.SESSION_COOKIE,
+        token,
+        # A remembered session survives a browser restart; otherwise the cookie
+        # is dropped when the browser closes and the row expires on its own.
+        max_age=auth.REMEMBER_SECONDS if remember else None,
+        httponly=True,
+        samesite="lax",
+        # Set True once this is served over HTTPS.
+        secure=False,
+        path="/",
+    )
+    return response
+
+
+@app.get("/logout", include_in_schema=False)
+@app.post("/logout", include_in_schema=False)
+def logout(request: Request):
+    auth.delete_session(request.cookies.get(auth.SESSION_COOKIE))
+    response = RedirectResponse("/login?signed_out=1", status_code=303)
+    response.delete_cookie(auth.SESSION_COOKIE, path="/")
+    return response
+
+
+@app.get("/me/password", response_class=HTMLResponse, include_in_schema=False)
+def me_password_page():
+    page = STATIC_DIR / "me-password.html"
+    if not page.is_file():
+        raise HTTPException(status_code=404, detail="me-password.html not built")
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
+
+
+@app.post("/me/password", include_in_schema=False)
+async def me_password_submit(request: Request):
+    """Change the signed-in user's own password.
+
+    The current password is required as well: a borrowed session should not be
+    enough to lock the real owner out of their own account.
+    """
+    token = request.cookies.get(auth.SESSION_COOKIE)
+    user = await run_in_threadpool(auth.get_session, token)
+    if not user:
+        return RedirectResponse("/login?next=%2Fme%2Fpassword", status_code=303)
+
+    form = parse_qs((await request.body()).decode("utf-8"))
+    current = form.get("current", [""])[0]
+    new = form.get("new", [""])[0]
+    confirm = form.get("confirm", [""])[0]
+
+    def back_with(error: str) -> RedirectResponse:
+        return RedirectResponse("/me/password?" + urlencode({"error": error}), status_code=303)
+
+    stored = await run_in_threadpool(auth.get_user_by_username, user["username"])
+    if not stored or not auth.verify_password(current, stored["password_hash"]):
+        return back_with("current")
+    if len(new) < auth.MIN_PASSWORD_LENGTH:
+        return back_with("short")
+    if new != confirm:
+        return back_with("mismatch")
+
+    await run_in_threadpool(auth.set_password, user["id"], new)
+    # Every other session was opened with the old password, so end them all -
+    # then issue a fresh one here so this browser is not thrown out with them.
+    await run_in_threadpool(auth.delete_user_sessions, user["id"])
+    fresh = await run_in_threadpool(
+        auth.create_session,
+        user["id"],
+        # Keep the session type the person originally chose.
+        bool(user.get("remember_me")),
+        _client_ip(request),
+        request.headers.get("user-agent"),
+    )
+    response = RedirectResponse("/me/password?changed=1", status_code=303)
+    response.set_cookie(
+        auth.SESSION_COOKIE,
+        fresh,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        path="/",
+    )
+    return response
+
+
+@app.get("/api/me", include_in_schema=False)
+def api_me(request: Request):
+    """Who is signed in, for the sign-out strip on every page.
+
+    Public on purpose: with no valid cookie it answers `{"user": null}` and
+    nothing else, so it is safe to call from the sign-in page too.
+    """
+    user = auth.get_session(request.cookies.get(auth.SESSION_COOKIE))
+    if not user:
+        return {"user": None}
+    return {
+        "user": {
+            "username": user["username"],
+            "display_name": user.get("display_name"),
+            "role": user["role"],
+        }
+    }

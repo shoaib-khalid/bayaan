@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — Bayaan</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #12100e; color: #f2ece3; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px;
+  }
+  .card {
+    width: 100%; max-width: 380px; padding: 34px 36px 30px;
+    background: #191612; border: 1px solid #3a332a; border-radius: 10px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .04em; color: #c8a96a; font-weight: 600; }
+  .sub { margin: 0 0 26px; font-size: 13px; color: #a89b88; }
+  label { display: block; font-size: 13px; color: #cbbfae; margin: 0 0 6px; }
+  input[type=text], input[type=password] {
+    width: 100%; padding: 10px 12px; margin: 0 0 16px;
+    background: #100e0b; color: #f2ece3; border: 1px solid #3a332a; border-radius: 6px;
+    font: inherit; font-size: 15px;
+  }
+  input[type=text]:focus, input[type=password]:focus {
+    outline: none; border-color: #c8a96a; box-shadow: 0 0 0 3px rgba(200, 169, 106, .15);
+  }
+  .row { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; font-size: 13px; color: #cbbfae; }
+  .row input { accent-color: #c8a96a; }
+  button {
+    width: 100%; padding: 11px; border: 0; border-radius: 6px; cursor: pointer;
+    background: #c8a96a; color: #1b1710; font: inherit; font-weight: 600; letter-spacing: .02em;
+  }
+  button:hover { background: #d9bb7d; }
+  .msg { margin: 0 0 18px; padding: 10px 12px; border-radius: 6px; font-size: 13.5px; }
+  .msg.error { background: #3a1e1c; border: 1px solid #6d3330; color: #f0c9c4; }
+  .msg.ok { background: #1d2b21; border: 1px solid #35543d; color: #c7e6cf; }
+  .foot { margin: 20px 0 0; font-size: 12px; color: #7d7264; text-align: center; }
+  .foot a { color: #a89b88; }
+</style>
+</head>
+<body>
+  <form class="card" method="post" action="/login" autocomplete="on">
+    <h1>Bayaan</h1>
+    <p class="sub">Sign in to read and edit.</p>
+
+    <div id="banner" class="msg" hidden></div>
+
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" autocomplete="username"
+           autocapitalize="none" spellcheck="false" required autofocus>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+    <div class="row">
+      <input id="remember" name="remember" type="checkbox" value="1">
+      <label for="remember" style="margin:0">Keep me signed in on this device</label>
+    </div>
+
+    <input id="next" name="next" type="hidden" value="/">
+    <button type="submit">Sign in</button>
+
+    <p class="foot">Passwords are issued by an administrator.</p>
+  </form>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var banner = document.getElementById("banner");
+
+  // Come back to the page that was asked for, not to the home page.
+  var next = q.get("next");
+  if (next && next.charAt(0) === "/" && next.charAt(1) !== "/") {
+    document.getElementById("next").value = next;
+  }
+
+  if (q.get("error")) {
+    banner.textContent = "That username and password did not match an active account.";
+    banner.className = "msg error";
+    banner.hidden = false;
+  } else if (q.get("signed_out")) {
+    banner.textContent = "You are signed out.";
+    banner.className = "msg ok";
+    banner.hidden = false;
+  }
+
+  // Keep the typed username so a mistyped password does not mean retyping both.
+  var failed = q.get("username");
+  if (failed) { document.getElementById("username").value = failed; }
+})();
+</script>
+</body>
+</html>
