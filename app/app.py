@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 import mysql.connector
 from starlette.concurrency import run_in_threadpool
 
-from . import auth
+from . import admin, auth
 from .config import DATABASE_CONFIG, API_TITLE, API_DESCRIPTION, API_VERSION
 
 # Real Arabic words contain letters or a known complete-word font ligature.
@@ -664,3 +664,103 @@ def api_me(request: Request):
             "role": user["role"],
         }
     }
+
+
+# ---------------------------------------------------------------------------
+# User administration (/admin/users — requires page.admin)
+#
+# Every action is a form POST that redirects back to the page with a code, so a
+# refresh cannot resend it and the URL never carries a message the page would
+# have to trust.
+# ---------------------------------------------------------------------------
+
+def _admin_back(query: str) -> RedirectResponse:
+    return RedirectResponse("/admin/users?" + query, status_code=303)
+
+
+async def _admin_form(request: Request) -> dict[str, str]:
+    form = parse_qs((await request.body()).decode("utf-8"))
+    return {key: (values[0] if values else "") for key, values in form.items()}
+
+
+@app.get("/admin/users", response_class=HTMLResponse, include_in_schema=False)
+def admin_users_page(request: Request, ok: str = "", error: str = ""):
+    page = admin.render_users(
+        request.state.user,
+        auth.list_users(),
+        auth.list_roles(),
+        ok or None,
+        error or None,
+    )
+    return HTMLResponse(page, headers={"Cache-Control": "no-cache"})
+
+
+@app.post("/admin/users/create", include_in_schema=False)
+async def admin_users_create(request: Request):
+    form = await _admin_form(request)
+    username = form.get("username", "").strip()
+    display_name = form.get("display_name", "").strip() or None
+    role = form.get("role", "").strip() or "viewer"
+    password = form.get("password", "")
+    confirm = form.get("confirm", "")
+
+    if not username or not password or not confirm:
+        return _admin_back("error=missing")
+    if not any(r["name"] == role for r in auth.list_roles()):
+        return _admin_back("error=role")
+    if password != confirm:
+        return _admin_back("error=mismatch")
+    if len(password) < auth.MIN_PASSWORD_LENGTH:
+        return _admin_back("error=short")
+    if auth.get_user_by_username(username):
+        return _admin_back("error=duplicate")
+
+    try:
+        auth.create_user(username, password, role=role, display_name=display_name)
+    except ValueError:
+        return _admin_back("error=short")
+    return _admin_back("ok=created")
+
+
+@app.post("/admin/users/password", include_in_schema=False)
+async def admin_users_password(request: Request):
+    """Set somebody else's password. Ends the sessions they had open."""
+    form = await _admin_form(request)
+    target = auth.get_user(int(form.get("user_id") or 0))
+    if not target:
+        return _admin_back("error=user")
+
+    password = form.get("password", "")
+    confirm = form.get("confirm", "")
+    if password != confirm:
+        return _admin_back("error=mismatch")
+    if len(password) < auth.MIN_PASSWORD_LENGTH:
+        return _admin_back("error=short")
+
+    auth.set_password(target["id"], password)
+    auth.delete_user_sessions(target["id"])
+    return _admin_back("ok=password")
+
+
+@app.post("/admin/users/active", include_in_schema=False)
+async def admin_users_active(request: Request):
+    form = await _admin_form(request)
+    target = auth.get_user(int(form.get("user_id") or 0))
+    if not target:
+        return _admin_back("error=user")
+
+    make_active = form.get("active") == "1"
+    if not make_active:
+        # Locking yourself out mid-session is a support call waiting to happen;
+        # and leaving no active administrator means nobody can grant anything.
+        if target["id"] == request.state.user["id"]:
+            return _admin_back("error=self")
+        others = [
+            u for u in auth.list_users()
+            if u["role"] == "admin" and u["is_active"] and u["id"] != target["id"]
+        ]
+        if target["role"] == "admin" and not others:
+            return _admin_back("error=lastadmin")
+
+    auth.set_active(target["id"], make_active)
+    return _admin_back("ok=enabled" if make_active else "ok=disabled")

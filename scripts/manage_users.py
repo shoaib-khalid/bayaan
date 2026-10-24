@@ -64,7 +64,9 @@ def cmd_list(args) -> int:
         print("no accounts yet — create one with:")
         print("  python scripts/manage_users.py create <username> --role admin")
         return 0
-    width = max(len(u["username"]) for u in users) + 2
+    # The header must be able to widen the column too, otherwise a short
+    # username runs it into the role column ("usernamerole").
+    width = max([len("username")] + [len(u["username"]) for u in users]) + 2
     print(f"{'id':>3}  {'username':<{width}}{'role':<8}{'active':<8}{'last sign-in'}")
     for u in users:
         last = u["last_login_at"].strftime("%Y-%m-%d %H:%M") if u["last_login_at"] else "never"
